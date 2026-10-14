@@ -6,6 +6,7 @@ export {
   type Actor,
   type CountInput,
   type CountResult,
+  type LedgerOperation,
   type MoveInput,
   type ReserveInput,
   type ReserveResult,

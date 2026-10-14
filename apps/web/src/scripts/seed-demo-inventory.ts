@@ -55,7 +55,8 @@ const showroom = await location('DXB-SHOW', 'Dubai showroom floor', true, 20)
 const demo = await location('DXB-DEMO', 'Listening room', false, 30)
 
 const ledger = createLedger(payload)
-const receipt = { type: 'receipt', id: 'GR-2026-0001' } as const
+// Opening balance: stock that predates the platform. New stock arrives by goods receipt (seed:purchasing).
+const receipt = { type: 'opening', id: 'OB-2026-0001' } as const
 await ledger.move({
   sku: 'MCINTOSH-MA352',
   qty: 6,

@@ -24,8 +24,10 @@ export { MARKETS_SEED, seedMarkets, type SeedMarketsResult } from './system/seed
 export { ensureStaffUser, type StaffCredentials } from './system/ensure-staff-user'
 export * from './collections/inventory'
 export { createLedger, PostgresLedgerStore } from './system/ledgerStore'
+export { createReceiving, PostgresPurchasingStore } from './system/purchasingStore'
 export {
   LEDGER_QUEUE,
   RELEASE_EXPIRED_RESERVATIONS,
   releaseExpiredReservationsTask,
 } from './jobs/releaseExpiredReservations'
+export * from './collections/purchasing'

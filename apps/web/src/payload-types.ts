@@ -76,6 +76,9 @@ export interface Config {
     'stock-levels': StockLevel;
     'serial-numbers': SerialNumber;
     reservations: Reservation;
+    suppliers: Supplier;
+    'purchase-orders': PurchaseOrder;
+    'goods-receipts': GoodsReceipt;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -93,6 +96,9 @@ export interface Config {
     'stock-levels': StockLevelsSelect<false> | StockLevelsSelect<true>;
     'serial-numbers': SerialNumbersSelect<false> | SerialNumbersSelect<true>;
     reservations: ReservationsSelect<false> | ReservationsSelect<true>;
+    suppliers: SuppliersSelect<false> | SuppliersSelect<true>;
+    'purchase-orders': PurchaseOrdersSelect<false> | PurchaseOrdersSelect<true>;
+    'goods-receipts': GoodsReceiptsSelect<false> | GoodsReceiptsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -419,6 +425,151 @@ export interface Reservation {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "suppliers".
+ */
+export interface Supplier {
+  id: number;
+  code: string;
+  name: string;
+  /**
+   * ISO 3166-1 alpha-2, e.g. US.
+   */
+  country: string;
+  /**
+   * ISO 4217, e.g. USD.
+   */
+  currency: string;
+  leadTimeDays?: number | null;
+  contact?: {
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  };
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "purchase-orders".
+ */
+export interface PurchaseOrder {
+  id: number;
+  /**
+   * e.g. PO-2026-0100.
+   */
+  number: string;
+  supplier: number | Supplier;
+  /**
+   * Destination.
+   */
+  warehouse: number | Warehouse;
+  /**
+   * ISO 4217, e.g. USD.
+   */
+  currency: string;
+  /**
+   * Minor units of the currency (2 for USD, 3 for KWD).
+   */
+  decimals: number;
+  /**
+   * Expected arrival; feeds stock ETAs.
+   */
+  expectedAt?: string | null;
+  /**
+   * Receiving sets partially received and received.
+   */
+  status: 'draft' | 'ordered' | 'partially_received' | 'received' | 'closed' | 'cancelled';
+  lines: {
+    sku: string;
+    description?: string | null;
+    qtyOrdered: number;
+    /**
+     * Minor units of the order currency.
+     */
+    unitCost: number;
+    serialised?: boolean | null;
+    /**
+     * Units booked by posted goods receipts.
+     */
+    qtyReceived?: number | null;
+    id?: string | null;
+  }[];
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "goods-receipts".
+ */
+export interface GoodsReceipt {
+  id: number;
+  /**
+   * e.g. GR-2026-0001.
+   */
+  number: string;
+  purchaseOrder: number | PurchaseOrder;
+  /**
+   * Receiving dock.
+   */
+  location: number | Location;
+  /**
+   * Set by posting.
+   */
+  status: 'draft' | 'posted';
+  postedAt?: string | null;
+  postedBy?: (number | null) | User;
+  putawayAt?: string | null;
+  putawayLocation?: (number | null) | Location;
+  lines?:
+    | {
+        /**
+         * Id of the purchase order line.
+         */
+        poLine: string;
+        /**
+         * What arrived.
+         */
+        sku: string;
+        qty: number;
+        /**
+         * One per unit for serialised lines.
+         */
+        serials?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        exceptions?:
+          | {
+              type: 'short' | 'over' | 'damaged' | 'wrong_item' | 'missing_serial';
+              qty?: number | null;
+              serials?:
+                | {
+                    [k: string]: unknown;
+                  }
+                | unknown[]
+                | string
+                | number
+                | boolean
+                | null;
+              note?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -577,6 +728,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'reservations';
         value: number | Reservation;
+      } | null)
+    | ({
+        relationTo: 'suppliers';
+        value: number | Supplier;
+      } | null)
+    | ({
+        relationTo: 'purchase-orders';
+        value: number | PurchaseOrder;
+      } | null)
+    | ({
+        relationTo: 'goods-receipts';
+        value: number | GoodsReceipt;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -763,6 +926,88 @@ export interface ReservationsSelect<T extends boolean = true> {
   docId?: T;
   status?: T;
   expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "suppliers_select".
+ */
+export interface SuppliersSelect<T extends boolean = true> {
+  code?: T;
+  name?: T;
+  country?: T;
+  currency?: T;
+  leadTimeDays?: T;
+  contact?:
+    | T
+    | {
+        name?: T;
+        email?: T;
+        phone?: T;
+      };
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "purchase-orders_select".
+ */
+export interface PurchaseOrdersSelect<T extends boolean = true> {
+  number?: T;
+  supplier?: T;
+  warehouse?: T;
+  currency?: T;
+  decimals?: T;
+  expectedAt?: T;
+  status?: T;
+  lines?:
+    | T
+    | {
+        sku?: T;
+        description?: T;
+        qtyOrdered?: T;
+        unitCost?: T;
+        serialised?: T;
+        qtyReceived?: T;
+        id?: T;
+      };
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "goods-receipts_select".
+ */
+export interface GoodsReceiptsSelect<T extends boolean = true> {
+  number?: T;
+  purchaseOrder?: T;
+  location?: T;
+  status?: T;
+  postedAt?: T;
+  postedBy?: T;
+  putawayAt?: T;
+  putawayLocation?: T;
+  lines?:
+    | T
+    | {
+        poLine?: T;
+        sku?: T;
+        qty?: T;
+        serials?: T;
+        exceptions?:
+          | T
+          | {
+              type?: T;
+              qty?: T;
+              serials?: T;
+              note?: T;
+              id?: T;
+            };
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

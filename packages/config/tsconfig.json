@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": ["env.ts"],
+  "compilerOptions": { "noEmit": true, "types": ["node"] }
+}

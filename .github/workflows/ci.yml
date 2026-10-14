@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: '1'
+  TURBO_TELEMETRY_DISABLED: '1'
+  # CI-only values. packages/config/env.ts validates these at startup, so build and
+  # generate:types need a complete set. None of them is a real credential.
+  DATABASE_URL: postgres://alpha:alpha@localhost:5432/alpha
+  PAYLOAD_SECRET: ci-only-not-a-secret-0000000000000000000000000000000000000000000000
+  NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+  S3_ENDPOINT: http://localhost:9000
+  S3_REGION: auto
+  S3_BUCKET: alpha-media
+  S3_ACCESS_KEY_ID: ci
+  S3_SECRET_ACCESS_KEY: ci
+  S3_FORCE_PATH_STYLE: 'true'
+
+jobs:
+  check:
+    name: Typecheck, lint, test, types diff, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: alpha
+          POSTGRES_PASSWORD: alpha
+          POSTGRES_DB: alpha
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U alpha -d alpha"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # pnpm version comes from package.json#packageManager
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Pinned Payload and Next.js versions
+        run: |
+          payload=$(pnpm --filter @alpha/web list payload next --depth 0 --json | node -e '
+            const deps = JSON.parse(require("fs").readFileSync(0, "utf8"))[0].dependencies;
+            console.log(`payload=${deps.payload.version} next=${deps.next.version}`)')
+          echo "$payload"
+          # Exactly one resolved version of each. Count the `packages:` entry ("  next@16.4.0:"),
+          # not the `snapshots:` entry ("  next@16.4.0(peers…):") that every package also has.
+          for pkg in payload next; do
+            n=$(grep -cE "^  ${pkg}@[0-9][0-9.]*:$" pnpm-lock.yaml || true)
+            if [ "$n" -ne 1 ]; then echo "::error::${pkg} resolves to $n versions in pnpm-lock.yaml"; exit 1; fi
+          done
+
+      - name: Format
+        run: pnpm format:check
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Integration tests (Postgres service container)
+        run: pnpm test:integration
+
+      - name: Accessibility
+        run: pnpm test:a11y
+
+      - name: Generated files are up to date
+        run: |
+          pnpm --filter @alpha/web generate:types
+          pnpm --filter @alpha/web generate:importmap
+          # status, not diff: also catches a generated file that was deleted from the commit
+          changed=$(git status --porcelain -- apps/web/src/payload-types.ts 'apps/web/src/app/(payload)/admin/importMap.js')
+          if [ -n "$changed" ]; then
+            echo "::error::Generated Payload files are stale. Run 'pnpm generate:types' (and generate:importmap in apps/web) and commit the result."
+            echo "$changed"
+            git --no-pager diff -- apps/web/src/payload-types.ts 'apps/web/src/app/(payload)/admin/importMap.js'
+            exit 1
+          fi
+
+      - name: Migrations apply to the CI database
+        run: pnpm --filter @alpha/web migrate
+
+      - name: Build
+        run: pnpm build

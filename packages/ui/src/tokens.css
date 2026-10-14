@@ -1,0 +1,20 @@
+/* Alpha design tokens — the only place colour values live. See docs/spec §4. */
+:root {
+  --color-lacquer: #141b24;
+  --color-aluminium: #f2f3f5;
+  --color-aluminium-deep: #d5d8dc;
+  --color-graphite: #252c34;
+  --color-bronze: #9a7b56;
+  --color-vu-amber: #e3a13b;
+  --color-signal-green: #3f8a5f;
+  --color-alert: #a6412a;
+
+  --font-sans: 'Archivo', system-ui, sans-serif;
+  --font-arabic: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-arabic-display: 'Noto Kufi Arabic', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --radius-control: 4px;
+  --radius-card: 8px;
+  --motion-ui: 200ms;
+}

@@ -70,7 +70,14 @@ export interface Config {
     users: User;
     media: Media;
     'legacy-redirects': LegacyRedirect;
+    warehouses: Warehouse;
+    locations: Location;
+    'stock-movements': StockMovement;
+    'stock-levels': StockLevel;
+    'serial-numbers': SerialNumber;
+    reservations: Reservation;
     'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -80,7 +87,14 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'legacy-redirects': LegacyRedirectsSelect<false> | LegacyRedirectsSelect<true>;
+    warehouses: WarehousesSelect<false> | WarehousesSelect<true>;
+    locations: LocationsSelect<false> | LocationsSelect<true>;
+    'stock-movements': StockMovementsSelect<false> | StockMovementsSelect<true>;
+    'stock-levels': StockLevelsSelect<false> | StockLevelsSelect<true>;
+    'serial-numbers': SerialNumbersSelect<false> | SerialNumbersSelect<true>;
+    reservations: ReservationsSelect<false> | ReservationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -91,9 +105,11 @@ export interface Config {
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'ar') | ('en' | 'ar')[];
   globals: {
     markets: Market;
+    'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     markets: MarketsSelect<false> | MarketsSelect<true>;
+    'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: 'en' | 'ar';
   widgets: {
@@ -101,7 +117,13 @@ export interface Config {
   };
   user: User;
   jobs: {
-    tasks: unknown;
+    tasks: {
+      releaseExpiredReservations: TaskReleaseExpiredReservations;
+      inline: {
+        input: unknown;
+        output: unknown;
+      };
+    };
     workflows: unknown;
   };
 }
@@ -190,6 +212,213 @@ export interface LegacyRedirect {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "warehouses".
+ */
+export interface Warehouse {
+  id: number;
+  /**
+   * Short code, e.g. DXB-WH1.
+   */
+  code: string;
+  name: string;
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  type: 'warehouse' | 'showroom' | 'demo' | 'consignment' | 'service';
+  address?: {
+    line1?: string | null;
+    city?: string | null;
+  };
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "locations".
+ */
+export interface Location {
+  id: number;
+  /**
+   * e.g. DXB-WH1-A01.
+   */
+  code: string;
+  warehouse: number | Warehouse;
+  name?: string | null;
+  /**
+   * Part of the market's fulfilment set: its available stock is sellable online.
+   */
+  sellable?: boolean | null;
+  /**
+   * Reservations try lower numbers first.
+   */
+  priority?: number | null;
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Insert-only. Written by the stock ledger; nobody edits or deletes a movement.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-movements".
+ */
+export interface StockMovement {
+  id: number;
+  sku: string;
+  serial?: string | null;
+  qty: number;
+  /**
+   * Empty: the stock entered the ledger.
+   */
+  fromState?:
+    | (
+        | 'received'
+        | 'available'
+        | 'reserved'
+        | 'picked'
+        | 'shipped'
+        | 'delivered'
+        | 'demo'
+        | 'ex_display'
+        | 'in_transit'
+        | 'bonded'
+        | 'damaged'
+        | 'rma'
+        | 'quarantine'
+      )
+    | null;
+  /**
+   * Empty: the stock left the ledger.
+   */
+  toState?:
+    | (
+        | 'received'
+        | 'available'
+        | 'reserved'
+        | 'picked'
+        | 'shipped'
+        | 'delivered'
+        | 'demo'
+        | 'ex_display'
+        | 'in_transit'
+        | 'bonded'
+        | 'damaged'
+        | 'rma'
+        | 'quarantine'
+      )
+    | null;
+  location: number | Location;
+  docType:
+    | 'receipt'
+    | 'opening'
+    | 'transfer'
+    | 'cart'
+    | 'quote'
+    | 'pos'
+    | 'project'
+    | 'order'
+    | 'shipment'
+    | 'count'
+    | 'adjustment'
+    | 'rma';
+  docId: string;
+  user?: (number | null) | User;
+  reason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Derived from stock movements. Read-only: quantities change only through the ledger.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-levels".
+ */
+export interface StockLevel {
+  id: number;
+  sku: string;
+  location: number | Location;
+  state:
+    | 'received'
+    | 'available'
+    | 'reserved'
+    | 'picked'
+    | 'shipped'
+    | 'delivered'
+    | 'demo'
+    | 'ex_display'
+    | 'in_transit'
+    | 'bonded'
+    | 'damaged'
+    | 'rma'
+    | 'quarantine';
+  qty: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "serial-numbers".
+ */
+export interface SerialNumber {
+  id: number;
+  serial: string;
+  sku: string;
+  /**
+   * Empty: the unit has left the ledger.
+   */
+  currentState?:
+    | (
+        | 'received'
+        | 'available'
+        | 'reserved'
+        | 'picked'
+        | 'shipped'
+        | 'delivered'
+        | 'demo'
+        | 'ex_display'
+        | 'in_transit'
+        | 'bonded'
+        | 'damaged'
+        | 'rma'
+        | 'quarantine'
+      )
+    | null;
+  location?: (number | null) | Location;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reservations".
+ */
+export interface Reservation {
+  id: number;
+  sku: string;
+  location: number | Location;
+  qty: number;
+  /**
+   * Serial numbers held, for serialised SKUs.
+   */
+  serials?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  docType: 'cart' | 'quote' | 'pos' | 'project' | 'order';
+  docId: string;
+  status: 'active' | 'released' | 'expired' | 'picked';
+  /**
+   * Empty: held until picked or released (paid orders).
+   */
+  expiresAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -204,6 +433,107 @@ export interface PayloadKv {
     | number
     | boolean
     | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: number;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline' | 'releaseExpiredReservations';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?: ('inline' | 'releaseExpiredReservations') | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -223,6 +553,30 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'legacy-redirects';
         value: number | LegacyRedirect;
+      } | null)
+    | ({
+        relationTo: 'warehouses';
+        value: number | Warehouse;
+      } | null)
+    | ({
+        relationTo: 'locations';
+        value: number | Location;
+      } | null)
+    | ({
+        relationTo: 'stock-movements';
+        value: number | StockMovement;
+      } | null)
+    | ({
+        relationTo: 'stock-levels';
+        value: number | StockLevel;
+      } | null)
+    | ({
+        relationTo: 'serial-numbers';
+        value: number | SerialNumber;
+      } | null)
+    | ({
+        relationTo: 'reservations';
+        value: number | Reservation;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -323,11 +677,134 @@ export interface LegacyRedirectsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "warehouses_select".
+ */
+export interface WarehousesSelect<T extends boolean = true> {
+  code?: T;
+  name?: T;
+  market?: T;
+  type?: T;
+  address?:
+    | T
+    | {
+        line1?: T;
+        city?: T;
+      };
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "locations_select".
+ */
+export interface LocationsSelect<T extends boolean = true> {
+  code?: T;
+  warehouse?: T;
+  name?: T;
+  sellable?: T;
+  priority?: T;
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-movements_select".
+ */
+export interface StockMovementsSelect<T extends boolean = true> {
+  sku?: T;
+  serial?: T;
+  qty?: T;
+  fromState?: T;
+  toState?: T;
+  location?: T;
+  docType?: T;
+  docId?: T;
+  user?: T;
+  reason?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-levels_select".
+ */
+export interface StockLevelsSelect<T extends boolean = true> {
+  sku?: T;
+  location?: T;
+  state?: T;
+  qty?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "serial-numbers_select".
+ */
+export interface SerialNumbersSelect<T extends boolean = true> {
+  serial?: T;
+  sku?: T;
+  currentState?: T;
+  location?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reservations_select".
+ */
+export interface ReservationsSelect<T extends boolean = true> {
+  sku?: T;
+  location?: T;
+  qty?: T;
+  serials?: T;
+  docType?: T;
+  docId?: T;
+  status?: T;
+  expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
   key?: T;
   data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  meta?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -414,6 +891,24 @@ export interface Market {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats".
+ */
+export interface PayloadJobsStat {
+  id: number;
+  stats?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "markets_select".
  */
 export interface MarketsSelect<T extends boolean = true> {
@@ -439,6 +934,16 @@ export interface MarketsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats_select".
+ */
+export interface PayloadJobsStatsSelect<T extends boolean = true> {
+  stats?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
 export interface CollectionsWidget {
@@ -446,6 +951,16 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskReleaseExpiredReservations".
+ */
+export interface TaskReleaseExpiredReservations {
+  input?: unknown;
+  output: {
+    released: number;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -8,7 +8,11 @@
     ".": "./src/index.ts",
     "./markets/codes": "./src/markets/codes.ts",
     "./markets/resolve": "./src/markets/resolve.ts",
-    "./legacy/normalize": "./src/legacy/normalize.ts"
+    "./legacy/normalize": "./src/legacy/normalize.ts",
+    "./admin/LedgerExplorer": "./src/admin/LedgerExplorer.tsx",
+    "./admin/LedgerNavLink": "./src/admin/LedgerNavLink.tsx",
+    "./admin/ledgerExplorerData": "./src/admin/ledgerExplorerData.ts",
+    "./admin/LedgerExplorerContent": "./src/admin/LedgerExplorerContent.tsx"
   },
   "scripts": {
     "lint": "eslint src",
@@ -21,7 +25,11 @@
   },
   "peerDependencies": {
     "next": "16.4.0",
-    "payload": "3.90.2"
+    "payload": "3.90.2",
+    "@payloadcms/db-postgres": "3.90.2",
+    "@payloadcms/next": "3.90.2",
+    "@payloadcms/ui": "3.90.2",
+    "react": "^19.0.0"
   },
   "devDependencies": {
     "@alpha/config": "workspace:*",
@@ -29,6 +37,13 @@
     "next": "16.4.0",
     "payload": "3.90.2",
     "typescript": "^5.8.0",
-    "vitest": "^4.0.0"
+    "vitest": "^4.0.0",
+    "@payloadcms/db-postgres": "3.90.2",
+    "@payloadcms/next": "3.90.2",
+    "@payloadcms/ui": "3.90.2",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
   }
 }

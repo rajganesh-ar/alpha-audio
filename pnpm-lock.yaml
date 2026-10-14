@@ -206,6 +206,21 @@ importers:
       '@alpha/config':
         specifier: workspace:*
         version: link:../config
+      '@payloadcms/db-postgres':
+        specifier: 3.90.2
+        version: 3.90.2(payload@3.90.2(graphql@16.14.2)(typescript@5.9.3))
+      '@payloadcms/next':
+        specifier: 3.90.2
+        version: 3.90.2(@types/react@19.3.0)(graphql@16.14.2)(monaco-editor@0.57.0)(next@16.4.0(@playwright/test@1.56.1)(@types/node@22.20.5)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.77.4))(payload@3.90.2(graphql@16.14.2)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
+      '@payloadcms/ui':
+        specifier: 3.90.2
+        version: 3.90.2(@types/react@19.3.0)(monaco-editor@0.57.0)(next@16.4.0(@playwright/test@1.56.1)(@types/node@22.20.5)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.77.4))(payload@3.90.2(graphql@16.14.2)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.3.0(@types/react@19.3.0)
       eslint:
         specifier: ^9.0.0
         version: 9.39.5(jiti@2.7.0)
@@ -215,6 +230,12 @@ importers:
       payload:
         specifier: 3.90.2
         version: 3.90.2(graphql@16.14.2)(typescript@5.9.3)
+      react:
+        specifier: 19.2.4
+        version: 19.2.4
+      react-dom:
+        specifier: 19.2.4
+        version: 19.2.4(react@19.2.4)
       typescript:
         specifier: ^5.8.0
         version: 5.9.3
@@ -7932,7 +7953,7 @@ snapshots:
       obug: 2.2.1
       std-env: 4.3.0
       tinyrainbow: 3.2.0
-      vitest: 4.1.11(@types/node@22.20.5)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.6)(vite@8.3.4(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(tsx@4.22.4)(yaml@2.9.1))
+      vitest: 4.1.11(@types/node@22.20.5)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.6)(vite@8.3.4(@types/node@22.20.5)(esbuild@0.25.12)(jiti@2.7.0)(sass@1.77.4)(tsx@4.22.4)(yaml@2.9.1))
 
   '@vitest/expect@3.2.4':
     dependencies:

@@ -17,7 +17,8 @@
     "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "seed:markets": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-markets.ts",
-    "fonts": "alpha-sync-fonts public/fonts"
+    "fonts": "alpha-sync-fonts public/fonts",
+    "seed:inventory": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo-inventory.ts"
   },
   "dependencies": {
     "@alpha/config": "workspace:*",

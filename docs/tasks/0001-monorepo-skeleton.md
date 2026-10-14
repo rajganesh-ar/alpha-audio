@@ -26,5 +26,5 @@ A pnpm + Turborepo monorepo where `pnpm dev` starts Payload 3 (pinned minor) wit
 - [x] Renaming a Tailwind class to `ml-4` in any component fails lint with the `alpha/no-physical-direction` message.
 - [x] Importing `apps/web` from `packages/core` fails lint with the boundary message. Importing React or Next.js from `core`, `acoustics` or `llm` now fails too (it silently did not before); covered by `eslint-plugin-alpha/tests/boundaries.test.js`.
 - [x] Deleting a generated type and running CI fails on the types diff step. Verified by committing a `payload-types.ts` with `interface Media` removed on a throwaway branch and running the step's script: exit 1 with the stale-files error; exit 0 on the real commit.
-- [ ] CI workflow green on the PR.
+- [x] CI workflow green on the PR. ([first run](https://github.com/rajganesh-ar/alpha-audio/actions/runs/38502636855): all steps passed, including the `pgvector/pgvector:pg16` service, migrations and build.)
 - [x] No Payload or Next.js version other than the pinned ones in the lockfile. (payload 3.90.2, next 16.4.0; CI checks this.)

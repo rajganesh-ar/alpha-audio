@@ -6,7 +6,7 @@ The full specification lives in `docs/spec/`. Read the relevant section before t
 
 ## Non-negotiable rules
 
-1. **Stock is a ledger, never a field.** Quantities are derived from `StockMovements`. Every stock change goes through `LedgerService` (`createLedger(payload)` from `@alpha/payload`); movements and levels cannot be written any other way (access, hooks and a database trigger refuse it; ADR 0004). Never add a `quantity` field to a product.
+1. **Stock is a ledger, never a field.** Quantities are derived from `StockMovements`. Every stock change goes through `LedgerService` (`createLedger(payload)` from `@alpha/payload`); movements and levels cannot be written any other way (access, hooks and a database trigger refuse it; ADR 0004). Supplier stock enters only by posting a goods receipt (`createReceiving(payload)`; ADR 0005). Never add a `quantity` field to a product.
 2. **Money and compatibility are deterministic.** Prices, stock, VAT, rules and scores are computed in `packages/core` or `packages/acoustics`. The LLM layer (`packages/llm`) only interprets and explains; it never chooses a product or emits a figure that did not come from a tool result.
 3. **Buyer context comes from the session, never from request parameters.** Company, group, market and currency are read from the authenticated session. Any handler that accepts a `companyId` from the client is a bug.
 4. **Private by default.** Cost, landed cost, margin and contract prices are field-level restricted. Signed-in routes and the partners domain are `Cache-Control: private, no-store`. Public product pages never include cost.
@@ -54,7 +54,7 @@ Import boundaries: apps import packages; packages never import apps; `packages/c
 
 - Every collection has `access` for `read`, `create`, `update`, `delete` written as named functions in `packages/payload/access/`. Never inline `() => true` on a commercial or inventory collection.
 - `StockMovements` is insert-only: `create`, `update` and `delete` access return `false` for everyone including admins (the ledger writes it directly), and so do `StockLevels`, `SerialNumbers` and `Reservations`.
-- Field-level `access.read` on `cost`, `landedCost`, `margin`, `contractPrices`, `creditLimit`.
+- Field-level `access.read` on `cost`, `landedCost`, `margin`, `contractPrices`, `creditLimit` (`canReadCost` for cost fields). Values only a system service writes (received quantities, posting stamps) get `access: { create: systemWritten, update: systemWritten }`.
 - Local API calls made on behalf of a user pass `overrideAccess: false`. `overrideAccess: true` is allowed only inside `packages/payload/system/` and must carry a comment explaining why.
 - Content and pricing collections use `versions: { drafts: true }`. Publishing requires the `publisher` role.
 - Hooks are small and named for what they do (`revalidateStorefront`, `queueEmbedding`, `writeSlugRedirect`). A hook that does I/O to an external system enqueues a job instead of calling out directly.

@@ -44,6 +44,9 @@ export interface TransferInput extends Actor {
   reason?: string | undefined
 }
 
+/** One entry for applyWithin(): a move at one location or a transfer between two. */
+export type LedgerOperation = { move: MoveInput } | { transfer: TransferInput }
+
 export interface ReserveInput extends Actor {
   sku: string
   qty: number
@@ -122,17 +125,39 @@ export class LedgerService {
 
   /** A change of state at one location (receipt, putaway, demo, damage, RMA, write-off…). */
   async move(input: MoveInput): Promise<void> {
+    const steps = this.moveSteps(input)
+    await this.store.transaction((tx) => this.apply(tx, steps))
+  }
+
+  /** Moves stock between locations: out of one and into the other, atomically. */
+  async transfer(input: TransferInput): Promise<void> {
+    const steps = this.transferSteps(input)
+    await this.store.transaction((tx) => this.apply(tx, steps))
+  }
+
+  /**
+   * Applies moves and transfers inside a transaction the caller already holds, with the same
+   * rules as move() and transfer(). For documents that must post together with their stock,
+   * such as a goods receipt: the document and its movements commit or roll back as one.
+   */
+  async applyWithin(tx: LedgerTx, operations: readonly LedgerOperation[]): Promise<void> {
+    const steps = operations.flatMap((op) =>
+      'transfer' in op ? this.transferSteps(op.transfer) : this.moveSteps(op.move),
+    )
+    if (steps.length) await this.apply(tx, steps)
+  }
+
+  private moveSteps(input: MoveInput): Step[] {
     if (isFlowState(input.from) || isFlowState(input.to)) {
       throw new LedgerError(
         'invalid-move',
         'Reserved and picked stock moves only through reserve(), release() and pick().',
       )
     }
-    await this.store.transaction((tx) => this.apply(tx, [this.step(input)]))
+    return [this.step(input)]
   }
 
-  /** Moves stock between locations: out of one and into the other, atomically. */
-  async transfer(input: TransferInput): Promise<void> {
+  private transferSteps(input: TransferInput): Step[] {
     if (isFlowState(input.from.state) || isFlowState(input.to.state)) {
       throw new LedgerError('invalid-move', 'Reserved and picked stock cannot be transferred.')
     }
@@ -143,18 +168,10 @@ export class LedgerService {
       )
     }
     const doc = { ...input.doc, type: 'transfer' as const }
-    await this.store.transaction((tx) =>
-      this.apply(tx, [
-        this.step({
-          ...input,
-          doc,
-          from: input.from.state,
-          to: null,
-          location: input.from.location,
-        }),
-        this.step({ ...input, doc, from: null, to: input.to.state, location: input.to.location }),
-      ]),
-    )
+    return [
+      this.step({ ...input, doc, from: input.from.state, to: null, location: input.from.location }),
+      this.step({ ...input, doc, from: null, to: input.to.state, location: input.to.location }),
+    ]
   }
 
   /**

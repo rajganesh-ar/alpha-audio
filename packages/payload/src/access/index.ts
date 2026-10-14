@@ -1,4 +1,4 @@
-import type { Access } from 'payload'
+import type { Access, FieldAccess } from 'payload'
 
 /**
  * Named access functions (CLAUDE.md: never inline `() => true` on a commercial or inventory
@@ -16,3 +16,12 @@ export const isStaff: Access = ({ req }) => req.user?.collection === 'users'
 
 /** No one, including admins. For insert-only data such as StockMovements. */
 export const nobody: Access = () => false
+
+/**
+ * Who may read cost fields (unit cost, landed cost, margin). Staff only until the access-control
+ * task introduces finance and manager roles; customers and company users never see cost.
+ */
+export const canReadCost: FieldAccess = ({ req }) => req.user?.collection === 'users'
+
+/** Field-level: no one types this value; a system service writes it in its own transaction. */
+export const systemWritten: FieldAccess = () => false

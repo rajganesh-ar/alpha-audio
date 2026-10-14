@@ -3,6 +3,8 @@ import * as migration_20261014_023807_pgvector from './20261014_023807_pgvector'
 import * as migration_20261014_093836_markets_and_legacy_redirects from './20261014_093836_markets_and_legacy_redirects';
 import * as migration_20261014_181649_inventory_ledger from './20261014_181649_inventory_ledger';
 import * as migration_20261014_181650_ledger_constraints from './20261014_181650_ledger_constraints';
+import * as migration_20261014_185458_purchasing from './20261014_185458_purchasing';
+import * as migration_20261014_185459_purchasing_constraints from './20261014_185459_purchasing_constraints';
 
 export const migrations = [
   {
@@ -23,11 +25,21 @@ export const migrations = [
   {
     up: migration_20261014_181649_inventory_ledger.up,
     down: migration_20261014_181649_inventory_ledger.down,
-    name: '20261014_181649_inventory_ledger'
+    name: '20261014_181649_inventory_ledger',
   },
   {
     up: migration_20261014_181650_ledger_constraints.up,
     down: migration_20261014_181650_ledger_constraints.down,
     name: '20261014_181650_ledger_constraints',
+  },
+  {
+    up: migration_20261014_185458_purchasing.up,
+    down: migration_20261014_185458_purchasing.down,
+    name: '20261014_185458_purchasing',
+  },
+  {
+    up: migration_20261014_185459_purchasing_constraints.up,
+    down: migration_20261014_185459_purchasing_constraints.down,
+    name: '20261014_185459_purchasing_constraints',
   },
 ];

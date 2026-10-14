@@ -13,6 +13,7 @@ docker compose up -d                                             # Postgres + pg
 pnpm --filter @alpha/web migrate                                 # create the schema and enable pgvector
 pnpm --filter @alpha/web seed:markets                            # the six GCC markets (safe to re-run)
 pnpm --filter @alpha/web seed:inventory                          # demo warehouse and stock through the ledger (dev only)
+pnpm --filter @alpha/web seed:purchasing                         # demo supplier, open PO and a posted receipt (dev only)
 pnpm dev                                                         # http://localhost:3000 → /ae/en/
 ```
 
@@ -54,7 +55,7 @@ Integration tests use the database in `DATABASE_URL` when it is set, otherwise t
 - Old-site links (`/brand?bid=13`) are redirected from Settings → Legacy redirects. Routing, 404s and redirects are explained in [`docs/adr/0002-market-routing-and-legacy-redirects.md`](docs/adr/0002-market-routing-and-legacy-redirects.md).
 - Never put `NODE_ENV` in `.env`; Next.js sets it, and a stray `NODE_ENV=development` breaks `next build`.
 - Fonts are copied from the pinned Fontsource packages into `apps/web/public/fonts` by `pnpm --filter @alpha/web fonts` (run by `dev` and `build`); the folder is not committed.
-- Decisions behind this setup are in [`docs/adr/`](docs/adr/): toolchain (0001), market routing (0002), design system (0003), stock ledger (0004). Operating the ledger: [`docs/runbooks/stock-ledger.md`](docs/runbooks/stock-ledger.md).
+- Decisions behind this setup are in [`docs/adr/`](docs/adr/): toolchain (0001), market routing (0002), design system (0003), stock ledger (0004), purchasing and goods receipt (0005). Operating the ledger: [`docs/runbooks/stock-ledger.md`](docs/runbooks/stock-ledger.md); receiving: [`docs/runbooks/receiving.md`](docs/runbooks/receiving.md).
 
 ```
 

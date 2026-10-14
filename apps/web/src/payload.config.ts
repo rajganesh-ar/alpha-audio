@@ -10,6 +10,7 @@ import {
   LegacyRedirects,
   Markets,
   inventoryCollections,
+  purchasingCollections,
   releaseExpiredReservationsTask,
 } from '@alpha/payload'
 import { Users } from './collections/Users'
@@ -45,7 +46,7 @@ export default buildConfig({
     defaultLocale: 'en',
     fallback: true,
   },
-  collections: [Users, Media, LegacyRedirects, ...inventoryCollections],
+  collections: [Users, Media, LegacyRedirects, ...inventoryCollections, ...purchasingCollections],
   globals: [Markets],
   jobs: {
     tasks: [releaseExpiredReservationsTask],

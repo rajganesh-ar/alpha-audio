@@ -27,10 +27,10 @@ Stock enters the ledger only through a posted goods receipt against a purchase o
 
 ## Acceptance criteria
 
-- [ ] A posted receipt writes exactly one `receipt` movement per bulk line (or one per serial), and the ledger invariants still hold.
-- [ ] Posting the same receipt twice, or twice in parallel, posts it once; the second attempt is refused.
-- [ ] A serialised line with a missing or duplicate serial cannot be posted; the error names the serial.
-- [ ] Partial receipts move the PO to `partially_received`, the last one to `received`; the PO's outstanding quantity per line is correct after each.
-- [ ] Damaged units end in `quarantine`, not `available`, and the receipt records the exception.
-- [ ] `openPurchaseEta` returns the earliest open expected date for a SKU in a market, or none.
-- [ ] Anonymous and non-staff requests cannot read `unitCost`; the route handlers refuse requests without a staff session.
+- [x] A posted receipt writes exactly one `receipt` movement per bulk line (or one per serial), and the ledger invariants still hold.
+- [x] Posting the same receipt twice, or twice in parallel, posts it once; the second attempt is refused.
+- [x] A serialised line with a missing or duplicate serial cannot be posted; the error names the serial.
+- [x] Partial receipts move the PO to `partially_received`, the last one to `received`; the PO's outstanding quantity per line is correct after each.
+- [x] Damaged units end in `quarantine`, not `available`, and the receipt records the exception.
+- [x] `openPurchaseEta` returns the earliest open expected date for a SKU in a market, or none.
+- [x] Anonymous and non-staff requests cannot read `unitCost`; the route handlers refuse requests without a staff session.

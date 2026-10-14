@@ -30,10 +30,10 @@ import {
  */
 
 /** Minimal surface of the Drizzle database the adapter exposes (`payload.db.drizzle`). */
-interface Executor {
+export interface Executor {
   execute(query: SQL): Promise<{ rows: Array<Record<string, unknown>> }>
 }
-interface Database extends Executor {
+export interface Database extends Executor {
   transaction<T>(work: (tx: Executor) => Promise<T>): Promise<T>
 }
 
@@ -66,7 +66,8 @@ function toReservation(row: Record<string, unknown>): ReservationRecord {
 
 const RESERVATION_COLUMNS = sql`id, sku, location_id, qty, serials, doc_type::text AS doc_type, doc_id, status::text AS status, expires_at, created_at`
 
-function transactionApi(tx: Executor): LedgerTx {
+/** The ledger's view of an open transaction; other system stores share it to stay atomic. */
+export function transactionApi(tx: Executor): LedgerTx {
   return {
     async lockLevels(keys) {
       const sorted = sortKeys(keys)
@@ -238,7 +239,10 @@ export class PostgresLedgerStore implements LedgerStore {
 
 /** The stock ledger for this Payload instance. `now` is injectable for tests. */
 export function createLedger(payload: Payload, now?: () => Date): LedgerService {
-  // reason: the Postgres adapter's Drizzle instance; only execute() and transaction() are used
-  const db = (payload.db as unknown as { drizzle: Database }).drizzle
-  return new LedgerService(new PostgresLedgerStore(db), now)
+  return new LedgerService(new PostgresLedgerStore(drizzleOf(payload)), now)
+}
+
+/** The Postgres adapter's Drizzle instance; system stores use only execute() and transaction(). */
+export function drizzleOf(payload: Payload): Database {
+  return (payload.db as unknown as { drizzle: Database }).drizzle
 }

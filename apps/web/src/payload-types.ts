@@ -67,9 +67,10 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    users: User;
+    products: Product;
+    brands: Brand;
+    categories: Category;
     media: Media;
-    'legacy-redirects': LegacyRedirect;
     warehouses: Warehouse;
     locations: Location;
     'stock-movements': StockMovement;
@@ -79,6 +80,8 @@ export interface Config {
     suppliers: Supplier;
     'purchase-orders': PurchaseOrder;
     'goods-receipts': GoodsReceipt;
+    'legacy-redirects': LegacyRedirect;
+    users: User;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -87,9 +90,10 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
+    brands: BrandsSelect<false> | BrandsSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    'legacy-redirects': LegacyRedirectsSelect<false> | LegacyRedirectsSelect<true>;
     warehouses: WarehousesSelect<false> | WarehousesSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     'stock-movements': StockMovementsSelect<false> | StockMovementsSelect<true>;
@@ -99,6 +103,8 @@ export interface Config {
     suppliers: SuppliersSelect<false> | SuppliersSelect<true>;
     'purchase-orders': PurchaseOrdersSelect<false> | PurchaseOrdersSelect<true>;
     'goods-receipts': GoodsReceiptsSelect<false> | GoodsReceiptsSelect<true>;
+    'legacy-redirects': LegacyRedirectsSelect<false> | LegacyRedirectsSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -110,10 +116,12 @@ export interface Config {
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'ar') | ('en' | 'ar')[];
   globals: {
+    home: Home;
     markets: Market;
     'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
+    home: HomeSelect<false> | HomeSelect<true>;
     markets: MarketsSelect<false> | MarketsSelect<true>;
     'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
@@ -153,30 +161,116 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
+ * via the `definition` "products".
  */
-export interface User {
+export interface Product {
   id: number;
-  name?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  resetPasswordRequestedAt?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
+  title: string;
+  /**
+   * {brand}-{model} in Latin lowercase, e.g. mcintosh-ma352. Same in every locale.
+   */
+  slug: string;
+  brand: number | Brand;
+  /**
+   * Ledger key, e.g. MCINTOSH-MA352.
+   */
+  sku: string;
+  lifecycle: 'active' | 'discontinued';
+  categories?: (number | Category)[] | null;
+  /**
+   * One or two sentences for cards and the product page.
+   */
+  summary?: string | null;
+  /**
+   * The first image is the card and page lead image. Alt text lives on each image, in both languages.
+   */
+  gallery?: (number | Media)[] | null;
+  /**
+   * Structured, so the Builder and filters can use them. Empty values are hidden.
+   */
+  specs?: {
+    powerW?: number | null;
+    channels?: number | null;
+    impedanceOhm?: number | null;
+    minImpedanceOhm?: number | null;
+    /**
+     * 2.83 V / 1 m
+     */
+    sensitivityDb?: number | null;
+    frequencyLowHz?: number | null;
+    frequencyHighHz?: number | null;
+    weightKg?: number | null;
+    dimensionsMm?: {
+      width?: number | null;
+      height?: number | null;
+      depth?: number | null;
+    };
+    /**
+     * e.g. 2 × XLR, 4 × RCA, phono MM/MC
+     */
+    inputs?: string | null;
+  };
+  /**
+   * One row per market the product is sold in. Not listed or not published means not sold there (the page 404s).
+   */
+  markets?:
     | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
+        market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+        published?: boolean | null;
+        /**
+         * Minor units of the market currency (fils, halalas…).
+         */
+        rrpInclVat?: number | null;
+        priceDisplay?: ('show' | 'request') | null;
+        id?: string | null;
       }[]
     | null;
-  password?: string | null;
-  collection: 'users';
+  /**
+   * Landed unit cost, AED fils. Staff only; never shown on the storefront.
+   */
+  cost?: number | null;
+  seo?: {
+    /**
+     * Defaults to the title.
+     */
+    title?: string | null;
+    description?: string | null;
+  };
+  /**
+   * Arabic copy is published only after the native reviewer signs it off.
+   */
+  arabicReview: 'draft' | 'reviewed';
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brands".
+ */
+export interface Brand {
+  id: number;
+  /**
+   * As the brand writes it; not translated.
+   */
+  name: string;
+  /**
+   * Latin lowercase, e.g. mcintosh.
+   */
+  slug: string;
+  logo?: (number | null) | Media;
+  /**
+   * Brand policy; "on request" overrides every product of the brand.
+   */
+  priceDisplay: 'show' | 'request';
+  story?: string | null;
+  /**
+   * Arabic copy is published only after the native reviewer signs it off.
+   */
+  arabicReview: 'draft' | 'reviewed';
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -199,22 +293,29 @@ export interface Media {
   focalY?: number | null;
 }
 /**
- * Old site URLs with query strings, redirected to their new pages.
- *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "legacy-redirects".
+ * via the `definition` "categories".
  */
-export interface LegacyRedirect {
+export interface Category {
   id: number;
-  sourcePath: string;
+  title: string;
   /**
-   * Without the "?". Tracking parameters are removed automatically.
+   * Latin lowercase, e.g. integrated-amplifiers.
    */
-  sourceQuery?: string | null;
-  target: string;
-  status: '301' | '302';
+  slug: string;
+  parent?: (number | null) | Category;
+  /**
+   * Lower comes first.
+   */
+  order?: number | null;
+  summary?: string | null;
+  /**
+   * Arabic copy is published only after the native reviewer signs it off.
+   */
+  arabicReview: 'draft' | 'reviewed';
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -331,6 +432,33 @@ export interface StockMovement {
   reason?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
 }
 /**
  * Derived from stock movements. Read-only: quantities change only through the ledger.
@@ -569,6 +697,24 @@ export interface GoodsReceipt {
   createdAt: string;
 }
 /**
+ * Old site URLs with query strings, redirected to their new pages.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "legacy-redirects".
+ */
+export interface LegacyRedirect {
+  id: number;
+  sourcePath: string;
+  /**
+   * Without the "?". Tracking parameters are removed automatically.
+   */
+  sourceQuery?: string | null;
+  target: string;
+  status: '301' | '302';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -694,16 +840,20 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'users';
-        value: number | User;
+        relationTo: 'products';
+        value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'brands';
+        value: number | Brand;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
       } | null)
     | ({
         relationTo: 'media';
         value: number | Media;
-      } | null)
-    | ({
-        relationTo: 'legacy-redirects';
-        value: number | LegacyRedirect;
       } | null)
     | ({
         relationTo: 'warehouses';
@@ -740,6 +890,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'goods-receipts';
         value: number | GoodsReceipt;
+      } | null)
+    | ({
+        relationTo: 'legacy-redirects';
+        value: number | LegacyRedirect;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -785,27 +943,87 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
+ * via the `definition` "products_select".
  */
-export interface UsersSelect<T extends boolean = true> {
-  name?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  resetPasswordRequestedAt?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
+export interface ProductsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  brand?: T;
+  sku?: T;
+  lifecycle?: T;
+  categories?: T;
+  summary?: T;
+  gallery?: T;
+  specs?:
     | T
     | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
+        powerW?: T;
+        channels?: T;
+        impedanceOhm?: T;
+        minImpedanceOhm?: T;
+        sensitivityDb?: T;
+        frequencyLowHz?: T;
+        frequencyHighHz?: T;
+        weightKg?: T;
+        dimensionsMm?:
+          | T
+          | {
+              width?: T;
+              height?: T;
+              depth?: T;
+            };
+        inputs?: T;
       };
+  markets?:
+    | T
+    | {
+        market?: T;
+        published?: T;
+        rrpInclVat?: T;
+        priceDisplay?: T;
+        id?: T;
+      };
+  cost?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  arabicReview?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brands_select".
+ */
+export interface BrandsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  logo?: T;
+  priceDisplay?: T;
+  story?: T;
+  arabicReview?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  parent?: T;
+  order?: T;
+  summary?: T;
+  arabicReview?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -825,18 +1043,6 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "legacy-redirects_select".
- */
-export interface LegacyRedirectsSelect<T extends boolean = true> {
-  sourcePath?: T;
-  sourceQuery?: T;
-  target?: T;
-  status?: T;
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1013,6 +1219,42 @@ export interface GoodsReceiptsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "legacy-redirects_select".
+ */
+export interface LegacyRedirectsSelect<T extends boolean = true> {
+  sourcePath?: T;
+  sourceQuery?: T;
+  target?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  resetPasswordRequestedAt?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -1084,6 +1326,60 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home".
+ */
+export interface Home {
+  id: number;
+  hero: {
+    /**
+     * Paints first; at most 200 KB.
+     */
+    poster?: (number | null) | Media;
+    eyebrow?: string | null;
+    headline: string;
+    lede?: string | null;
+    ctaLabel?: string | null;
+    /**
+     * Path inside the market, e.g. /design/advisor. The market and language are added.
+     */
+    ctaHref?: string | null;
+  };
+  /**
+   * Advisor, Room Lab and Builder.
+   */
+  entryCards?:
+    | {
+        tool: 'advisor' | 'room-lab' | 'builder';
+        title: string;
+        body?: string | null;
+        ctaLabel?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  featuredTitle?: string | null;
+  categoriesTitle?: string | null;
+  /**
+   * Shown where they are published in the market. When none are, the top categories show instead.
+   */
+  featured?: (number | Product)[] | null;
+  topCategories?: (number | Category)[] | null;
+  seo?: {
+    /**
+     * Defaults to the title.
+     */
+    title?: string | null;
+    description?: string | null;
+  };
+  /**
+   * Arabic copy is published only after the native reviewer signs it off.
+   */
+  arabicReview: 'draft' | 'reviewed';
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * Currency, VAT, languages and rails per market.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1151,6 +1447,46 @@ export interface PayloadJobsStat {
     | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home_select".
+ */
+export interface HomeSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        poster?: T;
+        eyebrow?: T;
+        headline?: T;
+        lede?: T;
+        ctaLabel?: T;
+        ctaHref?: T;
+      };
+  entryCards?:
+    | T
+    | {
+        tool?: T;
+        title?: T;
+        body?: T;
+        ctaLabel?: T;
+        id?: T;
+      };
+  featuredTitle?: T;
+  categoriesTitle?: T;
+  featured?: T;
+  topCategories?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  arabicReview?: T;
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

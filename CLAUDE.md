@@ -64,7 +64,7 @@ Import boundaries: apps import packages; packages never import apps; `packages/c
 ## Next.js conventions
 
 - App Router. Public routes live under `app/(frontend)/[market]/[locale]/`. Market and locale are validated in `apps/web/src/proxy.ts` (Next.js 16's name for middleware) against the `Markets` global; unknown or non-live values 404. Pages call `requireMarketRoute(params)`. Never `notFound()` from the market layout; see ADR 0002.
-- Rendering: content pages are ISR with `revalidateTag` from Payload hooks; anything reading a session, stock promise or buyer price is dynamic with `private, no-store`, or a streamed server-component fragment inside an ISR page.
+- Rendering: content pages are ISR with `revalidateTag` from Payload hooks (`revalidateStorefront`, `{ expire: 0 }`); anything reading a session, stock promise or buyer price is dynamic with `private, no-store`, or a live island inside an ISR page that renders the value at build time and refreshes it from a `private, no-store` `/api/v1` handler (`LiveStockLine`; ADR 0006). Cache Components is not enabled.
 - Data access from server components goes through the Payload Local API via `packages/payload/client`. Browsers call only `/api/v1/*` route handlers, validated with Zod.
 - Legacy query-string redirects (`?bid=`, `?catid=`) are resolved in `proxy.ts` from the `LegacyRedirects` table; the redirects plugin handles path redirects only.
 - Images through `next/image` with `sizes`; the LCP image is `priority`. No inline SVG icons; use the icon set in `packages/ui`.

@@ -33,7 +33,10 @@
   },
   "home": {
     "title": "Alpha Audio {market}",
-    "lede": "Hi-fi, home cinema and custom installation."
+    "lede": "Hi-fi, home cinema and custom installation.",
+    "featured": "Featured",
+    "categories": "Shop by category",
+    "entryUnavailable": "Coming soon"
   },
   "notFound": {
     "title": "Page not found",
@@ -81,11 +84,54 @@
     "out": "Out of stock",
     "onOrder": "Available to order",
     "unknown": "Check availability",
-    "unavailable": "Stock information is unavailable"
+    "unavailable": "Stock information is unavailable",
+    "eta": "Expected by {date}",
+    "onOrderNoDate": "Arrival date to be confirmed"
   },
   "form": {
     "required": "Required",
     "optional": "Optional",
     "checking": "Checking…"
+  },
+  "product": {
+    "gallery": "Product images",
+    "galleryThumb": "Show image {index} of {total}",
+    "galleryEmpty": "Images coming soon",
+    "specs": "Specifications",
+    "specsEmpty": "Specifications are coming soon.",
+    "spec": {
+      "power": "Power",
+      "powerValue": "{value} W per channel",
+      "channels": "Channels",
+      "impedance": "Nominal impedance",
+      "minImpedance": "Minimum impedance",
+      "ohmValue": "{value} ohms",
+      "sensitivity": "Sensitivity",
+      "sensitivityValue": "{value} dB (2.83 V / 1 m)",
+      "frequency": "Frequency response",
+      "frequencyValue": "{low} to {high}",
+      "hzValue": "{value} Hz",
+      "khzValue": "{value} kHz",
+      "weight": "Weight",
+      "weightValue": "{value} kg",
+      "dimensions": "Dimensions (W × H × D)",
+      "dimensionsValue": "{width} × {height} × {depth} mm",
+      "inputs": "Inputs",
+      "sku": "Model code"
+    }
+  },
+  "design": {
+    "comingSoon": "Coming soon",
+    "body": "We are building this tool. Until it opens, a specialist can help you plan your system.",
+    "back": "Back to home",
+    "tools": {
+      "advisor": "AI Advisor",
+      "room-lab": "Room Lab",
+      "builder": "System Builder"
+    }
+  },
+  "catalog": {
+    "categoryEmpty": "No products in this category yet.",
+    "productsIn": "{count} products"
   }
 }

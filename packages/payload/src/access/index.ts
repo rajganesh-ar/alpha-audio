@@ -25,3 +25,24 @@ export const canReadCost: FieldAccess = ({ req }) => req.user?.collection === 'u
 
 /** Field-level: no one types this value; a system service writes it in its own transaction. */
 export const systemWritten: FieldAccess = () => false
+
+/**
+ * Catalogue and content: staff read everything (drafts included); everyone else reads only
+ * published documents. Which market a product is sold in is the storefront's filter, not
+ * access: a published product is public in the markets it is published in.
+ */
+export const publishedOrStaff: Access = ({ req }) =>
+  req.user?.collection === 'users' ? true : { _status: { equals: 'published' } }
+
+/**
+ * Who may publish catalogue and content. Every staff user until the access-control task adds
+ * the `publisher` role (CLAUDE.md); kept as its own function so that task changes one line.
+ */
+export const canPublish: Access = ({ req }) => req.user?.collection === 'users'
+
+/** Create and update for catalogue and content: staff, and publishing needs `canPublish`. */
+export const canEditCatalog: Access = (args) => {
+  if (args.req.user?.collection !== 'users') return false
+  const status = (args.data as { _status?: unknown } | undefined)?._status
+  return status === 'published' ? canPublish(args) : true
+}

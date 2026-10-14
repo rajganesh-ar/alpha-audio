@@ -9,3 +9,4 @@ One file per decision: NNNN-title.md. 0001 is written by task 0001.
 | [0003](0003-design-tokens-and-component-library.md) | Design tokens, fonts and the component library |
 | [0004](0004-stock-ledger.md)                        | Stock ledger: rules, locks and guards          |
 | [0005](0005-purchasing-and-goods-receipt.md)        | Purchasing and goods receipt                   |
+| [0006](0006-storefront-rendering-and-live-stock.md) | Storefront rendering, caching and live stock   |

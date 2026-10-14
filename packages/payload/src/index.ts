@@ -31,3 +31,10 @@ export {
   releaseExpiredReservationsTask,
 } from './jobs/releaseExpiredReservations'
 export * from './collections/purchasing'
+export * from './collections/catalog'
+export { Home, ENTRY_TOOLS, type EntryTool } from './globals/Home'
+export {
+  STOREFRONT_TAGS,
+  revalidateStorefront,
+  type StorefrontTag,
+} from './hooks/revalidateStorefront'

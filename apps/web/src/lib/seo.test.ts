@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { MARKETS_SEED, type MarketRecord } from '@alpha/payload'
-import { alternatesFor, hreflangLinks, localizedPath, siteUrl } from './seo'
+import { alternatesFor, hreflangLinks, jsonLd, localizedPath, siteUrl } from './seo'
 
 const byCode = (code: string) => MARKETS_SEED.find((m) => m.code === code) as MarketRecord
 const live = (m: MarketRecord): MarketRecord => ({ ...m, status: 'live' })
@@ -75,5 +75,31 @@ describe('siteUrl', () => {
       'https://alphaaudios.com',
     )
     expect(() => siteUrl({})).toThrow(/NEXT_PUBLIC_SERVER_URL/)
+  })
+})
+
+describe('hreflang for pages published in some markets only', () => {
+  const markets = MARKETS_SEED.map((m) => (m.code === 'sa' ? live(m) : m))
+
+  it('lists only the markets the page is published in', () => {
+    const links = hreflangLinks(markets, '/products/x/', (m) => m.code === 'ae')
+    expect(links.map((l) => l.hrefLang)).toEqual(['en-AE', 'ar-AE', 'x-default'])
+  })
+
+  it('points x-default at the first published market when the default market lacks the page', () => {
+    const links = hreflangLinks(markets, '/products/x/', (m) => m.code === 'sa')
+    expect(links.at(-1)).toEqual({ hrefLang: 'x-default', href: '/sa/en/products/x/' })
+  })
+
+  it('emits nothing when the page is published nowhere live', () => {
+    expect(hreflangLinks(markets, '/products/x/', () => false)).toEqual([])
+  })
+})
+
+describe('jsonLd', () => {
+  it('cannot be closed early by content', () => {
+    const out = jsonLd({ name: '</script><script>alert(1)</script>' })
+    expect(out).not.toContain('</script>')
+    expect(JSON.parse(out)).toEqual({ name: '</script><script>alert(1)</script>' })
   })
 })

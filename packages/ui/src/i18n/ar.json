@@ -34,7 +34,10 @@
   },
   "home": {
     "title": "ألفا أوديو {market}",
-    "lede": "أنظمة الصوت عالية الدقة والسينما المنزلية والتركيب حسب الطلب."
+    "lede": "أنظمة الصوت عالية الدقة والسينما المنزلية والتركيب حسب الطلب.",
+    "featured": "مختارات",
+    "categories": "تسوّق حسب الفئة",
+    "entryUnavailable": "قريبًا"
   },
   "notFound": {
     "title": "الصفحة غير موجودة",
@@ -82,11 +85,54 @@
     "out": "غير متوفر",
     "onOrder": "متاح للطلب",
     "unknown": "تحقّق من التوفر",
-    "unavailable": "معلومات المخزون غير متاحة"
+    "unavailable": "معلومات المخزون غير متاحة",
+    "eta": "متوقع بحلول {date}",
+    "onOrderNoDate": "سيتم تأكيد موعد الوصول"
   },
   "form": {
     "required": "مطلوب",
     "optional": "اختياري",
     "checking": "جارٍ التحقق…"
+  },
+  "product": {
+    "gallery": "صور المنتج",
+    "galleryThumb": "عرض الصورة {index} من {total}",
+    "galleryEmpty": "الصور قريبًا",
+    "specs": "المواصفات",
+    "specsEmpty": "المواصفات قريبًا.",
+    "spec": {
+      "power": "القدرة",
+      "powerValue": "{value} واط لكل قناة",
+      "channels": "القنوات",
+      "impedance": "المعاوقة الاسمية",
+      "minImpedance": "أدنى معاوقة",
+      "ohmValue": "{value} أوم",
+      "sensitivity": "الحساسية",
+      "sensitivityValue": "{value} ديسيبل (2.83 فولت / 1 م)",
+      "frequency": "الاستجابة الترددية",
+      "frequencyValue": "من {low} إلى {high}",
+      "hzValue": "{value} هرتز",
+      "khzValue": "{value} كيلوهرتز",
+      "weight": "الوزن",
+      "weightValue": "{value} كغ",
+      "dimensions": "الأبعاد (العرض × الارتفاع × العمق)",
+      "dimensionsValue": "{width} × {height} × {depth} مم",
+      "inputs": "المداخل",
+      "sku": "رمز الطراز"
+    }
+  },
+  "design": {
+    "comingSoon": "قريبًا",
+    "body": "نعمل على بناء هذه الأداة. وإلى أن تُطلق، يمكن لأحد المختصين مساعدتك في تخطيط نظامك.",
+    "back": "العودة إلى الصفحة الرئيسية",
+    "tools": {
+      "advisor": "المستشار الذكي",
+      "room-lab": "مختبر الغرفة",
+      "builder": "منشئ الأنظمة"
+    }
+  },
+  "catalog": {
+    "categoryEmpty": "لا توجد منتجات في هذه الفئة بعد.",
+    "productsIn": "{count} منتجات"
   }
 }

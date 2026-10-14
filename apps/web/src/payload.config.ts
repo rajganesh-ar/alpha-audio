@@ -6,7 +6,9 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { loadEnv } from '@alpha/config/env'
 import {
+  Home,
   LEDGER_QUEUE,
+  catalogCollections,
   LegacyRedirects,
   Markets,
   inventoryCollections,
@@ -46,8 +48,15 @@ export default buildConfig({
     defaultLocale: 'en',
     fallback: true,
   },
-  collections: [Users, Media, LegacyRedirects, ...inventoryCollections, ...purchasingCollections],
-  globals: [Markets],
+  collections: [
+    ...catalogCollections,
+    Media,
+    ...inventoryCollections,
+    ...purchasingCollections,
+    LegacyRedirects,
+    Users,
+  ],
+  globals: [Home, Markets],
   jobs: {
     tasks: [releaseExpiredReservationsTask],
     // Runs inside the app process (Payload starts crons on the first admin or API request).

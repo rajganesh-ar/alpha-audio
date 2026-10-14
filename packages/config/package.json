@@ -7,8 +7,8 @@
     "./tsconfig.base.json": "./tsconfig.base.json",
     "./eslint": "./eslint.config.js",
     "./eslint-plugin-alpha": "./eslint-plugin-alpha/index.js",
-    "./tailwind": "./tailwind.preset.js",
-    "./env": "./env.ts"
+    "./env": "./env.ts",
+    "./tailwind/theme.css": "./tailwind/theme.css"
   },
   "scripts": {
     "lint": "eslint -c eslint.config.local.js eslint-plugin-alpha",

@@ -24,7 +24,12 @@ pnpm check                         # typecheck, lint, unit, integration, a11y â€
 pnpm format:check
 pnpm generate:types                # after any collection change; commit the result
 pnpm --filter @alpha/web migrate:create <name>   # after any collection change; commit the migration
+pnpm --filter @alpha/ui storybook                # component library at http://localhost:6006 (Direction toolbar: LTR/RTL)
+pnpm test:visual                                 # LTR + RTL screenshots of every story against the baselines
+pnpm --filter @alpha/ui test:visual:update       # after an intended visual change; review the image diff
 ```
+
+`pnpm test:a11y` and `pnpm test:visual` build Storybook and drive it with Playwright 1.56.1 (Chromium build 1194). Outside the cloud workspace, install that browser once with `pnpm --filter @alpha/ui exec playwright install chromium`.
 
 Integration tests use the database in `DATABASE_URL` when it is set, otherwise they start a throwaway Postgres with Testcontainers (needs Docker). Each run creates and drops its own database.
 
@@ -47,4 +52,9 @@ Integration tests use the database in `DATABASE_URL` when it is set, otherwise t
 - Checking a production build (`pnpm build && pnpm --filter @alpha/web start`)? Point it at a database `pnpm dev` has never touched: production boots from migrations and stops at Payload's prompt if dev mode has pushed schema to that database.
 - Old-site links (`/brand?bid=13`) are redirected from Settings â†’ Legacy redirects. Routing, 404s and redirects are explained in [`docs/adr/0002-market-routing-and-legacy-redirects.md`](docs/adr/0002-market-routing-and-legacy-redirects.md).
 - Never put `NODE_ENV` in `.env`; Next.js sets it, and a stray `NODE_ENV=development` breaks `next build`.
-- Decisions behind this setup are in [`docs/adr/0001-monorepo-and-toolchain.md`](docs/adr/0001-monorepo-and-toolchain.md).
+- Fonts are copied from the pinned Fontsource packages into `apps/web/public/fonts` by `pnpm --filter @alpha/web fonts` (run by `dev` and `build`); the folder is not committed.
+- Decisions behind this setup are in [`docs/adr/`](docs/adr/): toolchain (0001), market routing (0002), design system (0003).
+
+```
+
+```

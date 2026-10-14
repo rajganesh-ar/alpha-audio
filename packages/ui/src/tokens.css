@@ -1,36 +1,125 @@
-/* Alpha design tokens — the only place colour values live. See docs/spec §4. */
+/*
+ * Alpha design tokens: the only file where colour values live (docs/spec, Design system).
+ *
+ * Plain CSS custom properties, prefixed `--alpha-`, usable from any stylesheet. The Tailwind 4
+ * theme in @alpha/config/tailwind/theme.css maps them to utilities (`bg-lacquer`, `text-ink`,
+ * `rounded-control` …) with `@theme inline`, so a utility always resolves the token on the
+ * element it is used on. Contrast rules for these colours are pinned in src/contrast.test.ts.
+ */
 :root {
-  --color-lacquer: #141b24;
-  --color-aluminium: #f2f3f5;
-  --color-aluminium-deep: #d5d8dc;
-  --color-graphite: #252c34;
-  --color-bronze: #9a7b56;
-  --color-vu-amber: #e3a13b;
-  --color-signal-green: #3f8a5f;
-  --color-alert: #a6412a;
+  /* Palette */
+  --alpha-color-lacquer: #141b24; /* hero bands, cinema and showroom sections, dealer header */
+  --alpha-color-aluminium: #f2f3f5; /* page background */
+  --alpha-color-aluminium-deep: #d5d8dc; /* dividers, image placeholders, skeletons */
+  --alpha-color-graphite: #252c34; /* body text on light */
+  --alpha-color-bronze: #9a7b56; /* editorial accents, hairlines; never small text on light */
+  --alpha-color-vu-amber: #e3a13b; /* primary actions and live indicators only; fill, never text on light */
+  --alpha-color-signal-green: #3f8a5f; /* in stock, compatible, pass; icons and borders, text stays ink */
+  --alpha-color-alert: #a6412a; /* errors, out of stock, hard-rule failures */
 
-  --font-sans: 'Archivo', system-ui, sans-serif;
-  --font-arabic: 'IBM Plex Sans Arabic', system-ui, sans-serif;
-  --font-arabic-display: 'Noto Kufi Arabic', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* Derived roles (mixed from the palette, so still no new colours) */
+  --alpha-color-ink: var(--alpha-color-graphite);
+  --alpha-color-ink-muted: color-mix(
+    in srgb,
+    var(--alpha-color-graphite) 70%,
+    var(--alpha-color-aluminium)
+  ); /* 5.1:1 on aluminium */
+  --alpha-color-line: var(--alpha-color-aluminium-deep); /* decorative hairlines */
+  --alpha-color-line-strong: color-mix(
+    in srgb,
+    var(--alpha-color-graphite) 60%,
+    var(--alpha-color-aluminium)
+  ); /* control borders, 3.8:1 */
+  --alpha-color-focus: var(--alpha-color-lacquer);
+  --alpha-color-critical: var(--alpha-color-alert); /* error text and borders; fills stay alert */
 
-  /* Spacing and type: the minimum the shell needs. Task 0003 sets the full scales. */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-12: 3rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-2xl: 1.75rem;
-  --leading-body: 1.5;
-  --target-min: 44px; /* WCAG 2.2 target size used across the platform */
-  --measure: 72rem;
+  /*
+   * Type. One stack per role serves both languages: each Arabic face only covers the Arabic
+   * Unicode range, so Latin text and Western digits always render in Archivo and Arabic text in
+   * Plex (body) or Kufi (display). Faces are declared by @alpha/ui/fonts.
+   */
+  --alpha-font-body: 'Archivo', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --alpha-font-display: 'Archivo', 'Noto Kufi Arabic', system-ui, sans-serif;
+  --alpha-font-mono:
+    'JetBrains Mono', ui-monospace, monospace; /* SKUs, prices in tables, serials */
 
-  --radius-control: 4px;
-  --radius-card: 8px;
-  --motion-ui: 200ms;
+  --alpha-text-xs: 0.75rem;
+  --alpha-text-xs-leading: 1rem;
+  --alpha-text-sm: 0.875rem;
+  --alpha-text-sm-leading: 1.25rem;
+  --alpha-text-base: 1rem;
+  --alpha-text-base-leading: 1.5rem;
+  --alpha-text-lg: 1.125rem;
+  --alpha-text-lg-leading: 1.75rem;
+  --alpha-text-xl: 1.375rem;
+  --alpha-text-xl-leading: 1.875rem;
+  --alpha-text-2xl: 1.75rem;
+  --alpha-text-2xl-leading: 2.25rem;
+  --alpha-text-3xl: 2.25rem;
+  --alpha-text-3xl-leading: 2.75rem;
+  --alpha-text-4xl: 3rem;
+  --alpha-text-4xl-leading: 3.5rem;
+
+  /* Spacing: 4 px base. The scale is 1, 2, 3, 4, 6, 8, 12, 16 steps (4–64 px). */
+  --alpha-spacing: 0.25rem;
+
+  /* Layout grid: 4 columns, 16 px gutter on mobile; 12 columns, 24 px gutter from 64rem. */
+  --alpha-grid-columns: 4;
+  --alpha-grid-gutter: 1rem;
+  --alpha-measure: 75rem;
+  --alpha-target-min: 44px; /* WCAG 2.2 target size */
+
+  /* Radii: industrial, not soft */
+  --alpha-radius-control: 4px;
+  --alpha-radius-card: 8px;
+
+  /* Motion: interface chrome only; product media has its own timing */
+  --alpha-duration-ui: 200ms;
+  --alpha-ease-ui: cubic-bezier(0, 0, 0.2, 1); /* ease-out */
+  --alpha-duration-hero: 600ms; /* one hero reveal per page load */
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --alpha-grid-columns: 12;
+    --alpha-grid-gutter: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --alpha-duration-ui: 0ms;
+    --alpha-duration-hero: 0ms;
+  }
+}
+
+/*
+ * Dark band (lacquer sections, cinema and showroom bands, dealer header). Components read
+ * ink, line and focus roles, so re-pointing the roles here re-colours everything inside.
+ */
+[data-tone='dark'] {
+  --alpha-color-ink: var(--alpha-color-aluminium);
+  --alpha-color-ink-muted: color-mix(
+    in srgb,
+    var(--alpha-color-aluminium) 75%,
+    var(--alpha-color-lacquer)
+  );
+  --alpha-color-line: color-mix(
+    in srgb,
+    var(--alpha-color-aluminium) 20%,
+    var(--alpha-color-lacquer)
+  );
+  --alpha-color-line-strong: color-mix(
+    in srgb,
+    var(--alpha-color-aluminium) 55%,
+    var(--alpha-color-lacquer)
+  );
+  --alpha-color-focus: var(--alpha-color-vu-amber);
+  --alpha-color-critical: color-mix(
+    in srgb,
+    var(--alpha-color-alert) 60%,
+    var(--alpha-color-aluminium)
+  ); /* 5.9:1 on lacquer */
+  background-color: var(--alpha-color-lacquer);
+  color: var(--alpha-color-ink);
 }

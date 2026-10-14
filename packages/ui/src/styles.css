@@ -1,0 +1,39 @@
+/*
+ * @alpha/ui stylesheet for apps and Storybook:
+ *
+ *   @import 'tailwindcss';
+ *   @import '@alpha/ui/styles.css';
+ *
+ * Brings the tokens, the self-hosted @font-face rules (files at /fonts, see alpha-sync-fonts),
+ * the Tailwind theme and the classes used by @alpha/ui components.
+ */
+@import './tokens.css';
+@import './fonts/fonts.css';
+@import '@alpha/config/tailwind/theme.css';
+
+/* Tailwind scans the library's components so their utilities are generated in the app. */
+@source './components';
+
+@layer base {
+  html {
+    background-color: var(--alpha-color-aluminium);
+    color: var(--alpha-color-ink);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: var(--alpha-font-body);
+    font-size: var(--alpha-text-base);
+    line-height: var(--alpha-text-base-leading);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--alpha-color-focus);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--alpha-color-lacquer);
+    color: var(--alpha-color-aluminium);
+  }
+}

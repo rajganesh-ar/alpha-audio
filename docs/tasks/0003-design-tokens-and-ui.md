@@ -16,8 +16,16 @@ A token-driven component library with Storybook, RTL stories and visual snapshot
 
 ## Acceptance criteria
 
-- [ ] No hex value appears in any component file (lint rule `alpha/no-raw-color`).
-- [ ] Every component has all five stories; a CI check lists components missing one.
-- [ ] Storybook axe check passes with no violations on every story.
-- [ ] Snapshots exist for LTR and RTL and are stable across two runs.
-- [ ] Amber is never used as small text on a light background; the `Button` primary uses amber fill with lacquer text.
+- [x] No hex value appears in any component file (lint rule `alpha/no-raw-color`). _Hex lives only in `src/tokens.css`; Tailwind's default palette is switched off._
+- [x] Every component has all five stories; a CI check lists components missing one. _`src/components.conventions.test.tsx` (unit tests in CI), naming each component and missing state._
+- [x] Storybook axe check passes with no violations on every story. _`pnpm test:a11y`: 220 cases (every story, LTR and RTL), WCAG 2.0–2.2 A/AA._
+- [x] Snapshots exist for LTR and RTL and are stable across two runs. _`pnpm test:visual`: 204 screenshots + 18 markup pins, zero tolerance; CI runs it twice._
+- [x] Amber is never used as small text on a light background; the `Button` primary uses amber fill with lacquer text. _`src/contrast.test.ts` measures it; the conventions test enforces it._
+
+## Implementation notes
+
+- Tokens are `--alpha-*` custom properties mapped into Tailwind 4 with `@theme inline` (`@alpha/config/tailwind/theme.css`); colour roles and a dark tone sit on top of the palette. See ADR 0003.
+- Fonts: `src/fonts/faces.json` → generated `fonts.css` + `preloadFonts(locale)`; files synced by `alpha-sync-fonts`, not committed.
+- Beyond the inventory: `Icon` (the icon set), `GridItem` (placement in `Grid`) and `SuggestedMarketBanner` (from task 0002) follow the same five-story rule.
+- The i18n dictionary and typed `t()` landed in task 0002; this task added the shared UI copy (loading, retry, price, stock, form).
+- Props are plain types; mapping from Payload's generated types happens in the app (packages never import apps).

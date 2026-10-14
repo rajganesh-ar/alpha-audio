@@ -15,20 +15,20 @@ export function NotFoundContent({ markets }: { markets: readonly MarketRecord[] 
   const options = marketOptions(markets)
   const en = translator(getDictionary('en'))
   return (
-    <div className="alpha-not-found" data-testid="not-found">
+    <div className="mx-auto flex max-w-measure flex-col gap-8 px-4 py-12" data-testid="not-found">
       {LOCALES.map(({ locale, dir }) => {
         const t = translator(getDictionary(locale))
         return (
-          <section key={locale} className="alpha-not-found__section" lang={locale} dir={dir}>
-            <h1 className="alpha-not-found__title">{t('notFound.title')}</h1>
-            <p>{t('notFound.body')}</p>
+          <section key={locale} lang={locale} dir={dir} className="flex flex-col gap-3">
+            <h1 className="font-display text-3xl font-bold text-ink font-stretch-expanded">
+              {t('notFound.title')}
+            </h1>
+            <p className="text-lg text-ink-muted">{t('notFound.body')}</p>
           </section>
         )
       })}
       {options.length ? (
-        <div className="alpha-not-found__section">
-          <MarketSwitch label={en('marketSwitch.choose')} options={options} variant="list" />
-        </div>
+        <MarketSwitch label={en('marketSwitch.choose')} options={options} variant="list" />
       ) : null}
     </div>
   )

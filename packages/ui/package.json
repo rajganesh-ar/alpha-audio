@@ -7,27 +7,55 @@
   "exports": {
     ".": "./src/index.ts",
     "./tokens.css": "./src/tokens.css",
-    "./shell.css": "./src/shell/shell.css",
     "./i18n": "./src/i18n/index.ts",
-    "./suggested-market": "./src/shell/SuggestedMarketBanner.tsx",
-    "./cookies": "./src/shell/cookies.ts"
+    "./suggested-market": "./src/components/SuggestedMarketBanner/SuggestedMarketBanner.tsx",
+    "./cookies": "./src/lib/cookies.ts",
+    "./fonts": "./src/fonts/index.ts",
+    "./styles.css": "./src/styles.css"
   },
   "scripts": {
-    "lint": "eslint src",
+    "lint": "eslint src tests .storybook playwright.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "fonts": "node scripts/sync-fonts.mjs .fonts",
+    "storybook": "pnpm fonts && storybook dev -p 6006",
+    "build-storybook": "pnpm fonts && storybook build --quiet -o storybook-static",
+    "test:a11y": "playwright test --project=a11y",
+    "test:visual": "playwright test --project=visual",
+    "test:visual:update": "playwright test --project=visual --update-snapshots"
   },
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@alpha/config": "workspace:*",
-    "eslint": "^9.0.0",
-    "typescript": "^5.8.0",
-    "vitest": "^4.0.0",
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.56.1",
+    "@storybook/addon-a11y": "10.6.1",
+    "@storybook/react": "10.6.1",
+    "@storybook/react-vite": "10.6.1",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/node": "^22.20.5",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "storybook": "10.6.1",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5.8.0",
+    "vitest": "^4.0.0"
+  },
+  "dependencies": {
+    "@alpha/core": "workspace:*",
+    "@fontsource-variable/archivo": "5.3.0",
+    "@fontsource-variable/jetbrains-mono": "5.3.0",
+    "@fontsource-variable/noto-kufi-arabic": "5.3.0",
+    "@fontsource/ibm-plex-sans-arabic": "5.3.0",
+    "lucide-react": "1.49.0"
+  },
+  "bin": {
+    "alpha-sync-fonts": "./scripts/sync-fonts.mjs"
   }
 }

@@ -24,7 +24,10 @@
     "current": "{market} · {language}",
     "choose": "اختر السوق واللغة"
   },
-  "languages": { "en": "English", "ar": "العربية" },
+  "languages": {
+    "en": "English",
+    "ar": "العربية"
+  },
   "footer": {
     "copyright": "© {year} ألفا أوديو",
     "pricing": "الأسعار بعملة {currency}، شاملة ضريبة القيمة المضافة {vat}% حيثما تنطبق."
@@ -42,5 +45,48 @@
     "message": "يبدو أنك في {market}.",
     "switch": "انتقل إلى ألفا أوديو {market}",
     "dismiss": "إغلاق"
+  },
+  "ui": {
+    "loading": "جارٍ التحميل…",
+    "retry": "حاول مرة أخرى",
+    "close": "إغلاق",
+    "dismiss": "إغلاق",
+    "breadcrumb": "مسار التنقل",
+    "home": "الرئيسية",
+    "quietActions": "اختصارات",
+    "search": "بحث",
+    "account": "الحساب",
+    "bag": "الحقيبة",
+    "compare": "مقارنة",
+    "save": "حفظ",
+    "errorTitle": "حدث خطأ ما",
+    "errorBody": "تعذّر تحميل هذا الجزء من الصفحة.",
+    "emptyTitle": "لا يوجد شيء هنا بعد",
+    "emptyBody": "جرّب عامل تصفية مختلفًا أو تصفّح جميع المنتجات.",
+    "browseAll": "تصفّح جميع المنتجات",
+    "unavailable": "غير متاح حاليًا",
+    "marketsUnavailable": "الأسواق غير متاحة حاليًا.",
+    "reference": "المرجع"
+  },
+  "price": {
+    "inclVat": "شامل ضريبة القيمة المضافة {rate}%",
+    "onRequest": "السعر عند الطلب",
+    "request": "اطلب السعر",
+    "instalment": "أو {count} دفعات بقيمة {amount}",
+    "was": "كان {amount}",
+    "unavailable": "السعر غير متاح"
+  },
+  "stock": {
+    "inStock": "متوفر",
+    "low": "الكمية محدودة",
+    "out": "غير متوفر",
+    "onOrder": "متاح للطلب",
+    "unknown": "تحقّق من التوفر",
+    "unavailable": "معلومات المخزون غير متاحة"
+  },
+  "form": {
+    "required": "مطلوب",
+    "optional": "اختياري",
+    "checking": "جارٍ التحقق…"
   }
 }

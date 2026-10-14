@@ -19,7 +19,8 @@
     "seed:markets": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-markets.ts",
     "fonts": "alpha-sync-fonts public/fonts",
     "seed:inventory": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo-inventory.ts",
-    "seed:purchasing": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo-purchasing.ts"
+    "seed:purchasing": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo-purchasing.ts",
+    "seed:catalog": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo-catalog.ts"
   },
   "dependencies": {
     "@alpha/config": "workspace:*",

@@ -31,9 +31,9 @@ A first real storefront in `ae/en` and `ae/ar`: a home page and a product page b
 
 ## Acceptance criteria
 
-- [ ] `/ae/en/` and `/ae/ar/` render the home page from Payload with no hard-coded copy; RTL mirrors.
-- [ ] `/ae/en/products/{slug}/` shows price incl. VAT formatted by `formatMoney` and a stock line that changes when the ledger changes (without a rebuild).
-- [ ] A product unpublished in `ae` returns 404 with the switcher; publishing it revalidates the page.
-- [ ] Product JSON-LD validates (schema test) and its `availability` matches `sellable`.
-- [ ] Lighthouse on the product page (mobile, local production build): LCP ≤ 2.5 s, CLS ≤ 0.1, no a11y violations.
-- [ ] New components pass the five-story check, axe and the visual snapshots.
+- [x] `/ae/en/` and `/ae/ar/` render the home page from Payload with no hard-coded copy; RTL mirrors.
+- [x] `/ae/en/products/{slug}/` shows price incl. VAT formatted by `formatMoney` and a stock line that changes when the ledger changes (without a rebuild).
+- [x] A product unpublished in `ae` returns 404 with the switcher; publishing it revalidates the page.
+- [x] Product JSON-LD validates (schema test) and its `availability` matches `sellable`.
+- [x] Lighthouse on the product page (mobile, local production build): LCP ≤ 2.5 s, CLS ≤ 0.1, no a11y violations. (Devtools throttling; see ADR 0006 for the simulated-mode estimate.)
+- [x] New components pass the five-story check, axe and the visual snapshots.

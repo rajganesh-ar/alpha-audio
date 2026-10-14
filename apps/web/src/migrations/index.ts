@@ -5,6 +5,8 @@ import * as migration_20261014_181649_inventory_ledger from './20261014_181649_i
 import * as migration_20261014_181650_ledger_constraints from './20261014_181650_ledger_constraints';
 import * as migration_20261014_185458_purchasing from './20261014_185458_purchasing';
 import * as migration_20261014_185459_purchasing_constraints from './20261014_185459_purchasing_constraints';
+import * as migration_20261014_193323_catalog from './20261014_193323_catalog';
+import * as migration_20261014_193324_catalog_constraints from './20261014_193324_catalog_constraints';
 
 export const migrations = [
   {
@@ -41,5 +43,15 @@ export const migrations = [
     up: migration_20261014_185459_purchasing_constraints.up,
     down: migration_20261014_185459_purchasing_constraints.down,
     name: '20261014_185459_purchasing_constraints',
+  },
+  {
+    up: migration_20261014_193323_catalog.up,
+    down: migration_20261014_193323_catalog.down,
+    name: '20261014_193323_catalog',
+  },
+  {
+    up: migration_20261014_193324_catalog_constraints.up,
+    down: migration_20261014_193324_catalog_constraints.down,
+    name: '20261014_193324_catalog_constraints',
   },
 ];

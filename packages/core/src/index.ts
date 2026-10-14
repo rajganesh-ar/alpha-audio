@@ -2,3 +2,4 @@
 export * from './money'
 export * from './ledger'
 export * from './purchasing'
+export * from './catalog'

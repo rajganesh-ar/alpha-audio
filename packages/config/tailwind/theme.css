@@ -1,0 +1,68 @@
+/*
+ * Tailwind 4 theme for Alpha. Mirrors @alpha/ui/tokens.css; holds no values of its own.
+ *
+ * `inline` makes each utility read the token directly (`bg-lacquer` → `var(--alpha-color-lacquer)`),
+ * so a token overridden on an element (a dark band, a reduced-motion query) applies there.
+ * Tailwind's default palette, fonts, type sizes, radii and shadows are switched off: only
+ * tokens produce utilities, so `bg-red-500` or `rounded-xl` simply do not exist.
+ *
+ * Use: `@import 'tailwindcss'; @import '@alpha/ui/tokens.css'; @import '@alpha/config/tailwind/theme.css';`
+ */
+@theme inline {
+  --color-*: initial;
+  --color-lacquer: var(--alpha-color-lacquer);
+  --color-aluminium: var(--alpha-color-aluminium);
+  --color-aluminium-deep: var(--alpha-color-aluminium-deep);
+  --color-graphite: var(--alpha-color-graphite);
+  --color-bronze: var(--alpha-color-bronze);
+  --color-vu-amber: var(--alpha-color-vu-amber);
+  --color-signal-green: var(--alpha-color-signal-green);
+  --color-alert: var(--alpha-color-alert);
+  --color-ink: var(--alpha-color-ink);
+  --color-ink-muted: var(--alpha-color-ink-muted);
+  --color-line: var(--alpha-color-line);
+  --color-line-strong: var(--alpha-color-line-strong);
+  --color-focus: var(--alpha-color-focus);
+  --color-critical: var(--alpha-color-critical);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-*: initial;
+  --font-body: var(--alpha-font-body);
+  --font-display: var(--alpha-font-display);
+  --font-mono: var(--alpha-font-mono);
+  --default-font-family: var(--alpha-font-body);
+  --default-mono-font-family: var(--alpha-font-mono);
+
+  --text-*: initial;
+  --text-xs: var(--alpha-text-xs);
+  --text-xs--line-height: var(--alpha-text-xs-leading);
+  --text-sm: var(--alpha-text-sm);
+  --text-sm--line-height: var(--alpha-text-sm-leading);
+  --text-base: var(--alpha-text-base);
+  --text-base--line-height: var(--alpha-text-base-leading);
+  --text-lg: var(--alpha-text-lg);
+  --text-lg--line-height: var(--alpha-text-lg-leading);
+  --text-xl: var(--alpha-text-xl);
+  --text-xl--line-height: var(--alpha-text-xl-leading);
+  --text-2xl: var(--alpha-text-2xl);
+  --text-2xl--line-height: var(--alpha-text-2xl-leading);
+  --text-3xl: var(--alpha-text-3xl);
+  --text-3xl--line-height: var(--alpha-text-3xl-leading);
+  --text-4xl: var(--alpha-text-4xl);
+  --text-4xl--line-height: var(--alpha-text-4xl-leading);
+
+  --spacing: var(--alpha-spacing);
+  --container-measure: var(--alpha-measure);
+
+  --radius-*: initial;
+  --radius-control: var(--alpha-radius-control);
+  --radius-card: var(--alpha-radius-card);
+
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+
+  --ease-*: initial;
+  --ease-ui: var(--alpha-ease-ui);
+}

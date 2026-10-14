@@ -89,8 +89,32 @@ jobs:
       - name: Integration tests (Postgres service container)
         run: pnpm test:integration
 
-      - name: Accessibility
+      # Chromium build 1194, the one @playwright/test 1.56.1 drives (see packages/ui/playwright.config.ts).
+      - name: Playwright browser
+        run: pnpm --filter @alpha/ui exec playwright install --with-deps chromium
+
+      - name: Accessibility (axe on every Storybook story, LTR and RTL)
         run: pnpm test:a11y
+
+      - name: Visual snapshots (every story, LTR and RTL; run twice to prove they are stable)
+        run: |
+          pnpm test:visual
+          pnpm test:visual
+
+      - name: Visual diff summary
+        if: failure()
+        working-directory: packages/ui
+        run: node scripts/report-visual-diffs.mjs test-results/results.json
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            packages/ui/playwright-report
+            packages/ui/test-results
+          retention-days: 7
 
       - name: Generated files are up to date
         run: |

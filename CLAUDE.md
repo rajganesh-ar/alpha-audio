@@ -71,11 +71,11 @@ Import boundaries: apps import packages; packages never import apps; `packages/c
 
 ## UI, RTL and accessibility
 
-- Tokens only: colours, type, spacing and radii come from `packages/ui/tokens.css` and the Tailwind theme. No hex values in components.
+- Tokens only: colours, type, spacing and radii come from `packages/ui/src/tokens.css` (`--alpha-*`) through the Tailwind 4 theme in `@alpha/config/tailwind/theme.css`; Tailwind's default palette is switched off. No hex values in components. Text and lines use the role tokens (`text-ink`, `text-ink-muted`, `border-line-strong`, `text-critical`); amber, signal-green and bronze never colour text on a light background (contrast and conventions tests enforce this). See ADR 0003.
 - Logical properties only: `ms-`, `me-`, `ps-`, `pe-`, `text-start`, `border-s`. The lint rule `alpha/no-physical-direction` fails on `ml-`, `mr-`, `pl-`, `pr-`, `left-`, `right-`, `text-left`, `text-right`.
 - Direction icons (arrows, chevrons) get `rtl:-scale-x-100`. Logos, media controls and numerals never mirror.
 - Numerals are Western digits everywhere, including Arabic pages. Prices use `formatMoney()` from `packages/core/money`.
-- Every component ships a Storybook story for: default, loading, empty, error, RTL. A component missing any state is not done.
+- Every component ships a Storybook story for: default, loading, empty, error, RTL (exports `Default`, `Loading`, `Empty`, `Error`, `Rtl` named "RTL"). A component missing any state is not done; `components.conventions.test.tsx` lists what is missing. A visual change needs regenerated snapshots (`pnpm --filter @alpha/ui test:visual:update`) in the same PR.
 - WCAG 2.2 AA: keyboard operable, visible focus, 44×44 px targets, labels tied to inputs, colour never the only signal. Run `pnpm test:a11y` before opening a PR.
 
 ## Testing
@@ -128,6 +128,7 @@ pnpm check               type-check + lint + unit + integration + a11y
 pnpm test:e2e            Playwright against the local app
 pnpm payload migrate:create <name>
 pnpm payload generate:types
-pnpm storybook
+pnpm --filter @alpha/ui storybook       component library with the direction toolbar
+pnpm test:visual         LTR and RTL screenshots of every story
 pnpm eval:llm            run the Advisor evaluation set
 ```

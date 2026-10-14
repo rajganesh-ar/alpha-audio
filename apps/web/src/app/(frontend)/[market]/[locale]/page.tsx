@@ -23,8 +23,10 @@ export default async function MarketHome({ params }: { params: Params }) {
   const t = translator(getDictionary(route.locale))
   return (
     <>
-      <h1>{t('home.title', { market: route.market.name[route.locale] })}</h1>
-      <p>{t('home.lede')}</p>
+      <h1 className="font-display text-4xl font-bold text-ink font-stretch-expanded">
+        {t('home.title', { market: route.market.name[route.locale] })}
+      </h1>
+      <p className="mt-4 text-lg text-ink-muted">{t('home.lede')}</p>
     </>
   )
 }

@@ -1,5 +1,9 @@
 {
   "extends": "@alpha/config/tsconfig.base.json",
-  "include": ["src"],
-  "compilerOptions": { "noEmit": true, "jsx": "react-jsx" }
+  "include": ["src", "tests", ".storybook", "playwright.config.ts"],
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["node"]
+  }
 }

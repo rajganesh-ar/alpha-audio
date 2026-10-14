@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { getDictionary, translator } from '@alpha/ui'
+import { DocumentHead } from '@/components/DocumentHead'
 import { NotFoundContent } from '@/components/NotFoundContent'
 import { marketsForNotFound } from '@/lib/notFoundMarkets'
 import './(frontend)/globals.css'
@@ -19,6 +20,10 @@ export const metadata: Metadata = {
 export default async function GlobalNotFound() {
   return (
     <html lang="en" dir="ltr">
+      <head>
+        {/* The page is bilingual, so it preloads the Arabic first-paint set (Archivo included). */}
+        <DocumentHead locale="ar" />
+      </head>
       <body>
         <NotFoundContent markets={await marketsForNotFound()} />
       </body>

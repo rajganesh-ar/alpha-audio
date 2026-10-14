@@ -14,6 +14,7 @@ import { languageTag, liveMarkets } from '@alpha/payload'
 import { getMarketRoute, getMarkets } from '@/lib/markets'
 import { localizedPath, siteUrl } from '@/lib/seo'
 import { marketOptions } from '@/lib/shell'
+import { DocumentHead } from '@/components/DocumentHead'
 import '../../globals.css'
 
 type Params = Promise<{ market: string; locale: string }>
@@ -51,6 +52,9 @@ export default async function MarketLayout({
   if (!route) {
     return (
       <html lang="en" dir="ltr">
+        <head>
+          <DocumentHead locale="ar" />
+        </head>
         <body>{children}</body>
       </html>
     )
@@ -78,6 +82,9 @@ export default async function MarketLayout({
 
   return (
     <html lang={route.languageTag} dir={route.dir}>
+      <head>
+        <DocumentHead locale={route.locale} />
+      </head>
       <body>
         <AppShell
           skipToContentLabel={t('shell.skipToContent')}

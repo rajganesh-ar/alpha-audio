@@ -1,7 +1,14 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": ["NODE_ENV"],
-  "globalPassThroughEnv": ["CI", "NEXT_TELEMETRY_DISABLED", "TESTCONTAINERS_*", "DOCKER_HOST"],
+  "globalPassThroughEnv": [
+    "CI",
+    "DOCKER_HOST",
+    "NEXT_TELEMETRY_DISABLED",
+    "PLAYWRIGHT_BROWSERS_PATH",
+    "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD",
+    "TESTCONTAINERS_*"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -19,11 +26,35 @@
         "SMTP_URL"
       ]
     },
-    "dev": { "cache": false, "persistent": true },
-    "lint": { "dependsOn": ["^build"] },
-    "typecheck": { "dependsOn": ["^build"] },
-    "test": { "dependsOn": ["^build"] },
-    "test:integration": { "dependsOn": ["^build"], "cache": false, "env": ["DATABASE_URL"] },
-    "test:a11y": { "dependsOn": ["^build"] }
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["^build"]
+    },
+    "test:integration": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "env": ["DATABASE_URL"]
+    },
+    "test:a11y": {
+      "dependsOn": ["^build", "build-storybook"],
+      "cache": false
+    },
+    "build-storybook": {
+      "dependsOn": ["^build"],
+      "outputs": ["storybook-static/**"]
+    },
+    "test:visual": {
+      "dependsOn": ["^build", "build-storybook"],
+      "cache": false
+    }
   }
 }

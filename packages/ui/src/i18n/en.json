@@ -1,5 +1,8 @@
 {
-  "$meta": { "locale": "en", "status": "published" },
+  "$meta": {
+    "locale": "en",
+    "status": "published"
+  },
   "shell": {
     "skipToContent": "Skip to content",
     "brand": "Alpha Audio",
@@ -20,7 +23,10 @@
     "current": "{market} · {language}",
     "choose": "Choose a market and language"
   },
-  "languages": { "en": "English", "ar": "العربية" },
+  "languages": {
+    "en": "English",
+    "ar": "العربية"
+  },
   "footer": {
     "copyright": "© {year} Alpha Audio",
     "pricing": "Prices in {currency}, VAT {vat}% included where it applies."
@@ -38,5 +44,48 @@
     "message": "You seem to be in {market}.",
     "switch": "Go to Alpha Audio {market}",
     "dismiss": "Dismiss"
+  },
+  "ui": {
+    "loading": "Loading…",
+    "retry": "Try again",
+    "close": "Close",
+    "dismiss": "Dismiss",
+    "breadcrumb": "Breadcrumb",
+    "home": "Home",
+    "quietActions": "Shortcuts",
+    "search": "Search",
+    "account": "Account",
+    "bag": "Bag",
+    "compare": "Compare",
+    "save": "Save",
+    "errorTitle": "Something went wrong",
+    "errorBody": "We could not load this part of the page.",
+    "emptyTitle": "Nothing here yet",
+    "emptyBody": "Try a different filter or browse all products.",
+    "browseAll": "Browse all products",
+    "unavailable": "Unavailable right now",
+    "marketsUnavailable": "Markets are unavailable right now.",
+    "reference": "Reference"
+  },
+  "price": {
+    "inclVat": "Incl. VAT {rate}%",
+    "onRequest": "Price on request",
+    "request": "Request a price",
+    "instalment": "or {count} payments of {amount}",
+    "was": "Was {amount}",
+    "unavailable": "Price unavailable"
+  },
+  "stock": {
+    "inStock": "In stock",
+    "low": "Only a few left",
+    "out": "Out of stock",
+    "onOrder": "Available to order",
+    "unknown": "Check availability",
+    "unavailable": "Stock information is unavailable"
+  },
+  "form": {
+    "required": "Required",
+    "optional": "Optional",
+    "checking": "Checking…"
   }
 }

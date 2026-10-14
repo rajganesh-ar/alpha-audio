@@ -9,3 +9,11 @@ coverage
 *.tsbuildinfo
 .vite
 next-env.d.ts
+
+# Self-hosted fonts copied from the pinned Fontsource packages (alpha-sync-fonts)
+packages/ui/.fonts/
+apps/web/public/fonts/
+# Storybook and Playwright output
+packages/ui/storybook-static/
+packages/ui/test-results/
+packages/ui/playwright-report/

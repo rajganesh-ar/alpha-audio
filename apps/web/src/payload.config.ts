@@ -5,7 +5,13 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { loadEnv } from '@alpha/config/env'
-import { LegacyRedirects, Markets } from '@alpha/payload'
+import {
+  LEDGER_QUEUE,
+  LegacyRedirects,
+  Markets,
+  inventoryCollections,
+  releaseExpiredReservationsTask,
+} from '@alpha/payload'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { migrations } from './migrations'
@@ -20,6 +26,16 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
+    components: {
+      views: {
+        ledgerExplorer: {
+          Component: '@alpha/payload/admin/LedgerExplorer#LedgerExplorer',
+          path: '/ledger',
+          exact: true,
+        },
+      },
+      afterNavLinks: ['@alpha/payload/admin/LedgerNavLink#LedgerNavLink'],
+    },
   },
   localization: {
     locales: [
@@ -29,8 +45,18 @@ export default buildConfig({
     defaultLocale: 'en',
     fallback: true,
   },
-  collections: [Users, Media, LegacyRedirects],
+  collections: [Users, Media, LegacyRedirects, ...inventoryCollections],
   globals: [Markets],
+  jobs: {
+    tasks: [releaseExpiredReservationsTask],
+    // Runs inside the app process (Payload starts crons on the first admin or API request).
+    // The scheduled task queues itself each minute; this cron works the ledger queue.
+    autoRun: [{ cron: '* * * * *', queue: LEDGER_QUEUE }],
+    jobsCollectionOverrides: ({ defaultJobsCollection }) => ({
+      ...defaultJobsCollection,
+      admin: { ...defaultJobsCollection.admin, group: 'System', hidden: false },
+    }),
+  },
   editor: lexicalEditor(),
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({

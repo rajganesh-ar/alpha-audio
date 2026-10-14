@@ -6,7 +6,7 @@ The full specification lives in `docs/spec/`. Read the relevant section before t
 
 ## Non-negotiable rules
 
-1. **Stock is a ledger, never a field.** Quantities are derived from `StockMovements`. Never write to `StockLevels` outside `packages/core/ledger`. Never add a `quantity` field to a product.
+1. **Stock is a ledger, never a field.** Quantities are derived from `StockMovements`. Every stock change goes through `LedgerService` (`createLedger(payload)` from `@alpha/payload`); movements and levels cannot be written any other way (access, hooks and a database trigger refuse it; ADR 0004). Never add a `quantity` field to a product.
 2. **Money and compatibility are deterministic.** Prices, stock, VAT, rules and scores are computed in `packages/core` or `packages/acoustics`. The LLM layer (`packages/llm`) only interprets and explains; it never chooses a product or emits a figure that did not come from a tool result.
 3. **Buyer context comes from the session, never from request parameters.** Company, group, market and currency are read from the authenticated session. Any handler that accepts a `companyId` from the client is a bug.
 4. **Private by default.** Cost, landed cost, margin and contract prices are field-level restricted. Signed-in routes and the partners domain are `Cache-Control: private, no-store`. Public product pages never include cost.
@@ -53,7 +53,7 @@ Import boundaries: apps import packages; packages never import apps; `packages/c
 ## Payload conventions
 
 - Every collection has `access` for `read`, `create`, `update`, `delete` written as named functions in `packages/payload/access/`. Never inline `() => true` on a commercial or inventory collection.
-- `StockMovements` is insert-only: `update` and `delete` access return `false` for everyone including admins.
+- `StockMovements` is insert-only: `create`, `update` and `delete` access return `false` for everyone including admins (the ledger writes it directly), and so do `StockLevels`, `SerialNumbers` and `Reservations`.
 - Field-level `access.read` on `cost`, `landedCost`, `margin`, `contractPrices`, `creditLimit`.
 - Local API calls made on behalf of a user pass `overrideAccess: false`. `overrideAccess: true` is allowed only inside `packages/payload/system/` and must carry a comment explaining why.
 - Content and pricing collections use `versions: { drafts: true }`. Publishing requires the `publisher` role.
@@ -81,7 +81,7 @@ Import boundaries: apps import packages; packages never import apps; `packages/c
 ## Testing
 
 - Unit tests with Vitest next to the code (`*.test.ts`). `packages/core` and `packages/acoustics` require 90% line coverage; CI enforces it.
-- Integration tests with Testcontainers Postgres in `packages/payload/tests/`: access functions, hooks, migrations on a fresh database, jobs.
+- Integration tests against a fresh, migrated Postgres in `apps/web/tests/integration/` (the Payload config lives in the app; `helpers/suite.ts` boots it): access functions, hooks, migrations, jobs. `DATABASE_URL` points at a server, otherwise Testcontainers starts one.
 - Mandatory tests that must always exist and pass:
   - `ledger.invariants.test.ts`: no level below zero; movements sum to levels; each serial has one current state.
   - `reservation.concurrency.test.ts`: 200 parallel reservations on one SKU end with zero negative stock.

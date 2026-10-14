@@ -17,9 +17,17 @@ An append-only stock ledger with derived levels, serial tracking and a race-safe
 
 ## Acceptance criteria
 
-- [ ] Any attempt to update or delete a `StockMovements` row through the admin, REST or Local API (with `overrideAccess: false`) is refused.
-- [ ] `StockLevels` cannot be edited in the admin; it is read-only.
-- [ ] Concurrency test passes 10 times in a row in CI.
-- [ ] Invariant test asserts movements sum to levels for every (sku, location, state) after a randomised sequence of 1,000 movements.
-- [ ] A count variance posts as a movement with `docType = count` and a mandatory reason.
-- [ ] `LedgerExplorer` shows a serial's full history in order.
+- [x] Any attempt to update or delete a `StockMovements` row through the admin, REST or Local API (with `overrideAccess: false`) is refused. _`inventory.integration.test.ts` (Local API, all four ledger collections, create too); REST 403s checked against `next start`; hooks refuse `overrideAccess: true`; a trigger refuses raw SQL._
+- [x] `StockLevels` cannot be edited in the admin; it is read-only. _No update access; the admin renders every field disabled with no Save button (checked in Chromium)._
+- [x] Concurrency test passes 10 times in a row in CI. _`reservation.concurrency.test.ts` runs ten rounds of 200 parallel reservations on 5 units: exactly 5 succeed each round._
+- [x] Invariant test asserts movements sum to levels for every (sku, location, state) after a randomised sequence of 1,000 movements. _`ledger.invariants.test.ts` on Postgres (plus the memory store in core): also no negative level, one state per serial, reserved = active reservations._
+- [x] A count variance posts as a movement with `docType = count` and a mandatory reason.
+- [x] `LedgerExplorer` shows a serial's full history in order. _`ledgerExplorer.integration.test.ts`; `/admin/ledger`._
+
+## Implementation notes
+
+- The Postgres store lives in `packages/payload/src/system/ledgerStore.ts`; the rules in `packages/core/src/ledger`. See ADR 0004.
+- Movements are created only through `LedgerService`; Payload create access is refused too, so levels can never disagree with movements.
+- Migration `ledger_constraints` adds the database guards: insert-only trigger, non-negative whole levels, valid movements.
+- Integration tests live in `apps/web/tests/integration/` (where the Payload config is).
+- Operating notes: `docs/runbooks/stock-ledger.md`.

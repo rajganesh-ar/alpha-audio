@@ -84,18 +84,22 @@ const staff = () =>
   ensureStaffUser(payload, { email: 'staff@alpha.test', password: 'integration-password-1' })
 
 describe('migrations', () => {
-  it('apply in order on a fresh database', async () => {
+  it('apply in order on a fresh database: every committed migration, schema first', async () => {
+    const { migrations } = await import('../../src/migrations')
     const { docs } = await payload.find({
       collection: 'payload-migrations',
       sort: 'createdAt',
+      pagination: false,
       user: await staff(),
       overrideAccess: false,
     })
-    expect(docs.map((d) => d.name)).toEqual([
+    const applied = docs.map((d) => d.name)
+    expect(applied).toEqual(migrations.map((m) => m.name))
+    expect(applied.slice(0, 2)).toEqual([
       '20261014_023806_initial_schema',
       '20261014_023807_pgvector',
-      '20261014_093836_markets_and_legacy_redirects',
     ])
+    expect([...applied].sort()).toEqual(applied) // timestamps keep files and run order aligned
   })
 })
 

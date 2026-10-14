@@ -63,6 +63,9 @@ Storybook (`@storybook/react-vite`, Tailwind through `@tailwindcss/vite`) gets a
 Both suites read the stories from the built Storybook's `index.json`, so a new story is covered without being listed.
 
 - **Pinned Playwright:** `@playwright/test` is pinned to **1.56.1** because it drives Chromium build 1194. That build is preinstalled in the cloud workspace, and CI's `playwright install chromium` fetches the same one. Baselines are therefore made and checked by the same browser binary, with self-hosted fonts.
+- **Pinned rasterisation:** Chromium takes glyph rasterisation from the machine's fontconfig, and the first CI run failed on that alone. The screenshot browser now gets `tests/stories/fonts.conf` (greyscale antialiasing, no hinting, only the Liberation folder as the last-resort typeface) plus matching Chromium flags.
+- **No system-font glyphs:** the visual spec fails any story in which a glyph is painted by a system font, checked through the DevTools protocol, because such a glyph would make the baseline machine-specific. That check found Arabic text in `font-mono` falling back to DejaVu; the mono stack now includes Plex Arabic.
+- **Readable failures:** on failure, CI prints each failing story and its pixel-diff ratio as annotations.
 - **Baselines are committed** (about 2.3 MB). They are test fixtures, not media.
 - **Updating baselines:** `pnpm --filter @alpha/ui build-storybook && pnpm --filter @alpha/ui test:visual:update`, then review the image diff in the PR.
 

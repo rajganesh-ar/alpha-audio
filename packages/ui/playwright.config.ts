@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig, devices } from '@playwright/test'
 
 /**
@@ -6,8 +7,11 @@ import { defineConfig, devices } from '@playwright/test'
  *  - `visual`: one screenshot per story and direction, compared with the committed baselines.
  *
  * @playwright/test is pinned to 1.56.1 because it drives Chromium build 1194, the build
- * preinstalled in the cloud workspace; CI downloads the same build, so baselines match.
+ * preinstalled in the cloud workspace; CI downloads the same build. Glyph rasterisation comes
+ * from fontconfig, so the browser gets the project's own fonts.conf (greyscale antialiasing, no
+ * hinting) and matching Chromium flags: the same pixels on any Linux machine.
  */
+const FONTCONFIG_FILE = fileURLToPath(new URL('./tests/stories/fonts.conf', import.meta.url))
 const PORT = 6106
 
 export default defineConfig({
@@ -15,7 +19,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env['CI'],
   retries: 0,
-  reporter: process.env['CI'] ? [['list'], ['html', { open: 'never' }]] : 'list',
+  reporter: process.env['CI']
+    ? [['list'], ['html', { open: 'never' }], ['json', { outputFile: 'test-results/results.json' }]]
+    : 'list',
   snapshotPathTemplate: '{testDir}/__screenshots__/{arg}{ext}',
   expect: {
     toHaveScreenshot: { animations: 'disabled', caret: 'hide', scale: 'css', maxDiffPixelRatio: 0 },
@@ -26,6 +32,14 @@ export default defineConfig({
     viewport: { width: 1024, height: 768 },
     deviceScaleFactor: 1,
     contextOptions: { reducedMotion: 'reduce' },
+    launchOptions: {
+      env: { ...process.env, FONTCONFIG_FILE },
+      args: [
+        '--font-render-hinting=none',
+        '--disable-lcd-text',
+        '--disable-font-subpixel-positioning',
+      ],
+    },
     colorScheme: 'light',
     locale: 'en-US',
     timezoneId: 'Asia/Dubai',

@@ -95,3 +95,11 @@ describe('fonts.css', () => {
     await expect(`${header}${fontFaceCss()}\n`).toMatchFileSnapshot('./fonts.css')
   })
 })
+
+describe('screenshot fontconfig', () => {
+  it('is well-formed XML for fontconfig (no "--" inside comments)', () => {
+    const conf = readFileSync(join(import.meta.dirname, '../../tests/stories/fonts.conf'), 'utf8')
+    for (const [, body] of conf.matchAll(/<!--([\s\S]*?)-->/g)) expect(body).not.toContain('--')
+    expect(conf).toMatch(/<dir>[^<]+<\/dir>/)
+  })
+})

@@ -101,6 +101,11 @@ jobs:
           pnpm test:visual
           pnpm test:visual
 
+      - name: Visual diff summary
+        if: failure()
+        working-directory: packages/ui
+        run: node scripts/report-visual-diffs.mjs test-results/results.json
+
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4

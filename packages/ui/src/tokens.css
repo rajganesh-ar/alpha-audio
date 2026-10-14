@@ -41,7 +41,7 @@
   --alpha-font-body: 'Archivo', 'IBM Plex Sans Arabic', system-ui, sans-serif;
   --alpha-font-display: 'Archivo', 'Noto Kufi Arabic', system-ui, sans-serif;
   --alpha-font-mono:
-    'JetBrains Mono', ui-monospace, monospace; /* SKUs, prices in tables, serials */
+    'JetBrains Mono', 'IBM Plex Sans Arabic', ui-monospace, monospace; /* SKUs, prices in tables, serials */
 
   --alpha-text-xs: 0.75rem;
   --alpha-text-xs-leading: 1rem;

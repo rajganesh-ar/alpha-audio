@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    'legacy-redirects': LegacyRedirect;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +79,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'legacy-redirects': LegacyRedirectsSelect<false> | LegacyRedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -87,8 +89,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'ar') | ('en' | 'ar')[];
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    markets: Market;
+  };
+  globalsSelect: {
+    markets: MarketsSelect<false> | MarketsSelect<true>;
+  };
   locale: 'en' | 'ar';
   widgets: {
     collections: CollectionsWidget;
@@ -165,6 +171,24 @@ export interface Media {
   focalY?: number | null;
 }
 /**
+ * Old site URLs with query strings, redirected to their new pages.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "legacy-redirects".
+ */
+export interface LegacyRedirect {
+  id: number;
+  sourcePath: string;
+  /**
+   * Without the "?". Tracking parameters are removed automatically.
+   */
+  sourceQuery?: string | null;
+  target: string;
+  status: '301' | '302';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -195,6 +219,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'legacy-redirects';
+        value: number | LegacyRedirect;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -283,6 +311,18 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "legacy-redirects_select".
+ */
+export interface LegacyRedirectsSelect<T extends boolean = true> {
+  sourcePath?: T;
+  sourceQuery?: T;
+  target?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -320,6 +360,82 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Currency, VAT, languages and rails per market.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "markets".
+ */
+export interface Market {
+  id: number;
+  markets?:
+    | {
+        code: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+        name: string;
+        /**
+         * Only live markets are routable.
+         */
+        status: 'live' | 'soon' | 'off';
+        currency: 'AED' | 'SAR' | 'QAR' | 'KWD' | 'BHD' | 'OMR';
+        /**
+         * Must match the currency (ISO 4217).
+         */
+        decimals: number;
+        /**
+         * Percent, e.g. 5 or 15.
+         */
+        vatRate: number;
+        timezone: string;
+        locales: ('en' | 'ar')[];
+        payments: (
+          | 'card'
+          | 'applepay'
+          | 'googlepay'
+          | 'tabby'
+          | 'tamara'
+          | 'cod'
+          | 'mada'
+          | 'naps'
+          | 'knet'
+          | 'benefitpay'
+          | 'omannet'
+        )[];
+        addressScheme: 'ae-makani' | 'sa-national-address' | 'qa-zone' | 'kw-paci' | 'bh-block' | 'om-way';
+        /**
+         * Who fulfils orders by default.
+         */
+        fulfilment: 'alpha' | 'dealer';
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "markets_select".
+ */
+export interface MarketsSelect<T extends boolean = true> {
+  markets?:
+    | T
+    | {
+        code?: T;
+        name?: T;
+        status?: T;
+        currency?: T;
+        decimals?: T;
+        vatRate?: T;
+        timezone?: T;
+        locales?: T;
+        payments?: T;
+        addressScheme?: T;
+        fulfilment?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

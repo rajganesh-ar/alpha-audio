@@ -5,16 +5,28 @@
   "description": "Payload collections, globals, hooks, access, jobs, migrations",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./markets/codes": "./src/markets/codes.ts",
+    "./markets/resolve": "./src/markets/resolve.ts"
   },
   "scripts": {
     "lint": "eslint src",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run"
   },
+  "dependencies": {
+    "@alpha/core": "workspace:*",
+    "zod": "3.25.76"
+  },
+  "peerDependencies": {
+    "next": "16.4.0",
+    "payload": "3.90.2"
+  },
   "devDependencies": {
     "@alpha/config": "workspace:*",
     "eslint": "^9.0.0",
+    "next": "16.4.0",
+    "payload": "3.90.2",
     "typescript": "^5.8.0",
     "vitest": "^4.0.0"
   }

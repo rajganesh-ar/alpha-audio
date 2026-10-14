@@ -50,7 +50,7 @@ describe('alpha/no-raw-color', () => {
 })
 
 describe('alpha/no-override-access', () => {
-  it('allows only inside packages/payload/system', () => {
+  it('allows overrideAccess: true only in packages/payload/src/system, with a reason', () => {
     tester.run('no-override-access', noOverrideAccess, {
       valid: [
         {
@@ -58,8 +58,12 @@ describe('alpha/no-override-access', () => {
           filename: '/r/apps/web/a.ts',
         },
         {
-          code: 'payload.find({ overrideAccess: true })',
-          filename: '/r/packages/payload/system/seed.ts',
+          code: 'payload.find({\n  // Seed runs with no signed-in user.\n  overrideAccess: true,\n})',
+          filename: '/r/packages/payload/src/system/seed.ts',
+        },
+        {
+          code: 'payload.find({\n  /* System job: no user. */ overrideAccess: true,\n})',
+          filename: '/r/packages/payload/system/job.ts',
         },
       ],
       invalid: [
@@ -67,6 +71,21 @@ describe('alpha/no-override-access', () => {
           code: 'payload.find({ overrideAccess: true })',
           filename: '/r/apps/web/a.ts',
           errors: [{ messageId: 'override' }],
+        },
+        {
+          code: 'payload.find({ overrideAccess: true })',
+          filename: '/r/packages/payload/src/collections/x.ts',
+          errors: [{ messageId: 'override' }],
+        },
+        {
+          code: 'payload.find({ overrideAccess: true })',
+          filename: '/r/packages/payload-system/src/seed.ts',
+          errors: [{ messageId: 'override' }],
+        },
+        {
+          code: 'payload.find({ collection: "x", overrideAccess: true })',
+          filename: '/r/packages/payload/src/system/seed.ts',
+          errors: [{ messageId: 'reason' }],
         },
       ],
     })

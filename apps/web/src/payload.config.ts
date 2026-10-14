@@ -5,6 +5,7 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { loadEnv } from '@alpha/config/env'
+import { LegacyRedirects, Markets } from '@alpha/payload'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { migrations } from './migrations'
@@ -28,7 +29,8 @@ export default buildConfig({
     defaultLocale: 'en',
     fallback: true,
   },
-  collections: [Users, Media],
+  collections: [Users, Media, LegacyRedirects],
+  globals: [Markets],
   editor: lexicalEditor(),
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({

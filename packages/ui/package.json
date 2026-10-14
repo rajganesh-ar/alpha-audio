@@ -6,7 +6,11 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./tokens.css": "./src/tokens.css"
+    "./tokens.css": "./src/tokens.css",
+    "./shell.css": "./src/shell/shell.css",
+    "./i18n": "./src/i18n/index.ts",
+    "./suggested-market": "./src/shell/SuggestedMarketBanner.tsx",
+    "./cookies": "./src/shell/cookies.ts"
   },
   "scripts": {
     "lint": "eslint src",
@@ -20,6 +24,10 @@
     "@alpha/config": "workspace:*",
     "eslint": "^9.0.0",
     "typescript": "^5.8.0",
-    "vitest": "^4.0.0"
+    "vitest": "^4.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
   }
 }

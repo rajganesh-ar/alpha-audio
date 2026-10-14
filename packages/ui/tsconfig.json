@@ -1,5 +1,5 @@
 {
   "extends": "@alpha/config/tsconfig.base.json",
   "include": ["src"],
-  "compilerOptions": { "noEmit": true }
+  "compilerOptions": { "noEmit": true, "jsx": "react-jsx" }
 }

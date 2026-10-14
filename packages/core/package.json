@@ -10,10 +10,11 @@
   "scripts": {
     "lint": "eslint src",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run --coverage"
   },
   "devDependencies": {
     "@alpha/config": "workspace:*",
+    "@vitest/coverage-v8": "4.1.11",
     "eslint": "^9.0.0",
     "typescript": "^5.8.0",
     "vitest": "^4.0.0"

@@ -1,8 +1,13 @@
 @import '@alpha/ui/tokens.css';
+@import '@alpha/ui/shell.css';
 
 body {
   margin: 0;
   background: var(--color-aluminium);
   color: var(--color-graphite);
   font-family: var(--font-sans);
+}
+
+html[lang^='ar'] body {
+  font-family: var(--font-arabic);
 }

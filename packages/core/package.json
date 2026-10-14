@@ -1,0 +1,21 @@
+{
+  "name": "@alpha/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ledger, price engine, checkout, lead routing (pure services)",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@alpha/config": "workspace:*",
+    "eslint": "^9.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^4.0.0"
+  }
+}

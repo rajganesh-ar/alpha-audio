@@ -3,9 +3,11 @@
 Phase: P0 Foundations. Depends on: 0001. Spec: sections 2 (Sitemap) and 9 (GCC market layer).
 
 ## Goal
+
 Every public URL is `/{market}/{locale}/…`, validated against a `Markets` global, with a working RTL shell for Arabic.
 
 ## Deliverables
+
 - `Markets` global in `packages/payload/globals/Markets.ts` with one entry per market: `code`, `name` (localized), `currency`, `decimals`, `vatRate`, `locales[]`, `payments[]`, `addressScheme`, `fulfilment` (`alpha` | `dealer`), `status` (`live` | `soon` | `off`), `timezone`. Seed script with ae, sa, qa, kw, bh, om using the values in the spec.
 - `apps/web/middleware.ts`: validates `[market]` and `[locale]` against live markets and their locales; unknown → 404; root `/` → `/ae/en/`; geo-IP header (Cloudflare `cf-ipcountry`) sets a `suggestedMarket` cookie for a dismissible banner, never a redirect.
 - `app/[market]/[locale]/layout.tsx`: sets `html[lang][dir]`, loads the i18n dictionary (`packages/ui/i18n`, `en.json`, `ar.json`), renders `AppShell` with `Header`, `MarketSwitch`, `AnnouncementBar`, `Footer` stubs.
@@ -14,6 +16,7 @@ Every public URL is `/{market}/{locale}/…`, validated against a `Markets` glob
 - `LegacyRedirects` collection (`sourcePath`, `sourceQuery`, `target`, `status`) and middleware resolution for `?bid=` and `?catid=` URLs with a 301.
 
 ## Acceptance criteria
+
 - [ ] `/ae/ar/` renders with `dir="rtl"` and mirrored header; `/ae/en/` with `dir="ltr"`.
 - [ ] `/xx/en/` and `/ae/fr/` return 404 with the market switcher.
 - [ ] `/brand?bid=13` returns 301 to the target stored in `LegacyRedirects`.

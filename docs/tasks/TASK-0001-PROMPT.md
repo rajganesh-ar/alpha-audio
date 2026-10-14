@@ -3,6 +3,7 @@
 Set up the alpha-platform monorepo as specified in `docs/tasks/0001-monorepo-skeleton.md`, following every rule in `CLAUDE.md`.
 
 Constraints:
+
 - Use the official Payload 3 + Next.js template as the base for `apps/web`, pinned to the current Payload 3 minor and its supported Next.js 16 release; record the exact versions in `docs/adr/0001-monorepo-and-toolchain.md`.
 - Postgres adapter with pgvector enabled by migration 0001; S3 storage adapter pointed at MinIO locally.
 - Write the two custom ESLint rules (`alpha/no-physical-direction`, `alpha/no-raw-color`) as a local plugin in `packages/config/eslint-plugin-alpha` with unit tests.

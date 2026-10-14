@@ -1,0 +1,47 @@
+# alpha-platform
+
+The Alpha Audio GCC platform: one Payload 3 + Next.js 16 application for the retail storefront, admin and warehouse tools, plus the dealer board, built on shared pure packages. Read [`CLAUDE.md`](CLAUDE.md) for the rules every change follows and [`docs/spec/engineering-spec.md`](docs/spec/engineering-spec.md) for the full specification.
+
+## Run it locally
+
+You need Node 22 (see `.nvmrc`), pnpm 10 (`corepack enable` provides it) and Docker.
+
+```bash
+pnpm install
+cp .env.example .env && cp apps/web/.env.example apps/web/.env   # then set PAYLOAD_SECRET: openssl rand -hex 32
+docker compose up -d                                             # Postgres + pgvector, MinIO, Mailpit
+pnpm --filter @alpha/web migrate                                 # create the schema and enable pgvector
+pnpm dev                                                         # http://localhost:3000 and /admin
+```
+
+Open <http://localhost:3000/admin> and create the first admin user. MinIO's console is at <http://localhost:9001> (`alpha` / `alpha-secret`) and Mailpit at <http://localhost:8025>.
+
+## Checks
+
+```bash
+pnpm check                         # typecheck, lint, unit, integration, a11y — the same gates CI runs
+pnpm format:check
+pnpm generate:types                # after any collection change; commit the result
+pnpm --filter @alpha/web migrate:create <name>   # after any collection change; commit the migration
+```
+
+Integration tests use the database in `DATABASE_URL` when it is set, otherwise they start a throwaway Postgres with Testcontainers (needs Docker). Each run creates and drops its own database.
+
+## Layout
+
+| Path                 | What lives there                                                              |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `apps/web`           | Next.js storefront + Payload admin (one process)                              |
+| `packages/payload`   | Collections, globals, hooks, access, jobs                                     |
+| `packages/core`      | Ledger, price engine, checkout (pure, no React)                               |
+| `packages/acoustics` | Room Lab engine (pure, no I/O)                                                |
+| `packages/llm`       | LLM provider abstraction and evaluation harness                               |
+| `packages/ui`        | Design tokens and components                                                  |
+| `packages/config`    | ESLint (with `eslint-plugin-alpha`), TypeScript, Tailwind presets, env schema |
+| `docs`               | Specification, tasks, ADRs, runbooks                                          |
+
+## Notes
+
+- `pnpm dev` lets Payload push schema changes to your local database automatically. Production runs migrations only, so a collection change is not done until `migrate:create` has generated its migration.
+- Never put `NODE_ENV` in `.env`; Next.js sets it, and a stray `NODE_ENV=development` breaks `next build`.
+- Decisions behind this setup are in [`docs/adr/0001-monorepo-and-toolchain.md`](docs/adr/0001-monorepo-and-toolchain.md).

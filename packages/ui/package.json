@@ -1,0 +1,25 @@
+{
+  "name": "@alpha/ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Design tokens, components, Storybook",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens.css": "./src/tokens.css"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@alpha/config": "workspace:*",
+    "eslint": "^9.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^4.0.0"
+  }
+}

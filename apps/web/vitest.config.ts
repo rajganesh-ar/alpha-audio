@@ -1,0 +1,25 @@
+import { defineConfig } from 'vitest/config'
+
+// Integration tests live in tests/integration, never in src/migrations: `payload migrate`
+// imports every file in that folder as a migration.
+export default defineConfig({
+  test: {
+    projects: [
+      {
+        test: {
+          name: 'unit',
+          include: ['src/**/*.test.ts'],
+          exclude: ['src/**/*.integration.test.ts'],
+        },
+      },
+      {
+        test: {
+          name: 'integration',
+          include: ['tests/integration/**/*.integration.test.ts'],
+          testTimeout: 180_000,
+          hookTimeout: 180_000,
+        },
+      },
+    ],
+  },
+})

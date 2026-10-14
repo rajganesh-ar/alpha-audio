@@ -35,7 +35,7 @@ Import boundaries: apps import packages; packages never import apps; `packages/c
 
 - Node LTS as pinned in `.nvmrc`; pnpm as pinned in `package.json#packageManager`. Use `pnpm`, never `npm` or `yarn`.
 - Payload pinned to a minor (see `packages/payload/package.json`); do not bump Payload or Next.js in a feature PR. Upgrades are their own PR titled `chore(deps): payload 3.x`.
-- Postgres via `@payloadcms/db-postgres`; pgvector extension enabled by migration `0001`.
+- Postgres via `@payloadcms/db-postgres`; pgvector is enabled by the second migration, right after the generated initial schema (Payload records each migration in a table that the schema migration creates, so the schema always runs first).
 - Local development: `pnpm dev` starts everything (Docker Compose brings up Postgres, MinIO and a mail catcher). If a service is missing, fix `docker-compose.yml`, do not work around it.
 - Environment variables are documented in `.env.example`. Add every new variable there with a comment. The app fails fast at startup on a missing variable; extend `packages/config/env.ts` when you add one.
 

@@ -1,0 +1,42 @@
+# Local services for `pnpm dev`. Nothing here is used in cloud environments.
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: alpha
+      POSTGRES_PASSWORD: alpha
+      POSTGRES_DB: alpha
+    ports: ['5432:5432']
+    volumes: ['pgdata:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U alpha -d alpha']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: alpha
+      MINIO_ROOT_PASSWORD: alpha-secret
+    ports: ['9000:9000', '9001:9001']
+    volumes: ['miniodata:/data']
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on: [minio]
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 alpha alpha-secret; do sleep 1; done;
+      mc mb --ignore-existing local/alpha-media;
+      mc anonymous set download local/alpha-media;
+      "
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ['1025:1025', '8025:8025']
+
+volumes:
+  pgdata:
+  miniodata:

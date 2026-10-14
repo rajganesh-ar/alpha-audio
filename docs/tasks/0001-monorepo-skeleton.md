@@ -20,10 +20,11 @@ A pnpm + Turborepo monorepo where `pnpm dev` starts Payload 3 (pinned minor) wit
 
 ## Acceptance criteria
 
-- [ ] Fresh clone: `pnpm install && pnpm dev` serves the Payload admin at `/admin` and a Next.js page at `/` with a local Postgres from Docker Compose.
-- [ ] `pnpm check` passes with zero lint warnings.
-- [ ] Renaming a Tailwind class to `ml-4` in any component fails lint with the `alpha/no-physical-direction` message.
-- [ ] Importing `apps/web` from `packages/core` fails lint with the boundary message.
-- [ ] Deleting a generated type and running CI fails on the types diff step.
+- [x] Fresh clone: `pnpm install && pnpm dev` serves the Payload admin at `/admin` and a Next.js page at `/` with a local Postgres from Docker Compose.
+  - Verified with `pnpm install --frozen-lockfile`, `payload migrate` and `next dev` against Postgres 16 + pgvector: `/` returns 200, `/admin` renders the first-user screen, and registering an admin through the API writes to Postgres. The cloud session could not pull the Compose images (Docker Hub blocked by egress policy), so Postgres ran natively; Compose itself is to be confirmed on a developer machine.
+- [x] `pnpm check` passes with zero lint warnings. (23 of 23 tasks.)
+- [x] Renaming a Tailwind class to `ml-4` in any component fails lint with the `alpha/no-physical-direction` message.
+- [x] Importing `apps/web` from `packages/core` fails lint with the boundary message. Importing React or Next.js from `core`, `acoustics` or `llm` now fails too (it silently did not before); covered by `eslint-plugin-alpha/tests/boundaries.test.js`.
+- [x] Deleting a generated type and running CI fails on the types diff step. Verified by committing a `payload-types.ts` with `interface Media` removed on a throwaway branch and running the step's script: exit 1 with the stale-files error; exit 0 on the real commit.
 - [ ] CI workflow green on the PR.
-- [ ] No Payload or Next.js version other than the pinned ones in the lockfile.
+- [x] No Payload or Next.js version other than the pinned ones in the lockfile. (payload 3.90.2, next 16.4.0; CI checks this.)

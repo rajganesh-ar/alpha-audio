@@ -2,8 +2,8 @@ import type { GlobalAfterChangeHook } from 'payload'
 import { invalidateMarketsCache } from '../markets/read'
 
 /**
- * After the Markets global changes (a market goes live, VAT changes), drop this instance's
- * cached copy and purge every rendered storefront page so it re-renders with the new record.
+ * After the Markets global changes (a market goes live, VAT changes), drop this process's
+ * cached copy (shared by the proxy and the app) and purge every rendered storefront page so it re-renders with the new record.
  *
  * `revalidatePath` is used rather than `revalidateTag`: in Next.js 16 `revalidateTag` serves
  * stale data by default, and a VAT rate or market status must not be served stale.

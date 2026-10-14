@@ -53,7 +53,10 @@ describe('resolveMarketRoute', () => {
       dir: 'rtl',
       market: { code: 'ae' },
     })
-    expect(resolveMarketRoute(markets, 'ae', 'en')).toMatchObject({ dir: 'ltr', languageTag: 'en-AE' })
+    expect(resolveMarketRoute(markets, 'ae', 'en')).toMatchObject({
+      dir: 'ltr',
+      languageTag: 'en-AE',
+    })
   })
 
   it.each([
@@ -166,9 +169,16 @@ describe('parseMarketsGlobal', () => {
     expect(() => parseMarketsGlobal({ markets: [{ ...ae, vatRate: 'five' }] })).toThrow(
       /markets\.0\.vatRate/,
     )
-    expect(() => parseMarketsGlobal({ markets: [{ ...ae, name: { en: 'UAE' } }] })).toThrow(
-      /markets\.0\.name\.ar/,
+    expect(() => parseMarketsGlobal({ markets: [{ ...ae, name: { ar: 'الإمارات' } }] })).toThrow(
+      /markets\.0\.name\.en/,
     )
+  })
+
+  it('falls back to the English name while the Arabic one is missing', () => {
+    for (const ar of [undefined, null, '', '  ']) {
+      const [parsed] = parseMarketsGlobal({ markets: [{ ...ae, name: { en: 'UAE', ar } }] })
+      expect(parsed?.name).toEqual({ en: 'UAE', ar: 'UAE' })
+    }
   })
 })
 
@@ -194,6 +204,25 @@ describe('getMarketsCached', () => {
     invalidateMarketsCache()
     await getMarketsCached(payload, 30_000, now)
     expect(findGlobal).toHaveBeenCalledTimes(3)
+  })
+
+  it('shares one read between concurrent misses', async () => {
+    invalidateMarketsCache()
+    const { payload, findGlobal } = fakePayload([ae])
+    const results = await Promise.all([getMarketsCached(payload), getMarketsCached(payload)])
+    expect(findGlobal).toHaveBeenCalledTimes(1)
+    expect(results[0]).toEqual(results[1])
+  })
+
+  it('does not cache a failed read', async () => {
+    invalidateMarketsCache()
+    const findGlobal = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('db down'))
+      .mockResolvedValueOnce({ markets: [ae] })
+    const payload = { findGlobal } as unknown as Payload
+    await expect(getMarketsCached(payload)).rejects.toThrow('db down')
+    await expect(getMarketsCached(payload)).resolves.toEqual([ae])
   })
 
   it('reads with all locales and normal access rules', async () => {

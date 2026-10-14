@@ -1,0 +1,46 @@
+{
+  "$meta": {
+    "locale": "ar",
+    "status": "draft",
+    "note": "Draft Arabic. Every string needs sign-off from the native reviewer before publication."
+  },
+  "shell": {
+    "skipToContent": "انتقل إلى المحتوى",
+    "brand": "ألفا أوديو",
+    "homeLink": "الصفحة الرئيسية لألفا أوديو",
+    "primaryNav": "القائمة الرئيسية",
+    "nav": {
+      "products": "المنتجات",
+      "brands": "العلامات التجارية",
+      "rooms": "الغرف",
+      "support": "الدعم"
+    }
+  },
+  "announcement": {
+    "preview": "نسخة تجريبية. موقع ألفا أوديو الجديد قيد الإنشاء."
+  },
+  "marketSwitch": {
+    "label": "السوق واللغة",
+    "current": "{market} · {language}",
+    "choose": "اختر السوق واللغة"
+  },
+  "languages": { "en": "English", "ar": "العربية" },
+  "footer": {
+    "copyright": "© {year} ألفا أوديو",
+    "pricing": "الأسعار بعملة {currency}، شاملة ضريبة القيمة المضافة {vat}% حيثما تنطبق."
+  },
+  "home": {
+    "title": "ألفا أوديو {market}",
+    "lede": "أنظمة الصوت عالية الدقة والسينما المنزلية والتركيب حسب الطلب."
+  },
+  "notFound": {
+    "title": "الصفحة غير موجودة",
+    "body": "لم نتمكن من العثور على هذه الصفحة. اختر السوق واللغة للمتابعة.",
+    "metaTitle": "الصفحة غير موجودة"
+  },
+  "suggestedMarket": {
+    "message": "يبدو أنك في {market}.",
+    "switch": "انتقل إلى ألفا أوديو {market}",
+    "dismiss": "إغلاق"
+  }
+}

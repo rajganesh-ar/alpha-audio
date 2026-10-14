@@ -19,7 +19,12 @@ export const MARKETS_SLUG = 'markets'
  */
 const marketSchema = z.object({
   code: z.enum(MARKET_CODES),
-  name: z.object({ en: z.string().min(1), ar: z.string().min(1) }),
+  // A market added in the admin in English only has no Arabic name yet. That must not take
+  // the storefront down (every page reads this record), so Arabic falls back to English
+  // until the native reviewer fills it in.
+  name: z
+    .object({ en: z.string().min(1), ar: z.string().nullish() })
+    .transform(({ en, ar }) => ({ en, ar: ar?.trim() ? ar : en })),
   currency: z.enum(['AED', 'SAR', 'QAR', 'KWD', 'BHD', 'OMR']),
   decimals: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
   vatRate: z.number().min(0).max(100),
@@ -55,25 +60,51 @@ export async function loadMarkets(payload: Payload): Promise<MarketRecord[]> {
 }
 
 /**
- * Process-local cache of the Markets global, for server code that renders on every request
- * (the 404 page). Bounds database reads to one per TTL per instance; the `revalidateMarkets`
- * hook clears it immediately on the instance that saved the change. ISR pages do not need
- * it: they read once per render and are purged by the same hook.
+ * Process-wide cache of the Markets global. The proxy checks every storefront URL against it
+ * and the 404 page renders on every request, so database reads are bounded to one per TTL per
+ * process. It lives on `globalThis` because Next bundles the proxy and the app separately: a
+ * module variable would give each bundle its own copy, and the `revalidateMarkets` hook would
+ * only clear one of them. Concurrent misses share a single read.
  */
 const DEFAULT_TTL_MS = 30_000
-let cached: { value: MarketRecord[]; expiresAt: number } | undefined
+const CACHE_KEY = Symbol.for('alpha.marketsCache')
+
+interface CacheSlot {
+  value?: MarketRecord[] | undefined
+  expiresAt: number
+  pending?: Promise<MarketRecord[]> | undefined
+}
+
+function slot(): CacheSlot {
+  const store = globalThis as unknown as Record<symbol, CacheSlot | undefined>
+  return (store[CACHE_KEY] ??= { expiresAt: 0 })
+}
 
 export async function getMarketsCached(
   payload: Payload,
   ttlMs: number = DEFAULT_TTL_MS,
   now: () => number = Date.now,
 ): Promise<MarketRecord[]> {
-  if (cached && cached.expiresAt > now()) return cached.value
-  const value = await loadMarkets(payload)
-  cached = { value, expiresAt: now() + ttlMs }
-  return value
+  const cache = slot()
+  if (cache.value && cache.expiresAt > now()) return cache.value
+  if (!cache.pending) {
+    const pending = loadMarkets(payload)
+      .then((value) => {
+        cache.value = value
+        cache.expiresAt = now() + ttlMs
+        return value
+      })
+      .finally(() => {
+        if (cache.pending === pending) cache.pending = undefined
+      })
+    cache.pending = pending
+  }
+  return cache.pending
 }
 
 export function invalidateMarketsCache(): void {
-  cached = undefined
+  const cache = slot()
+  cache.value = undefined
+  cache.expiresAt = 0
+  cache.pending = undefined
 }

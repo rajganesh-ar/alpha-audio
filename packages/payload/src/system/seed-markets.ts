@@ -120,10 +120,13 @@ export async function seedMarkets(payload: Payload): Promise<SeedMarketsResult> 
   })) as { markets?: Array<{ id?: string }> }
 
   const ids = (written.markets ?? []).map((row) => row.id)
+  if (ids.length !== merged.length || ids.some((id) => !id)) {
+    throw new Error('Markets seed: the English write did not return a row id for every market.')
+  }
   await payload.updateGlobal({
     slug: MARKETS_SLUG,
     locale: 'ar',
-    data: { markets: merged.map((m, i) => ({ ...m, id: ids[i], name: m.name.ar })) },
+    data: { markets: merged.map((m, i) => ({ ...m, id: ids[i] ?? null, name: m.name.ar })) },
     context,
     // System seed: as above.
     overrideAccess: true,

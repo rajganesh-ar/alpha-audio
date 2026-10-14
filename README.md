@@ -11,10 +11,11 @@ pnpm install
 cp .env.example .env && cp apps/web/.env.example apps/web/.env   # then set PAYLOAD_SECRET: openssl rand -hex 32
 docker compose up -d                                             # Postgres + pgvector, MinIO, Mailpit
 pnpm --filter @alpha/web migrate                                 # create the schema and enable pgvector
-pnpm dev                                                         # http://localhost:3000 and /admin
+pnpm --filter @alpha/web seed:markets                            # the six GCC markets (safe to re-run)
+pnpm dev                                                         # http://localhost:3000 → /ae/en/
 ```
 
-Open <http://localhost:3000/admin> and create the first admin user. MinIO's console is at <http://localhost:9001> (`alpha` / `alpha-secret`) and Mailpit at <http://localhost:8025>.
+Open <http://localhost:3000/admin> and create the first admin user. The storefront is at `/ae/en/` and `/ae/ar/`; only the UAE is live until a market's status is changed under Settings → Markets. MinIO's console is at <http://localhost:9001> (`alpha` / `alpha-secret`) and Mailpit at <http://localhost:8025>.
 
 ## Checks
 
@@ -43,5 +44,7 @@ Integration tests use the database in `DATABASE_URL` when it is set, otherwise t
 ## Notes
 
 - `pnpm dev` lets Payload push schema changes to your local database automatically. Production runs migrations only, so a collection change is not done until `migrate:create` has generated its migration.
+- Checking a production build (`pnpm build && pnpm --filter @alpha/web start`)? Point it at a database `pnpm dev` has never touched: production boots from migrations and stops at Payload's prompt if dev mode has pushed schema to that database.
+- Old-site links (`/brand?bid=13`) are redirected from Settings → Legacy redirects. Routing, 404s and redirects are explained in [`docs/adr/0002-market-routing-and-legacy-redirects.md`](docs/adr/0002-market-routing-and-legacy-redirects.md).
 - Never put `NODE_ENV` in `.env`; Next.js sets it, and a stray `NODE_ENV=development` breaks `next build`.
 - Decisions behind this setup are in [`docs/adr/0001-monorepo-and-toolchain.md`](docs/adr/0001-monorepo-and-toolchain.md).

@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./markets/codes": "./src/markets/codes.ts",
-    "./markets/resolve": "./src/markets/resolve.ts"
+    "./markets/resolve": "./src/markets/resolve.ts",
+    "./legacy/normalize": "./src/legacy/normalize.ts"
   },
   "scripts": {
     "lint": "eslint src",

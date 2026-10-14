@@ -4,7 +4,8 @@
  * becomes ''. `?bid=13&utm_source=x` and `?BID=13` both normalize to `bid=13`.
  */
 
-const TRACKING_PARAM = /^(utm_[a-z0-9_]+|gclid|gbraid|wbraid|fbclid|msclkid|dclid|yclid|_ga|_gl|mc_cid|mc_eid)$/i
+const TRACKING_PARAM =
+  /^(utm_[a-z0-9_]+|gclid|gbraid|wbraid|fbclid|msclkid|dclid|yclid|_ga|_gl|mc_cid|mc_eid)$/i
 
 export function normalizeLegacyQuery(query: string | URLSearchParams): string {
   const params = typeof query === 'string' ? new URLSearchParams(query.replace(/^\?/, '')) : query
@@ -43,4 +44,24 @@ export function validateLegacyPath(path: unknown): true | string {
   if (!path.startsWith('/')) return 'Source path must start with "/", such as /brand.'
   if (/[?#]/.test(path)) return 'Put the query string in "Source query", not in the path.'
   return true
+}
+
+/**
+ * Query keys that only the old site used. A request carrying one of these, on a path the new
+ * site does not route, is looked up in LegacyRedirects. Everything else skips the lookup.
+ */
+export const LEGACY_QUERY_KEYS = ['bid', 'catid'] as const
+
+export function hasLegacyQuery(params: URLSearchParams): boolean {
+  for (const key of params.keys()) {
+    if ((LEGACY_QUERY_KEYS as readonly string[]).includes(key.trim().toLowerCase())) return true
+  }
+  return false
+}
+
+/** Campaign parameters from the old link, kept on the redirect so attribution survives. */
+export function trackingParams(params: URLSearchParams): URLSearchParams {
+  const kept = new URLSearchParams()
+  for (const [key, value] of params) if (TRACKING_PARAM.test(key.trim())) kept.append(key, value)
+  return kept
 }

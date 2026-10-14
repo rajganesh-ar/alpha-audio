@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  hasLegacyQuery,
   normalizeLegacyPath,
   normalizeLegacyQuery,
+  trackingParams,
   validateLegacyPath,
   validateLegacyTarget,
 } from './normalize'
@@ -55,5 +57,27 @@ describe('validators', () => {
     expect(validateLegacyPath('/brand')).toBe(true)
     expect(validateLegacyPath('/brand?bid=13')).toMatch(/Source query/)
     expect(validateLegacyPath('brand')).toMatch(/start with/)
+  })
+})
+
+describe('legacy query detection', () => {
+  const q = (s: string) => new URLSearchParams(s)
+
+  it.each([
+    ['bid=13', true],
+    ['BID=13', true],
+    ['catid=53&utm_source=x', true],
+    ['utm_source=x', false],
+    ['q=amp', false],
+    ['', false],
+  ])('hasLegacyQuery(%s) → %s', (input, expected) => {
+    expect(hasLegacyQuery(q(input))).toBe(expected)
+  })
+
+  it('keeps only campaign parameters for the redirect', () => {
+    expect(trackingParams(q('bid=13&utm_source=ig&gclid=abc&x=1')).toString()).toBe(
+      'utm_source=ig&gclid=abc',
+    )
+    expect(trackingParams(q('bid=13')).toString()).toBe('')
   })
 })

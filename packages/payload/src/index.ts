@@ -13,5 +13,12 @@ export {
   parseMarketsGlobal,
 } from './markets/read'
 export { resolveLegacyRedirect, type LegacyRedirect } from './legacy/resolve'
-export { normalizeLegacyPath, normalizeLegacyQuery } from './legacy/normalize'
+export {
+  LEGACY_QUERY_KEYS,
+  hasLegacyQuery,
+  normalizeLegacyPath,
+  normalizeLegacyQuery,
+  trackingParams,
+} from './legacy/normalize'
 export { MARKETS_SEED, seedMarkets, type SeedMarketsResult } from './system/seed-markets'
+export { ensureStaffUser, type StaffCredentials } from './system/ensure-staff-user'

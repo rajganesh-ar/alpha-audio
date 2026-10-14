@@ -1,0 +1,42 @@
+{
+  "$meta": { "locale": "en", "status": "published" },
+  "shell": {
+    "skipToContent": "Skip to content",
+    "brand": "Alpha Audio",
+    "homeLink": "Alpha Audio home",
+    "primaryNav": "Main",
+    "nav": {
+      "products": "Products",
+      "brands": "Brands",
+      "rooms": "Rooms",
+      "support": "Support"
+    }
+  },
+  "announcement": {
+    "preview": "Preview build. The new Alpha Audio site is under construction."
+  },
+  "marketSwitch": {
+    "label": "Market and language",
+    "current": "{market} · {language}",
+    "choose": "Choose a market and language"
+  },
+  "languages": { "en": "English", "ar": "العربية" },
+  "footer": {
+    "copyright": "© {year} Alpha Audio",
+    "pricing": "Prices in {currency}, VAT {vat}% included where it applies."
+  },
+  "home": {
+    "title": "Alpha Audio {market}",
+    "lede": "Hi-fi, home cinema and custom installation."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "We could not find that page. Choose a market and language to continue.",
+    "metaTitle": "Page not found"
+  },
+  "suggestedMarket": {
+    "message": "You seem to be in {market}.",
+    "switch": "Go to Alpha Audio {market}",
+    "dismiss": "Dismiss"
+  }
+}

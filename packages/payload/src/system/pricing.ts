@@ -12,6 +12,7 @@ import {
   type PriceRule,
   type PricingData,
   type PricingProduct,
+  type ProjectPrice,
   type ResolvedPrices,
   type StockVisibility,
 } from '@alpha/core'
@@ -158,6 +159,7 @@ export async function loadPricingData(
   payload: Payload,
   ctx: PriceContext,
   skus: readonly string[],
+  options: { projectPrices?: readonly ProjectPrice[] | undefined } = {},
 ): Promise<PricingData> {
   const unique = [...new Set(skus)]
   const [companyRaw, settingsRaw, windows, productsRaw, contractsRaw, rulesRaw] = await Promise.all(
@@ -239,6 +241,8 @@ export async function loadPricingData(
   )
   return {
     products: pricingProducts,
+    // Checked by the caller: the user's own company's approved, in-date project (system/projects).
+    projectPrices: options.projectPrices ?? [],
     contracts: contracts.map((c): ContractPrice => ({
       sku: c.sku,
       price: BigInt(c.price),
@@ -291,6 +295,7 @@ export async function resolveForSession(
   user: unknown,
   lines: readonly PriceLine[],
   at: Date = new Date(),
+  projectPrices?: readonly ProjectPrice[],
 ): Promise<(ResolvedPrices & { company: CompanyContext['company'] }) | null> {
   const session = await companyContext(payload, user, at)
   if (!session) return null
@@ -298,6 +303,7 @@ export async function resolveForSession(
     payload,
     session.context,
     lines.map((l) => l.sku),
+    { projectPrices },
   )
   return { ...resolvePrices(session.context, lines, data), company: session.company }
 }

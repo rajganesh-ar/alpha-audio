@@ -435,6 +435,31 @@
         "busy": "Someone else is deciding on {order}; refresh and try again.",
         "forbidden": "That decision is not possible."
       }
+    },
+    "projects": {
+      "title": "Project registrations",
+      "nav": "Projects",
+      "empty": "No registrations are waiting for review.",
+      "company": "Company",
+      "customer": "End customer",
+      "close": "Expected close",
+      "price": "Project price (net, {currency})",
+      "validity": "Valid for (days)",
+      "note": "Note for the dealer",
+      "approve": "Approve with these prices",
+      "reject": "Reject",
+      "open": "Review",
+      "results": {
+        "approved": "{project} approved.",
+        "rejected": "{project} rejected.",
+        "not-found": "No such registration.",
+        "not-submitted": "{project} was already decided.",
+        "busy": "Someone else is reviewing {project}.",
+        "no-prices": "Enter a project price for at least one product.",
+        "invalid-price": "Prices are amounts of zero or more.",
+        "forbidden": "Staff only.",
+        "invalid": "Check the form and try again."
+      }
     }
   },
   "search": {
@@ -493,7 +518,8 @@
       "catalogue": "Catalogue",
       "orders": "Orders",
       "newOrder": "New order",
-      "quotes": "Quotes"
+      "quotes": "Quotes",
+      "projects": "Projects"
     },
     "notFound": "That page is not on the dealer board.",
     "signIn": {
@@ -608,7 +634,8 @@
         "rules": "The order no longer meets your order rules. Review it again.",
         "not-allowed": "Your role cannot place orders.",
         "on-hold": "Your account is on hold, so it cannot order.",
-        "error": "The order could not be placed. Try again."
+        "error": "The order could not be placed. Try again.",
+        "project-unavailable": "That project cannot be used: it is not approved, has expired or is not your company’s."
       }
     },
     "orders": {
@@ -713,7 +740,63 @@
       "status": {
         "not-allowed": "Your role cannot save quotes.",
         "lines": "Some lines cannot be quoted; fix them first.",
-        "error": "The quote could not be saved. Try again."
+        "error": "The quote could not be saved. Try again.",
+        "project-unavailable": "That project cannot be used: it is not approved, has expired or is not your company’s."
+      }
+    },
+    "projects": {
+      "title": "Projects",
+      "new": "Register a project",
+      "caption": "Your company’s registered projects",
+      "number": "Project",
+      "name": "Project name",
+      "endCustomer": "End customer",
+      "city": "City",
+      "expectedClose": "Expected close",
+      "note": "Note for Alpha",
+      "project": "The project",
+      "products": "Products and quantities",
+      "submit": "Register project",
+      "hint": "Alpha reviews the registration and may grant project prices for these products.",
+      "required": "required",
+      "registered": "Registered",
+      "validUntil": "Prices valid until",
+      "projectPrice": "Project price",
+      "noProjectPrice": "Normal pricing",
+      "empty": "No projects yet",
+      "emptyBody": "Register a project you are pursuing to ask for project prices.",
+      "statuses": {
+        "submitted": "Waiting for Alpha",
+        "reviewing": "Being reviewed",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "withdrawn": "Withdrawn",
+        "expired": "Expired"
+      },
+      "decisionNote": "Alpha’s note: {note}",
+      "orderFor": "Order for this project",
+      "withdraw": "Withdraw registration",
+      "back": "All projects",
+      "forProject": "Priced for project {number}: {name}",
+      "projectUnavailable": "That project cannot be used: it is not approved, has expired or is not your company’s. These are your normal prices.",
+      "problems": {
+        "name": "Enter the project’s name.",
+        "end-customer": "Enter the end customer.",
+        "expected-close": "Enter a date that is not in the past.",
+        "no-lines": "Add at least one product.",
+        "too-many-lines": "A registration can have at most 100 products.",
+        "invalid-quantity": "Enter whole quantities from 1 to 100,000.",
+        "unknown-product": "One or more SKUs are not in the catalogue."
+      },
+      "results": {
+        "registered": "Your project was registered. Alpha will review it.",
+        "withdrawn": "The registration was withdrawn.",
+        "not-found": "That project was not found.",
+        "not-submitted": "This registration can no longer be withdrawn.",
+        "busy": "This registration is being reviewed. Refresh in a moment.",
+        "forbidden": "Your role cannot do that.",
+        "not-allowed": "Your role cannot register projects.",
+        "error": "Something went wrong. Try again."
       }
     }
   }

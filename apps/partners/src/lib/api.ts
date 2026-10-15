@@ -4,6 +4,9 @@ import {
   createQuoteFromDraft,
   decideTradeOrder,
   orderQuote,
+  projectForSession,
+  registerProject,
+  withdrawProject,
   withdrawQuote,
   partnerCatalogue,
   partnerCookie,
@@ -83,6 +86,7 @@ const resolveBody = z.object({
     )
     .min(1)
     .max(200),
+  project: z.string().max(40).optional(),
 })
 
 /** `POST /api/v1/price/resolve`: the company's prices for lines, with the trace. */
@@ -94,7 +98,18 @@ export async function postResolve({ payload }: Deps, request: Request) {
   const body = resolveBody.safeParse(fields)
   if (!body.success)
     return problem(400, 'invalid-request', 'The request is invalid.', body.error.flatten())
-  const resolved = await resolveForSession(payload, user, body.data.lines)
+  const project = body.data.project
+    ? await projectForSession(payload, user, body.data.project)
+    : null
+  if (body.data.project && !project)
+    return problem(422, 'project-unavailable', 'That project cannot be used for pricing.')
+  const resolved = await resolveForSession(
+    payload,
+    user,
+    body.data.lines,
+    new Date(),
+    project?.prices,
+  )
   if (!resolved) return problem(401, 'unauthenticated', 'Sign in with a company account.')
   return json({ lines: resolved.lines.map(partnerLine), totals: resolved.totals })
 }
@@ -107,6 +122,7 @@ const orderBody = z.object({
   idempotencyKey: z.string().regex(/^[\w-]{8,100}$/),
   poNumber: z.string().max(64).optional(),
   note: z.string().max(1000).optional(),
+  project: z.string().max(40).optional(),
 })
 
 /** A form post (repeated `sku` and `qty` fields) or JSON, as the order body; null when unreadable. */
@@ -125,6 +141,7 @@ async function readOrder(request: Request): Promise<unknown> {
       poNumber: text('poNumber'),
       reference: text('reference'),
       note: text('note'),
+      project: text('project') || undefined,
     }
   } catch {
     return null
@@ -154,6 +171,7 @@ export async function postOrder({ payload }: Deps, request: Request) {
     idempotencyKey: body.idempotencyKey,
     poNumber: body.poNumber,
     note: body.note,
+    project: body.project,
     locale: userLocale(user),
   })
   if (!result) return form ? seeOther('/login') : problem(401, 'unauthenticated', 'Sign in.')
@@ -164,11 +182,16 @@ export async function postOrder({ payload }: Deps, request: Request) {
   if (form) {
     const extra: Record<string, string> = { status: result.reason }
     if (result.reason === 'unavailable') extra['skus'] = result.skus.join(', ')
+    if (body.project) extra['project'] = body.project
     return seeOther(`/orders/new?${reviewQuery(body.lines, extra)}`)
   }
   const status = result.reason === 'rules' ? 422 : 409
   return problem(
-    result.reason === 'not-allowed' || result.reason === 'on-hold' ? 403 : status,
+    result.reason === 'not-allowed' || result.reason === 'on-hold'
+      ? 403
+      : result.reason === 'project-unavailable'
+        ? 422
+        : status,
     result.reason,
     'The order was not placed.',
     result.reason === 'rules'
@@ -246,6 +269,7 @@ const quoteBody = z.object({
   idempotencyKey: z.string().regex(/^[\w-]{8,100}$/),
   reference: z.string().max(120).optional(),
   note: z.string().max(1000).optional(),
+  project: z.string().max(40).optional(),
 })
 
 /** `POST /api/v1/quotes`: saves the signed-in company user's lines as a quote, idempotent on the key. */
@@ -269,7 +293,12 @@ export async function postQuote({ payload }: Deps, request: Request) {
     return json({ quote: result.quote, created: result.created }, result.created ? 201 : 200)
   }
   if (form)
-    return seeOther(`/orders/new?${reviewQuery(parsed.data.lines, { quote: result.reason })}`)
+    return seeOther(
+      `/orders/new?${reviewQuery(parsed.data.lines, {
+        quote: result.reason,
+        ...(parsed.data.project ? { project: parsed.data.project } : {}),
+      })}`,
+    )
   return problem(
     result.reason === 'not-allowed' ? 403 : 422,
     result.reason,
@@ -335,4 +364,124 @@ export async function postQuoteAction(
     'The quote was not ordered.',
     result.reason === 'order-refused' ? result.refusal : undefined,
   )
+}
+
+const projectBody = z.object({
+  idempotencyKey: z.string().regex(/^[\w-]{8,100}$/),
+  name: z.string().max(200),
+  endCustomer: z.string().max(200),
+  city: z.string().max(80).optional(),
+  expectedClose: z.string().max(10),
+  note: z.string().max(1000).optional(),
+  lines: z.array(z.object({ sku: z.string().min(1).max(64), qty: z.number().int() })).max(200),
+})
+
+/** A form post (repeated `sku` and `qty`) or JSON, as the registration body. */
+async function readProject(request: Request): Promise<unknown> {
+  if (!isForm(request)) return readFields(request)
+  try {
+    const form = await request.formData()
+    const text = (key: string) => {
+      const v = form.get(key)
+      return typeof v === 'string' ? v : ''
+    }
+    const all = (key: string) => form.getAll(key).filter((v): v is string => typeof v === 'string')
+    return {
+      idempotencyKey: text('idempotencyKey'),
+      name: text('name'),
+      endCustomer: text('endCustomer'),
+      city: text('city'),
+      expectedClose: text('expectedClose'),
+      note: text('note'),
+      lines: draftLines(all('sku'), all('qty')),
+    }
+  } catch {
+    return null
+  }
+}
+
+/** `POST /api/v1/projects`: registers a project for the signed-in company user, idempotent on the key. */
+export async function postProject({ payload }: Deps, request: Request) {
+  if (crossSite(request)) return problem(403, 'cross-site', 'Cross-site requests are refused.')
+  const form = isForm(request)
+  const user = await signedIn(payload, request)
+  if (!user) return form ? seeOther('/login') : problem(401, 'unauthenticated', 'Sign in.')
+  const parsed = projectBody.safeParse(await readProject(request))
+  if (!parsed.success)
+    return form
+      ? seeOther('/projects/new?result=error')
+      : problem(400, 'invalid-request', 'The request is invalid.', parsed.error.flatten())
+  const body = parsed.data
+  const result = await registerProject(payload, user, { ...body, locale: userLocale(user) })
+  if (!result) return form ? seeOther('/login') : problem(401, 'unauthenticated', 'Sign in.')
+  if (result.ok) {
+    if (form) return seeOther(`/projects/${result.project.number}?result=registered`)
+    return json({ project: result.project, created: result.created }, result.created ? 201 : 200)
+  }
+  if (form) {
+    const back = new URLSearchParams({
+      result: result.reason === 'invalid' ? 'invalid' : result.reason,
+      name: body.name,
+      endCustomer: body.endCustomer,
+      city: body.city ?? '',
+      expectedClose: body.expectedClose,
+      note: body.note ?? '',
+    })
+    if (result.reason === 'invalid') back.set('problems', result.problems.join(','))
+    for (const l of body.lines) {
+      back.append('sku', l.sku)
+      back.append('qty', String(l.qty))
+    }
+    return seeOther(`/projects/new?${back.toString()}`)
+  }
+  return problem(
+    result.reason === 'not-allowed' ? 403 : 422,
+    result.reason,
+    'The project was not registered.',
+    result.reason === 'invalid' ? { problems: result.problems } : undefined,
+  )
+}
+
+/** `GET /api/v1/projects`: the company's registrations (access scopes them to the company). */
+export async function getProjects({ payload }: Deps, request: Request) {
+  const user = await signedIn(payload, request)
+  if (!user || (user as { collection?: string }).collection !== 'company-users')
+    return problem(401, 'unauthenticated', 'Sign in with a company account.')
+  return json(
+    await payload.find({
+      collection: 'project-registrations',
+      user,
+      overrideAccess: false,
+      depth: 0,
+      sort: '-createdAt',
+      limit: 50,
+    }),
+  )
+}
+
+/** `POST /api/v1/projects/{number}/withdraw` for the signed-in company user. */
+export async function postProjectAction(
+  { payload }: Deps,
+  request: Request,
+  number: string,
+  action: string,
+) {
+  if (crossSite(request)) return problem(403, 'cross-site', 'Cross-site requests are refused.')
+  const form = isForm(request)
+  if (action !== 'withdraw') return problem(404, 'not-found', 'Unknown action.')
+  const user = await signedIn(payload, request)
+  if (!user || (user as { collection?: string }).collection !== 'company-users')
+    return form ? seeOther('/login') : problem(401, 'unauthenticated', 'Sign in.')
+  const result = await withdrawProject(payload, user, number)
+  if (form)
+    return seeOther(
+      `/projects/${encodeURIComponent(number)}?result=${result.ok ? 'withdrawn' : result.reason}`,
+    )
+  return result.ok
+    ? json({ project: result.project })
+    : problem(
+        result.reason === 'not-found' ? 404 : result.reason === 'forbidden' ? 403 : 409,
+        result.reason,
+        'Not withdrawn.',
+      )
 }

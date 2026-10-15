@@ -30,8 +30,8 @@ export const PARTNER_PAGE_SIZE = 50
 /** Upper bound on products considered for one market (the catalogue is a few hundred). */
 const MAX_CANDIDATES = 2_000
 
-/** Trace steps a company sees: its own base and adjustments, never the internal floor. */
-const HIDDEN_STEPS: ReadonlySet<TraceStep['rule']> = new Set(['project', 'margin-floor'])
+/** Trace steps a company sees: its own base (project prices included) and adjustments, never the internal floor. */
+const HIDDEN_STEPS: ReadonlySet<TraceStep['rule']> = new Set(['margin-floor'])
 
 export interface PartnerStock {
   /** `exact` units, a band (`10+`, `3–9`, `Low`, `0`), or null when the company sees none. */

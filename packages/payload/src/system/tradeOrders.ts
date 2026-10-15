@@ -30,6 +30,7 @@ import { companyOf, isCompanyUser } from '../access'
 import type { LocaleCode } from '../markets/codes'
 import { createLedger, drizzleOf } from './ledgerStore'
 import { partnerLine } from './partnerCatalogue'
+import { projectForSession } from './projects'
 import { companyContext, loadPricingData, type CompanyContext } from './pricing'
 
 /**
@@ -192,7 +193,12 @@ export class PostgresTradeOrderStore implements TradeOrderStore {
   }
 
   async insertOrder(order: NewTradeOrder) {
-    const d = order.details as { poNumber?: string | null; note?: string | null; vatRate?: number }
+    const d = order.details as {
+      poNumber?: string | null
+      note?: string | null
+      vatRate?: number
+      project?: string | null
+    }
     const n = (m: { amount: bigint } | null) => (m ? Number(m.amount) : null)
     try {
       const doc = await this.payload.create({
@@ -208,6 +214,7 @@ export class PostgresTradeOrderStore implements TradeOrderStore {
           vatRate: d.vatRate ?? 0,
           poNumber: d.poNumber ?? null,
           note: d.note ?? null,
+          project: d.project ?? null,
           lines: order.lines.map((l) => ({
             product: typeof l.productId === 'number' ? l.productId : Number(l.productId) || null,
             sku: l.sku,
@@ -345,6 +352,9 @@ export interface TradeOrderDraft {
   canQuote: boolean
   /** How long a quote of these lines would keep its prices (PricingSettings). */
   quoteValidityDays: number
+  /** The project the lines are priced for, when one was asked for and is usable. */
+  project: { number: string; name: string } | null
+  projectUnavailable: boolean
 }
 
 const big = (v: number | null | undefined) =>
@@ -407,10 +417,12 @@ export async function priceDraft(
   raw: readonly OrderDraftLine[],
   locale: LocaleCode,
   at: Date,
+  projectNumber?: string | null,
 ) {
   const session = await companyContext(payload, user, at)
   if (!session) return null
   const lines = mergeDraftLines(raw)
+  const project = projectNumber ? await projectForSession(payload, user, projectNumber, at) : null
   const [parties, products] = await Promise.all([
     orderParties(payload, session, user),
     lines.length
@@ -431,6 +443,7 @@ export async function priceDraft(
     payload,
     session.context,
     lines.map((l) => l.sku),
+    { projectPrices: project?.prices },
   )
   const valid = lines.filter((l) => Number.isSafeInteger(l.qty) && l.qty >= 1)
   const priced = resolvePrices(session.context, valid as PriceLine[], data)
@@ -461,6 +474,9 @@ export async function priceDraft(
     tradeLines,
     totals: priced.totals,
     ...parties,
+    project: project ? { number: project.number, name: project.name } : null,
+    /** A project was asked for but is not the company's own, approved and in date. */
+    projectUnavailable: Boolean(projectNumber) && !project,
     fxRates: Object.fromEntries(
       Object.entries(data.settings.fxAedMicros).map(([c, m]) => [c, fxDecimal(m)]),
     ),
@@ -472,9 +488,16 @@ export async function previewTradeOrder(
   payload: Payload,
   user: unknown,
   lines: readonly OrderDraftLine[],
-  options: { locale: LocaleCode; at?: Date },
+  options: { locale: LocaleCode; at?: Date; project?: string | null | undefined },
 ): Promise<TradeOrderDraft | null> {
-  const draft = await priceDraft(payload, user, lines, options.locale, options.at ?? new Date())
+  const draft = await priceDraft(
+    payload,
+    user,
+    lines,
+    options.locale,
+    options.at ?? new Date(),
+    options.project,
+  )
   if (!draft) return null
   const service = createTradeOrders(payload)
   const settings = (await payload.findGlobal({ slug: 'pricing-settings', ...system })) as {
@@ -499,6 +522,8 @@ export async function previewTradeOrder(
     canOrder: ORDERING_ROLES.includes(draft.placer.role) && !draft.company.hold,
     canQuote: ORDERING_ROLES.includes(draft.placer.role),
     quoteValidityDays: settings.quoteValidityDays ?? 7,
+    project: draft.project,
+    projectUnavailable: draft.projectUnavailable,
   }
 }
 
@@ -507,6 +532,8 @@ export interface PlaceInput {
   idempotencyKey: string
   poNumber?: string | null | undefined
   note?: string | null | undefined
+  /** An approved project registration of the company (docs/tasks/0017). */
+  project?: string | null | undefined
   locale: LocaleCode
 }
 
@@ -516,9 +543,17 @@ export async function placeTradeOrder(
   user: unknown,
   input: PlaceInput,
   now?: () => Date,
-): Promise<SubmitResult | null> {
-  const draft = await priceDraft(payload, user, input.lines, input.locale, now?.() ?? new Date())
+): Promise<SubmitResult | { ok: false; reason: 'project-unavailable' } | null> {
+  const draft = await priceDraft(
+    payload,
+    user,
+    input.lines,
+    input.locale,
+    now?.() ?? new Date(),
+    input.project,
+  )
   if (!draft) return null
+  if (draft.projectUnavailable) return { ok: false, reason: 'project-unavailable' }
   return createTradeOrders(payload, now).submit({
     company: draft.company,
     placer: draft.placer,
@@ -529,6 +564,7 @@ export async function placeTradeOrder(
       poNumber: input.poNumber?.trim().slice(0, 64) || null,
       note: input.note?.trim().slice(0, 1000) || null,
       vatRate: draft.session.context.vatRate,
+      project: draft.project?.number ?? null,
     },
   })
 }

@@ -96,6 +96,7 @@ export interface Config {
     'company-users': CompanyUser;
     'trade-orders': TradeOrder;
     quotes: Quote;
+    'project-registrations': ProjectRegistration;
     'contract-prices': ContractPrice;
     'price-lists': PriceList;
     'buyer-groups': BuyerGroup;
@@ -137,6 +138,7 @@ export interface Config {
     'company-users': CompanyUsersSelect<false> | CompanyUsersSelect<true>;
     'trade-orders': TradeOrdersSelect<false> | TradeOrdersSelect<true>;
     quotes: QuotesSelect<false> | QuotesSelect<true>;
+    'project-registrations': ProjectRegistrationsSelect<false> | ProjectRegistrationsSelect<true>;
     'contract-prices': ContractPricesSelect<false> | ContractPricesSelect<true>;
     'price-lists': PriceListsSelect<false> | PriceListsSelect<true>;
     'buyer-groups': BuyerGroupsSelect<false> | BuyerGroupsSelect<true>;
@@ -1261,6 +1263,10 @@ export interface TradeOrder {
   decimals: number;
   vatRate: number;
   poNumber?: string | null;
+  /**
+   * Priced at this project’s prices (docs/tasks/0017).
+   */
+  project?: string | null;
   note?: string | null;
   lines?:
     | {
@@ -1355,6 +1361,10 @@ export interface Quote {
   decimals: number;
   vatRate: number;
   reference?: string | null;
+  /**
+   * Priced at this project’s prices (docs/tasks/0017).
+   */
+  project?: string | null;
   note?: string | null;
   lines?:
     | {
@@ -1418,6 +1428,49 @@ export interface Quote {
     | number
     | boolean
     | null;
+  idempotencyKey: string;
+  /**
+   * Staff notes; never shown to the dealer.
+   */
+  staffNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Approve or reject registrations, with project prices, on /ops/projects/.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "project-registrations".
+ */
+export interface ProjectRegistration {
+  id: number;
+  number: string;
+  status: 'submitted' | 'reviewing' | 'approved' | 'rejected' | 'withdrawn' | 'expired';
+  company: number | Company;
+  registeredBy: number | CompanyUser;
+  name: string;
+  endCustomer: string;
+  city?: string | null;
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  expectedClose: string;
+  validUntil?: string | null;
+  decidedAt?: string | null;
+  note?: string | null;
+  lines?:
+    | {
+        product?: (number | null) | Product;
+        sku: string;
+        title: string;
+        qty: number;
+        /**
+         * Minor units; set on approval.
+         */
+        projectPrice?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  decidedBy?: (number | null) | User;
+  decisionNote?: string | null;
   idempotencyKey: string;
   /**
    * Staff notes; never shown to the dealer.
@@ -1730,6 +1783,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'quotes';
         value: number | Quote;
+      } | null)
+    | ({
+        relationTo: 'project-registrations';
+        value: number | ProjectRegistration;
       } | null)
     | ({
         relationTo: 'contract-prices';
@@ -2385,6 +2442,7 @@ export interface TradeOrdersSelect<T extends boolean = true> {
   decimals?: T;
   vatRate?: T;
   poNumber?: T;
+  project?: T;
   note?: T;
   lines?:
     | T
@@ -2433,6 +2491,7 @@ export interface QuotesSelect<T extends boolean = true> {
   decimals?: T;
   vatRate?: T;
   reference?: T;
+  project?: T;
   note?: T;
   lines?:
     | T
@@ -2462,6 +2521,40 @@ export interface QuotesSelect<T extends boolean = true> {
   fxLockedAt?: T;
   fxRates?: T;
   reservations?: T;
+  idempotencyKey?: T;
+  staffNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "project-registrations_select".
+ */
+export interface ProjectRegistrationsSelect<T extends boolean = true> {
+  number?: T;
+  status?: T;
+  company?: T;
+  registeredBy?: T;
+  name?: T;
+  endCustomer?: T;
+  city?: T;
+  market?: T;
+  expectedClose?: T;
+  validUntil?: T;
+  decidedAt?: T;
+  note?: T;
+  lines?:
+    | T
+    | {
+        product?: T;
+        sku?: T;
+        title?: T;
+        qty?: T;
+        projectPrice?: T;
+        id?: T;
+      };
+  decidedBy?: T;
+  decisionNote?: T;
   idempotencyKey?: T;
   staffNotes?: T;
   updatedAt?: T;

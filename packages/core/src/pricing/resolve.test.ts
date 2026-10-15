@@ -94,6 +94,34 @@ describe('resolvePrices', () => {
     ).toMatchObject({ basis: 'dealer-list' })
   })
 
+  it('prices a registered project after any contract, before lists, without list discounts', () => {
+    const projectPrices = [
+      { sku: 'AMP', price: 680_000n },
+      { sku: 'SPK', price: 300_000n },
+    ]
+    const groupDiscounts = [{ brand: null, category: null, bps: 500 }]
+    const priceList = { items: [{ sku: 'AMP', price: 670_000n }], validFrom: null, validTo: null }
+    expect(one('AMP', data({ projectPrices, groupDiscounts, priceList }))).toMatchObject({
+      basis: 'project',
+      unit: { amount: 680_000n },
+      status: 'ok',
+    })
+    expect(one('AMP', data({ projectPrices }))?.trace.slice(0, 3)).toEqual([
+      { rule: 'contract', seen: true, matched: false, value: null },
+      { rule: 'project', seen: true, matched: true, value: '6800.00' },
+      { rule: 'price-list', seen: false, matched: false, value: null },
+    ])
+    const contracts = [{ sku: 'AMP', price: 690_000n, validFrom: null, validTo: null }]
+    expect(one('AMP', data({ projectPrices, contracts }))).toMatchObject({ basis: 'contract' })
+    // A below-floor project price still needs approval (floor 3,333.33 on landed 3,000.00).
+    expect(one('SPK', data({ projectPrices }))).toMatchObject({
+      basis: 'project',
+      status: 'needs-approval',
+    })
+    const stack = { ...rule, kind: 'promotion' as const, stackable: true, bps: 200 }
+    expect(unit('AMP', data({ projectPrices, rules: [stack] }))).toBe(666_400n)
+  })
+
   it('discounts a list price by group (brand, then category, then all) and by volume, best break wins', () => {
     const groupDiscounts = [
       { brand: null, category: null, bps: 100 },

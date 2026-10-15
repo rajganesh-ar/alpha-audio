@@ -9,7 +9,7 @@ export interface InputProps {
   value?: string | undefined
   defaultValue?: string | undefined
   onChange?: ((value: string) => void) | undefined
-  type?: 'text' | 'email' | 'tel' | 'search' | 'url' | 'password' | 'number' | undefined
+  type?: 'text' | 'email' | 'tel' | 'search' | 'url' | 'password' | 'number' | 'date' | undefined
   inputMode?: 'text' | 'email' | 'tel' | 'numeric' | 'decimal' | 'search' | 'url' | undefined
   autoComplete?: HTMLInputAutoCompleteAttribute | undefined
   placeholder?: string | undefined

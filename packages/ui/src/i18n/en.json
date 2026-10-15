@@ -11,8 +11,7 @@
     "nav": {
       "products": "Products",
       "brands": "Brands",
-      "rooms": "Rooms",
-      "support": "Support"
+      "design": "Design your system"
     }
   },
   "announcement": {
@@ -29,7 +28,8 @@
   },
   "footer": {
     "copyright": "© {year} Alpha Audio",
-    "pricing": "Prices in {currency}, VAT {vat}% included where it applies."
+    "pricing": "Prices in {currency}, VAT {vat}% included where it applies.",
+    "legal": "Legal"
   },
   "home": {
     "title": "Alpha Audio {market}",
@@ -411,5 +411,25 @@
     },
     "brand": "Alpha Audio Ops",
     "admin": "Admin"
+  },
+  "search": {
+    "metaTitle": "Search",
+    "title": "Search",
+    "label": "Search products",
+    "placeholder": "Brand, model or product type",
+    "submit": "Search",
+    "results": "{count} results for “{query}”",
+    "resultsOne": "1 result for “{query}”",
+    "noneTitle": "No results for “{query}”",
+    "noneBody": "Check the spelling, try fewer words, or browse a category.",
+    "suggestions": "Browse a category",
+    "popular": "Popular categories",
+    "prompt": "What are you looking for?"
+  },
+  "legal": {
+    "metaTitle": "{title}",
+    "contents": "On this page",
+    "reviewed": "Last reviewed {date}",
+    "title": "Legal"
   }
 }

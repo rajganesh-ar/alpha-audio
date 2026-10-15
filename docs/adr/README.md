@@ -14,3 +14,4 @@ One file per decision: NNNN-title.md. 0001 is written by task 0001.
 | [0008](0008-brand-rights.md)                        | Brand rights decide what the storefront sells   |
 | [0009](0009-checkout-and-payments.md)               | Checkout state machine and payments port        |
 | [0010](0010-fulfilment-and-notifications.md)        | Fulfilment, refunds and the notification outbox |
+| [0011](0011-keyword-search-and-sitemaps.md)         | Keyword search in Postgres; sitemaps            |

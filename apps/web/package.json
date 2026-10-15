@@ -22,7 +22,8 @@
     "seed:purchasing": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo-purchasing.ts",
     "seed:catalog": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo-catalog.ts",
     "seed:e2e": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-e2e.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "seed:content": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-content.ts"
   },
   "dependencies": {
     "@alpha/config": "workspace:*",

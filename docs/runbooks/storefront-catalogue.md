@@ -37,6 +37,23 @@ How products reach the storefront, and what to check when a page looks wrong. Re
 
 `In stock` (more than 2 sellable), `Only a few left` (1–2), `Available to order` with the earliest open purchase order date, or `Out of stock`. Sellable is `available` stock across the market's sellable locations.
 
+## Search
+
+- Search (`/{m}/{l}/search/?q=`) matches the product title, brand, SKU, category names and summary. It tolerates small typos ("macintosh"), and Arabic with or without diacritics. Only products on sale in the market are shown.
+- The index updates itself when a product, brand or category is published: database triggers maintain `product_search`. If results look stale after a bulk SQL change, run `SELECT alpha_refresh_product_search(id) FROM products;`.
+- A product missing from search but visible on its page: check its title in that locale, and that it is published (search ignores drafts).
+
+## Legal pages
+
+- Terms, privacy, returns and warranty live in **Content → Pages** (kind legal), one document each, published per market (**Markets**). Set **Reviewed at** after each legal review; the page shows it.
+- The seeded copy (`seed:content`) is a draft and says so in its first paragraph. Replace it before launch.
+- The footer lists the legal pages published in the market. A page not published in a market returns 404 there.
+
+## Sitemaps and robots
+
+- `/sitemap.xml` indexes `/{m}/sitemap.xml` for each live market. Each market's sitemap lists the pages on sale there, in each of its languages, with hreflang alternates. Submit `/sitemap.xml` in Search Console.
+- `robots.txt` keeps bag, checkout, orders, account, search, `/ops`, `/admin` and `/api` out of crawlers.
+
 ## Local demo data
 
 ```
@@ -44,6 +61,7 @@ pnpm --filter @alpha/web seed:markets
 pnpm --filter @alpha/web seed:inventory
 pnpm --filter @alpha/web seed:purchasing
 pnpm --filter @alpha/web seed:catalog
+pnpm --filter @alpha/web seed:content
 ```
 
 `seed:catalog` uploads generated images, so the media storage (MinIO in `docker compose`) must be running. It books opening stock and an open purchase order when the demo warehouse exists.

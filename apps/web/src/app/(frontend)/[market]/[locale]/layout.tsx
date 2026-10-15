@@ -15,6 +15,7 @@ import { languageTag, liveMarkets } from '@alpha/payload'
 import { getMarketRoute, getMarkets } from '@/lib/markets'
 import { localizedPath, siteUrl } from '@/lib/seo'
 import { marketOptions } from '@/lib/shell'
+import { getLegalPages } from '@/lib/content'
 import { DocumentHead } from '@/components/DocumentHead'
 import '../../globals.css'
 
@@ -62,6 +63,7 @@ export default async function MarketLayout({
   }
 
   const markets = await getMarkets()
+  const legalPages = await getLegalPages(route.market.code, route.locale)
   const t = translator(getDictionary(route.locale))
   const home = localizedPath(route.market.code, route.locale)
   const marketName = route.market.name[route.locale]
@@ -106,14 +108,16 @@ export default async function MarketLayout({
               nav={[
                 { label: t('shell.nav.products'), href: `${home}shop/` },
                 { label: t('shell.nav.brands'), href: `${home}brands/` },
-                { label: t('shell.nav.rooms'), href: `${home}rooms/` },
-                { label: t('shell.nav.support'), href: `${home}support/` },
+                { label: t('shell.nav.design'), href: `${home}design/advisor/` },
               ]}
               actions={
                 <>
                   <QuietActions
                     label={t('ui.quietActions')}
-                    actions={[{ label: t('ui.bag'), icon: 'bag', href: `${home}bag/` }]}
+                    actions={[
+                      { label: t('ui.search'), icon: 'search', href: `${home}search/` },
+                      { label: t('ui.bag'), icon: 'bag', href: `${home}bag/` },
+                    ]}
                   />
                   <MarketSwitch
                     label={t('marketSwitch.label')}
@@ -129,6 +133,19 @@ export default async function MarketLayout({
           }
           footer={
             <Footer
+              groups={
+                legalPages.length
+                  ? [
+                      {
+                        title: t('footer.legal'),
+                        links: legalPages.map((p) => ({
+                          label: p.title,
+                          href: `${home}legal/${p.slug}/`,
+                        })),
+                      },
+                    ]
+                  : []
+              }
               copyright={t('footer.copyright', { year: new Date().getUTCFullYear() })}
               pricing={t('footer.pricing', {
                 currency: route.market.currency,

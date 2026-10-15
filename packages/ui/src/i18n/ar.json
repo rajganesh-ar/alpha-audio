@@ -12,8 +12,7 @@
     "nav": {
       "products": "المنتجات",
       "brands": "العلامات التجارية",
-      "rooms": "الغرف",
-      "support": "الدعم"
+      "design": "صمّم نظامك"
     }
   },
   "announcement": {
@@ -30,7 +29,8 @@
   },
   "footer": {
     "copyright": "© {year} ألفا أوديو",
-    "pricing": "الأسعار بعملة {currency}، شاملة ضريبة القيمة المضافة {vat}% حيثما تنطبق."
+    "pricing": "الأسعار بعملة {currency}، شاملة ضريبة القيمة المضافة {vat}% حيثما تنطبق.",
+    "legal": "قانوني"
   },
   "home": {
     "title": "ألفا أوديو {market}",
@@ -412,5 +412,25 @@
     },
     "brand": "عمليات ألفا أوديو",
     "admin": "لوحة الإدارة"
+  },
+  "search": {
+    "metaTitle": "البحث",
+    "title": "البحث",
+    "label": "ابحث في المنتجات",
+    "placeholder": "العلامة أو الطراز أو نوع المنتج",
+    "submit": "بحث",
+    "results": "{count} نتيجة لـ «{query}»",
+    "resultsOne": "نتيجة واحدة لـ «{query}»",
+    "noneTitle": "لا نتائج لـ «{query}»",
+    "noneBody": "تحقق من الكتابة، أو جرّب كلمات أقل، أو تصفح فئة.",
+    "suggestions": "تصفح فئة",
+    "popular": "الفئات الأكثر زيارة",
+    "prompt": "عمّ تبحث؟"
+  },
+  "legal": {
+    "metaTitle": "{title}",
+    "contents": "في هذه الصفحة",
+    "reviewed": "آخر مراجعة {date}",
+    "title": "قانوني"
   }
 }

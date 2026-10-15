@@ -12,8 +12,10 @@ import * as migration_20261015_041146_brand_agreements from './20261015_041146_b
 import * as migration_20261015_073407_checkout from './20261015_073407_checkout';
 import * as migration_20261015_073408_checkout_constraints from './20261015_073408_checkout_constraints';
 import * as migration_20261015_073659_jobs_expire_checkouts from './20261015_073659_jobs_expire_checkouts';
-import * as migration_20261015_092240_fulfilment from './20261015_092240_fulfilment'
-import * as migration_20261015_092241_fulfilment_constraints from './20261015_092241_fulfilment_constraints'
+import * as migration_20261015_092240_fulfilment from './20261015_092240_fulfilment';
+import * as migration_20261015_092241_fulfilment_constraints from './20261015_092241_fulfilment_constraints';
+import * as migration_20261015_095446_pages from './20261015_095446_pages'
+import * as migration_20261015_095447_product_search from './20261015_095447_product_search'
 
 export const migrations = [
   {
@@ -95,5 +97,15 @@ export const migrations = [
     up: migration_20261015_092241_fulfilment_constraints.up,
     down: migration_20261015_092241_fulfilment_constraints.down,
     name: '20261015_092241_fulfilment_constraints',
+  },
+  {
+    up: migration_20261015_095446_pages.up,
+    down: migration_20261015_095446_pages.down,
+    name: '20261015_095446_pages',
+  },
+  {
+    up: migration_20261015_095447_product_search.up,
+    down: migration_20261015_095447_product_search.down,
+    name: '20261015_095447_product_search',
   },
 ]

@@ -9,6 +9,8 @@ export const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   PAYLOAD_SECRET: z.string().min(32, 'PAYLOAD_SECRET must be at least 32 characters'),
   NEXT_PUBLIC_SERVER_URL: z.string().url(),
+  // The dealer board's own origin (apps/partners; docs/tasks/0014).
+  PARTNERS_SERVER_URL: z.string().url().default('http://localhost:3001'),
   S3_ENDPOINT: z.string().url(),
   S3_REGION: z.string().default('auto'),
   S3_BUCKET: z.string().min(1),

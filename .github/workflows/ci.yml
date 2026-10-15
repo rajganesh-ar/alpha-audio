@@ -120,12 +120,13 @@ jobs:
         run: |
           pnpm --filter @alpha/web generate:types
           pnpm --filter @alpha/web generate:importmap
+          pnpm --filter @alpha/partners generate:types
           # status, not diff: also catches a generated file that was deleted from the commit
-          changed=$(git status --porcelain -- apps/web/src/payload-types.ts 'apps/web/src/app/(payload)/admin/importMap.js')
+          changed=$(git status --porcelain -- apps/web/src/payload-types.ts 'apps/web/src/app/(payload)/admin/importMap.js' apps/partners/src/payload-types.ts)
           if [ -n "$changed" ]; then
             echo "::error::Generated Payload files are stale. Run 'pnpm generate:types' (and generate:importmap in apps/web) and commit the result."
             echo "$changed"
-            git --no-pager diff -- apps/web/src/payload-types.ts 'apps/web/src/app/(payload)/admin/importMap.js'
+            git --no-pager diff -- apps/web/src/payload-types.ts 'apps/web/src/app/(payload)/admin/importMap.js' apps/partners/src/payload-types.ts
             exit 1
           fi
 
@@ -136,7 +137,7 @@ jobs:
         run: pnpm build
 
   e2e:
-    name: End-to-end (storefront and ops, ae/en and ae/ar)
+    name: End-to-end (storefront, ops and dealer board, en and ar)
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -199,15 +200,19 @@ jobs:
           pnpm seed:catalog
           pnpm seed:content
           pnpm seed:e2e
+          pnpm seed:trade
 
       - name: Build
-        run: pnpm --filter @alpha/web build
+        run: pnpm --filter @alpha/web --filter @alpha/partners build
 
       - name: Playwright browser
         run: pnpm --filter @alpha/web exec playwright install --with-deps chromium
 
       - name: Storefront and ops end to end (JavaScript off)
-        run: pnpm test:e2e
+        run: pnpm --filter @alpha/web test:e2e
+
+      - name: Dealer board end to end (JavaScript off)
+        run: pnpm --filter @alpha/partners test:e2e
 
       - name: Upload Playwright report
         if: failure()
@@ -217,4 +222,6 @@ jobs:
           path: |
             apps/web/playwright-report
             apps/web/test-results
+            apps/partners/playwright-report
+            apps/partners/test-results
           retention-days: 7

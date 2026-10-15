@@ -7,19 +7,19 @@
     "pnpm": ">=10"
   },
   "scripts": {
-    "dev": "docker compose up -d && turbo run dev --filter=@alpha/web",
+    "dev": "docker compose up -d && turbo run dev --filter=@alpha/web --filter=@alpha/partners",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:integration": "turbo run test:integration",
     "test:a11y": "turbo run test:a11y",
-    "generate:types": "pnpm --filter @alpha/web exec payload generate:types",
+    "generate:types": "pnpm --filter @alpha/web exec payload generate:types && pnpm --filter @alpha/partners generate:types",
     "check": "turbo run typecheck lint test test:integration test:a11y",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:visual": "turbo run test:visual",
-    "test:e2e": "pnpm --filter @alpha/web test:e2e"
+    "test:e2e": "pnpm --filter @alpha/web test:e2e && pnpm --filter @alpha/partners test:e2e"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

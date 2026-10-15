@@ -1,0 +1,159 @@
+/**
+ * Local development and CI only: two demo trade companies in the UAE with dealer board users,
+ * a contract price, a buyer group with a price list and a discount, a promotion and one product
+ * below the margin floor, so the partners catalogue shows every price basis (docs/tasks/0014).
+ * Run after the demo seeds (seed:markets, seed:inventory, seed:catalog):
+ *
+ *   pnpm --filter @alpha/web seed:trade
+ *
+ * Sign in on the partners app (http://localhost:3001) as one of the users in TRADE_USERS with
+ * the password TRADE_PASSWORD. Refuses to run in production. Safe to re-run: it stops if the
+ * first company exists.
+ */
+import { getPayload } from 'payload'
+import config from '@payload-config'
+import { ensureStaffUser } from '@alpha/payload'
+
+const TRADE_PASSWORD = 'partners-demo-123'
+const TRADE_USERS = {
+  harmonyOwner: 'owner@harmony.example',
+  harmonyArabic: 'arabic@harmony.example',
+  harmonyViewer: 'viewer@harmony.example',
+  gulfOwner: 'owner@gulf-integrators.example',
+} as const
+
+if (process.env.NODE_ENV === 'production') {
+  console.error('seed:trade is for local development and CI and refuses to run in production.')
+  process.exit(1)
+}
+
+const payload = await getPayload({ config })
+const user = await ensureStaffUser(payload, {
+  email: 'dev@alpha.local',
+  password: 'dev-password-123',
+})
+const as = () => ({ user, overrideAccess: false, context: { disableRevalidate: true } }) as const
+
+const existing = await payload.find({
+  collection: 'companies',
+  where: { name: { equals: 'Harmony Systems LLC' } },
+  ...as(),
+})
+if (existing.docs.length) {
+  payload.logger.info('Trade demo already seeded (Harmony Systems LLC exists); nothing to do.')
+  process.exit(0)
+}
+
+const brand = async (slug: string) => {
+  const doc = (
+    await payload.find({ collection: 'brands', where: { slug: { equals: slug } }, ...as() })
+  ).docs[0]
+  if (!doc) {
+    console.error(
+      `seed:trade needs the demo catalogue first (seed:catalog); brand ${slug} is missing.`,
+    )
+    process.exit(1)
+  }
+  return doc.id
+}
+const mcintosh = await brand('mcintosh')
+const bluesound = await brand('bluesound')
+
+// One product whose landed cost puts the dealer list below the margin floor (needs approval).
+const ma252 = (
+  await payload.find({
+    collection: 'products',
+    where: { sku: { equals: 'MCINTOSH-MA252' } },
+    ...as(),
+  })
+).docs[0]
+if (ma252)
+  await payload.update({
+    collection: 'products',
+    id: ma252.id,
+    data: { cost: 1_400_000, _status: 'published' },
+    ...as(),
+  })
+
+const list = await payload.create({
+  collection: 'price-lists',
+  data: {
+    name: 'Integrators UAE 2026',
+    market: 'ae',
+    items: [{ sku: 'MARANTZ-MODEL-40N', price: 880_000 }],
+    _status: 'published',
+  },
+  ...as(),
+})
+const group = await payload.create({
+  collection: 'buyer-groups',
+  data: {
+    name: 'Integrators',
+    priceList: list.id,
+    discounts: [{ brand: mcintosh, bps: 500 }],
+  },
+  ...as(),
+})
+await payload.create({
+  collection: 'price-rules',
+  data: {
+    name: 'Bluesound autumn',
+    kind: 'promotion',
+    brand: bluesound,
+    minQty: 1,
+    bps: 1_000,
+    stackable: false,
+    markets: ['ae'],
+  },
+  ...as(),
+})
+
+const harmony = await payload.create({
+  collection: 'companies',
+  data: {
+    name: 'Harmony Systems LLC',
+    market: 'ae',
+    channel: 'dealer',
+    tier: 'gold',
+    creditLimit: 5_000_000,
+    termsDays: 30,
+    settings: { stockVisibility: 'exact' },
+  },
+  ...as(),
+})
+const gulf = await payload.create({
+  collection: 'companies',
+  data: {
+    name: 'Gulf Integrators FZE',
+    market: 'ae',
+    channel: 'integrator',
+    tier: 'silver',
+    buyerGroup: group.id,
+    creditLimit: 2_000_000,
+    settings: { stockVisibility: 'banded' },
+  },
+  ...as(),
+})
+await payload.create({
+  collection: 'contract-prices',
+  data: { company: harmony.id, sku: 'MCINTOSH-MA352', price: 2_100_000 },
+  ...as(),
+})
+
+const people: Array<[string, number, 'owner' | 'purchaser' | 'viewer', 'en' | 'ar', string]> = [
+  [TRADE_USERS.harmonyOwner, harmony.id, 'owner', 'en', 'Rania Haddad'],
+  [TRADE_USERS.harmonyArabic, harmony.id, 'purchaser', 'ar', 'Omar Saleh'],
+  [TRADE_USERS.harmonyViewer, harmony.id, 'viewer', 'en', 'Priya Nair'],
+  [TRADE_USERS.gulfOwner, gulf.id, 'owner', 'en', 'Daniel Brooks'],
+]
+for (const [email, company, role, locale, name] of people) {
+  await payload.create({
+    collection: 'company-users',
+    data: { email, password: TRADE_PASSWORD, company, role, locale, name },
+    ...as(),
+  })
+}
+payload.logger.info(
+  `Trade demo ready: sign in on the partners app as ${Object.values(TRADE_USERS).join(', ')}.`,
+)
+process.exit(0)

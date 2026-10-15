@@ -460,5 +460,86 @@
     "orderPlaced": "Placed {date}",
     "viewOrder": "View order {number}",
     "back": "All orders"
+  },
+  "partners": {
+    "brand": "Alpha Audio Partners",
+    "metaTitle": "Dealer board",
+    "nav": {
+      "catalogue": "Catalogue"
+    },
+    "notFound": "That page is not on the dealer board.",
+    "signIn": {
+      "title": "Sign in to the dealer board",
+      "body": "Use the email and password Alpha Audio set up for you.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "status": {
+        "invalid": "That email and password do not match a dealer account.",
+        "locked": "Too many attempts. This account is locked for 15 minutes.",
+        "missing": "Enter your email and password.",
+        "cross-site": "This sign-in came from another site and was refused.",
+        "signed-out": "You have signed out.",
+        "error": "Something went wrong. Try again."
+      }
+    },
+    "signOut": "Sign out",
+    "tier": {
+      "gold": "Gold",
+      "silver": "Silver",
+      "standard": "Standard"
+    },
+    "channel": {
+      "dealer": "dealer",
+      "integrator": "integrator",
+      "retailer": "retailer"
+    },
+    "credit": "Credit limit {amount}",
+    "hold": "Your account is on hold. Contact your account manager before ordering.",
+    "catalogue": {
+      "title": "Catalogue",
+      "caption": "Products with your prices",
+      "product": "Product",
+      "rrp": "RRP incl. VAT",
+      "price": "Your price excl. VAT",
+      "stock": "Stock",
+      "search": "Search the catalogue",
+      "searchSubmit": "Search",
+      "clear": "Clear search",
+      "count": "{count} products",
+      "results": "{count} products for “{query}”",
+      "vatNote": "Your prices exclude VAT; {rate}% is added on orders.",
+      "noVatNote": "No VAT is charged in this market.",
+      "empty": "No products match",
+      "emptyBody": "Try another search, or clear it to see the whole catalogue.",
+      "needsApproval": "Needs approval",
+      "unavailable": "Not available",
+      "pagination": "Catalogue pages",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page}"
+    },
+    "stock": {
+      "low": "Low",
+      "none": "Out of stock",
+      "eta": "Expected {date}"
+    },
+    "trace": {
+      "label": "Why this price",
+      "empty": "No rule set this price.",
+      "applied": "Applied",
+      "checked": "Checked, did not apply",
+      "skipped": "Not checked",
+      "rules": {
+        "contract": "Your contract price",
+        "project": "Project price",
+        "price-list": "Your price list",
+        "dealer-list": "Dealer list ({channel})",
+        "group-discount": "Group discount",
+        "volume-break": "Volume break",
+        "promotion": "Promotion",
+        "margin-floor": "Price check"
+      }
+    }
   }
 }

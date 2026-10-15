@@ -127,7 +127,7 @@ export async function seedTrade(payload: Payload, tag: string): Promise<TradeFix
   const account = async (email: string, company: number, role: 'owner' | 'viewer') => {
     await payload.create({
       collection: 'company-users',
-      data: { email, password: PASSWORD, company, role },
+      data: { email, password: PASSWORD, company, role, locale: 'en' },
       ...ctx,
     })
     const { token } = await payload.login({

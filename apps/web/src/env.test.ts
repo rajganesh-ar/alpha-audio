@@ -64,4 +64,10 @@ describe('.env.example', () => {
   it('apps/web copy is identical to the root copy (Next.js and the Payload CLI load it from apps/web)', () => {
     expect(readFileSync(appExample, 'utf8')).toBe(readFileSync(rootExample, 'utf8'))
   })
+
+  it('apps/partners copy is identical too (the dealer board reads the same variables)', () => {
+    expect(readFileSync(`${repoRoot}apps/partners/.env.example`, 'utf8')).toBe(
+      readFileSync(rootExample, 'utf8'),
+    )
+  })
 })

@@ -9,3 +9,4 @@ See the Observability section of the spec for the required list.
 - [Order fulfilment](order-fulfilment.md)
 - [My Alpha accounts](my-alpha.md)
 - [Trade pricing](trade-pricing.md)
+- [Dealer board](partners.md)

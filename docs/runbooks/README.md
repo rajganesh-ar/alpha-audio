@@ -8,3 +8,4 @@ See the Observability section of the spec for the required list.
 - [Bag, checkout and orders](checkout.md)
 - [Order fulfilment](order-fulfilment.md)
 - [My Alpha accounts](my-alpha.md)
+- [Trade pricing](trade-pricing.md)

@@ -12,6 +12,8 @@ import {
   catalogCollections,
   contentCollections,
   customerCollections,
+  tradeCollections,
+  PricingSettings,
   LegacyRedirects,
   Markets,
   inventoryCollections,
@@ -81,10 +83,11 @@ export default buildConfig({
     ...purchasingCollections,
     ...salesCollections,
     ...customerCollections,
+    ...tradeCollections,
     LegacyRedirects,
     Users,
   ],
-  globals: [Home, Markets],
+  globals: [Home, Markets, PricingSettings],
   jobs: {
     tasks: [releaseExpiredReservationsTask, expireCheckoutsTask, sendNotificationTask],
     // Runs inside the app process (Payload starts crons on the first admin or API request).

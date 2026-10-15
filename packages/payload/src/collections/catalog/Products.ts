@@ -1,12 +1,30 @@
-import type { CollectionConfig, Field } from 'payload'
-import { PRICE_DISPLAYS } from '@alpha/core'
+import type { CollectionConfig, Field, NumberFieldSingleValidation } from 'payload'
+import { PRICE_DISPLAYS, minimumRrp, toDecimalString } from '@alpha/core'
 import { canEditCatalog, canReadCost, isStaff, nobody, publishedOrStaff } from '../../access'
 import { revalidateStorefront } from '../../hooks/revalidateStorefront'
 import { MARKET_CODES } from '../../markets/codes'
+import { getMarketsCached } from '../../markets/read'
 import { wholeNumber } from '../purchasing/fields'
 import { arabicReviewField, seoField, slugField } from './fields'
 
 const revalidate = revalidateStorefront('catalog')
+
+/**
+ * RRP: a whole number of minor units, and never below the market's MAP plus VAT (spec: price
+ * engine). The VAT rate and decimals come from the Markets record for the row's market.
+ */
+const rrpAboveMap: NumberFieldSingleValidation = async (value, options) => {
+  const whole = wholeNumber('RRP', 1)(value)
+  if (whole !== true || value === null || value === undefined) return whole
+  const row = options.siblingData as { market?: string; mapExclVat?: number | null }
+  if (row.mapExclVat === null || row.mapExclVat === undefined || !row.market) return true
+  const market = (await getMarketsCached(options.req.payload)).find((m) => m.code === row.market)
+  if (!market) return true
+  const floor = minimumRrp(BigInt(row.mapExclVat), market.vatRate)
+  return BigInt(value as number) >= floor
+    ? true
+    : `RRP is below the minimum advertised price: at least ${toDecimalString(floor, market.decimals)} ${market.currency} incl. ${market.vatRate}% VAT.`
+}
 
 const positive = (label: string) => (value: unknown) =>
   value === undefined ||
@@ -178,10 +196,21 @@ export const Products: CollectionConfig = {
               label: 'RRP incl. VAT',
               type: 'number',
               admin: {
-                width: '35%',
+                width: '25%',
                 description: 'Minor units of the market currency (fils, halalas…).',
               },
-              validate: wholeNumber('RRP', 1),
+              validate: rrpAboveMap,
+            },
+            {
+              name: 'mapExclVat',
+              label: 'MAP excl. VAT',
+              type: 'number',
+              admin: {
+                width: '20%',
+                description:
+                  'Minimum advertised price agreed with the brand; the RRP may not go below it plus VAT.',
+              },
+              validate: wholeNumber('MAP', 1),
             },
             {
               name: 'priceDisplay',
@@ -191,7 +220,7 @@ export const Products: CollectionConfig = {
                 label: v === 'show' ? 'Show price' : 'On request',
                 value: v,
               })),
-              admin: { width: '30%' },
+              admin: { width: '20%' },
             },
           ],
         },

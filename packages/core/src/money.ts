@@ -69,6 +69,15 @@ export function vatShare(totalInclusiveMinor: bigint, ratePercent: number): bigi
   return divideRoundHalfUp(totalInclusiveMinor * bp, hundredPercentBp + bp)
 }
 
+/**
+ * VAT on a net (VAT-exclusive) amount, for trade prices: `net × rate ÷ 100`, rounded half-up to
+ * the minor unit. `vatOnNet(1_000_000n, 5) === 50_000n`.
+ */
+export function vatOnNet(netMinor: bigint, ratePercent: number): bigint {
+  const bp = rateToBasisPoints(ratePercent)
+  return divideRoundHalfUp(netMinor * bp, BigInt(100 * BP_PER_PERCENT))
+}
+
 /** `vatShare` for a `Money`, keeping its currency. */
 export function vatShareOf(total: Money, ratePercent: number): Money {
   return { ...total, amount: vatShare(total.amount, ratePercent) }

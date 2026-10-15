@@ -64,6 +64,7 @@ export type SupportedTimezones =
 export interface Config {
   auth: {
     customers: CustomerAuthOperations;
+    'company-users': CompanyUserAuthOperations;
     users: UserAuthOperations;
   };
   blocks: {};
@@ -91,6 +92,12 @@ export interface Config {
     customers: Customer;
     'customer-sessions': CustomerSession;
     'sign-in-links': SignInLink;
+    companies: Company;
+    'company-users': CompanyUser;
+    'contract-prices': ContractPrice;
+    'price-lists': PriceList;
+    'buyer-groups': BuyerGroup;
+    'price-rules': PriceRule;
     'legacy-redirects': LegacyRedirect;
     users: User;
     'payload-kv': PayloadKv;
@@ -124,6 +131,12 @@ export interface Config {
     customers: CustomersSelect<false> | CustomersSelect<true>;
     'customer-sessions': CustomerSessionsSelect<false> | CustomerSessionsSelect<true>;
     'sign-in-links': SignInLinksSelect<false> | SignInLinksSelect<true>;
+    companies: CompaniesSelect<false> | CompaniesSelect<true>;
+    'company-users': CompanyUsersSelect<false> | CompanyUsersSelect<true>;
+    'contract-prices': ContractPricesSelect<false> | ContractPricesSelect<true>;
+    'price-lists': PriceListsSelect<false> | PriceListsSelect<true>;
+    'buyer-groups': BuyerGroupsSelect<false> | BuyerGroupsSelect<true>;
+    'price-rules': PriceRulesSelect<false> | PriceRulesSelect<true>;
     'legacy-redirects': LegacyRedirectsSelect<false> | LegacyRedirectsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -139,18 +152,20 @@ export interface Config {
   globals: {
     home: Home;
     markets: Market;
+    'pricing-settings': PricingSetting;
     'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     home: HomeSelect<false> | HomeSelect<true>;
     markets: MarketsSelect<false> | MarketsSelect<true>;
+    'pricing-settings': PricingSettingsSelect<false> | PricingSettingsSelect<true>;
     'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: 'en' | 'ar';
   widgets: {
     collections: CollectionsWidget;
   };
-  user: Customer | User;
+  user: Customer | CompanyUser | User;
   jobs: {
     tasks: {
       releaseExpiredReservations: TaskReleaseExpiredReservations;
@@ -165,6 +180,24 @@ export interface Config {
   };
 }
 export interface CustomerAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
+  };
+}
+export interface CompanyUserAuthOperations {
   forgotPassword: {
     email: string;
     password: string;
@@ -262,6 +295,10 @@ export interface Product {
          * Minor units of the market currency (fils, halalas…).
          */
         rrpInclVat?: number | null;
+        /**
+         * Minimum advertised price agreed with the brand; the RRP may not go below it plus VAT.
+         */
+        mapExclVat?: number | null;
         priceDisplay?: ('show' | 'request') | null;
         id?: string | null;
       }[]
@@ -1083,6 +1120,179 @@ export interface SignInLink {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "companies".
+ */
+export interface Company {
+  id: number;
+  name: string;
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  channel: 'dealer' | 'integrator' | 'retailer';
+  tier?: ('gold' | 'silver' | 'standard') | null;
+  /**
+   * Blocks ordering (overdue invoices), not quoting.
+   */
+  hold?: boolean | null;
+  buyerGroup?: (number | null) | BuyerGroup;
+  /**
+   * Overrides the buyer group’s list.
+   */
+  priceList?: (number | null) | PriceList;
+  /**
+   * Minor units of the market currency.
+   */
+  creditLimit?: number | null;
+  termsDays?: number | null;
+  settings: {
+    stockVisibility: 'exact' | 'banded' | 'hidden';
+    minOrderValue?: number | null;
+    orderMultiple?: number | null;
+    freeFreightThreshold?: number | null;
+    dropShipAllowed?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "buyer-groups".
+ */
+export interface BuyerGroup {
+  id: number;
+  name: string;
+  /**
+   * Used by members without their own list.
+   */
+  priceList?: (number | null) | PriceList;
+  /**
+   * Off the dealer list price. A brand row beats a category row, which beats an all-products row.
+   */
+  discounts?:
+    | {
+        brand?: (number | null) | Brand;
+        category?: (number | null) | Category;
+        bps: number;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "price-lists".
+ */
+export interface PriceList {
+  id: number;
+  name: string;
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  validFrom?: string | null;
+  /**
+   * Exclusive; empty means open-ended.
+   */
+  validTo?: string | null;
+  items?:
+    | {
+        sku: string;
+        /**
+         * Net unit price, minor units.
+         */
+        price: number;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "company-users".
+ */
+export interface CompanyUser {
+  id: number;
+  name?: string | null;
+  company: number | Company;
+  role: 'owner' | 'purchaser' | 'viewer' | 'installer';
+  /**
+   * Orders above this need an owner’s approval.
+   */
+  approvalThreshold?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'company-users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contract-prices".
+ */
+export interface ContractPrice {
+  id: number;
+  company: number | Company;
+  sku: string;
+  /**
+   * Net unit price, minor units of the company’s market.
+   */
+  price: number;
+  validFrom?: string | null;
+  /**
+   * Exclusive; empty means open-ended.
+   */
+  validTo?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "price-rules".
+ */
+export interface PriceRule {
+  id: number;
+  name: string;
+  kind: 'volume' | 'promotion';
+  /**
+   * One SKU, or…
+   */
+  sku?: string | null;
+  /**
+   * …a brand; neither means every product.
+   */
+  brand?: (number | null) | Brand;
+  minQty: number;
+  bps: number;
+  /**
+   * Promotions: also on contract and price-list prices.
+   */
+  stackable?: boolean | null;
+  /**
+   * Empty means every market.
+   */
+  markets?: ('ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om')[] | null;
+  validFrom?: string | null;
+  /**
+   * Exclusive; empty means open-ended.
+   */
+  validTo?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Old site URLs with query strings, redirected to their new pages.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1318,6 +1528,30 @@ export interface PayloadLockedDocument {
         value: number | SignInLink;
       } | null)
     | ({
+        relationTo: 'companies';
+        value: number | Company;
+      } | null)
+    | ({
+        relationTo: 'company-users';
+        value: number | CompanyUser;
+      } | null)
+    | ({
+        relationTo: 'contract-prices';
+        value: number | ContractPrice;
+      } | null)
+    | ({
+        relationTo: 'price-lists';
+        value: number | PriceList;
+      } | null)
+    | ({
+        relationTo: 'buyer-groups';
+        value: number | BuyerGroup;
+      } | null)
+    | ({
+        relationTo: 'price-rules';
+        value: number | PriceRule;
+      } | null)
+    | ({
         relationTo: 'legacy-redirects';
         value: number | LegacyRedirect;
       } | null)
@@ -1330,6 +1564,10 @@ export interface PayloadLockedDocument {
     | {
         relationTo: 'customers';
         value: number | Customer;
+      }
+    | {
+        relationTo: 'company-users';
+        value: number | CompanyUser;
       }
     | {
         relationTo: 'users';
@@ -1348,6 +1586,10 @@ export interface PayloadPreference {
     | {
         relationTo: 'customers';
         value: number | Customer;
+      }
+    | {
+        relationTo: 'company-users';
+        value: number | CompanyUser;
       }
     | {
         relationTo: 'users';
@@ -1416,6 +1658,7 @@ export interface ProductsSelect<T extends boolean = true> {
         market?: T;
         published?: T;
         rrpInclVat?: T;
+        mapExclVat?: T;
         priceDisplay?: T;
         id?: T;
       };
@@ -1880,6 +2123,128 @@ export interface SignInLinksSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "companies_select".
+ */
+export interface CompaniesSelect<T extends boolean = true> {
+  name?: T;
+  market?: T;
+  channel?: T;
+  tier?: T;
+  hold?: T;
+  buyerGroup?: T;
+  priceList?: T;
+  creditLimit?: T;
+  termsDays?: T;
+  settings?:
+    | T
+    | {
+        stockVisibility?: T;
+        minOrderValue?: T;
+        orderMultiple?: T;
+        freeFreightThreshold?: T;
+        dropShipAllowed?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "company-users_select".
+ */
+export interface CompanyUsersSelect<T extends boolean = true> {
+  name?: T;
+  company?: T;
+  role?: T;
+  approvalThreshold?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  resetPasswordRequestedAt?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contract-prices_select".
+ */
+export interface ContractPricesSelect<T extends boolean = true> {
+  company?: T;
+  sku?: T;
+  price?: T;
+  validFrom?: T;
+  validTo?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "price-lists_select".
+ */
+export interface PriceListsSelect<T extends boolean = true> {
+  name?: T;
+  market?: T;
+  validFrom?: T;
+  validTo?: T;
+  items?:
+    | T
+    | {
+        sku?: T;
+        price?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "buyer-groups_select".
+ */
+export interface BuyerGroupsSelect<T extends boolean = true> {
+  name?: T;
+  priceList?: T;
+  discounts?:
+    | T
+    | {
+        brand?: T;
+        category?: T;
+        bps?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "price-rules_select".
+ */
+export interface PriceRulesSelect<T extends boolean = true> {
+  name?: T;
+  kind?: T;
+  sku?: T;
+  brand?: T;
+  minQty?: T;
+  bps?: T;
+  stackable?: T;
+  markets?: T;
+  validFrom?: T;
+  validTo?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "legacy-redirects_select".
  */
 export interface LegacyRedirectsSelect<T extends boolean = true> {
@@ -2093,6 +2458,47 @@ export interface Market {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pricing-settings".
+ */
+export interface PricingSetting {
+  id: number;
+  channelFactors: {
+    /**
+     * Share of RRP excl. VAT. Basis points: 100 = 1%.
+     */
+    dealer: number;
+    /**
+     * Share of RRP excl. VAT. Basis points: 100 = 1%.
+     */
+    integrator: number;
+    /**
+     * Share of RRP excl. VAT. Basis points: 100 = 1%.
+     */
+    retailer: number;
+  };
+  /**
+   * Over landed cost, for products without an RRP. Basis points: 100 = 1%.
+   */
+  targetMargin: number;
+  /**
+   * Below landed cost ÷ (1 − floor) a price needs approval. Basis points: 100 = 1%.
+   */
+  marginFloor: number;
+  /**
+   * AED for one unit of each currency, e.g. SAR 0.979, KWD 11.95. Used for the margin floor.
+   */
+  fxRates?:
+    | {
+        currency: 'SAR' | 'QAR' | 'KWD' | 'BHD' | 'OMR';
+        aedPerUnit: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs-stats".
  */
 export interface PayloadJobsStat {
@@ -2168,6 +2574,31 @@ export interface MarketsSelect<T extends boolean = true> {
         payments?: T;
         addressScheme?: T;
         fulfilment?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pricing-settings_select".
+ */
+export interface PricingSettingsSelect<T extends boolean = true> {
+  channelFactors?:
+    | T
+    | {
+        dealer?: T;
+        integrator?: T;
+        retailer?: T;
+      };
+  targetMargin?: T;
+  marginFloor?: T;
+  fxRates?:
+    | T
+    | {
+        currency?: T;
+        aedPerUnit?: T;
         id?: T;
       };
   updatedAt?: T;

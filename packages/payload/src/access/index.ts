@@ -132,3 +132,10 @@ export const canReadCompanyTerms: FieldAccess = ({ req, doc }) => {
     (role === 'owner' || role === 'purchaser')
   )
 }
+
+/** Dealer orders and other company documents: staff read all; a company user reads their own company's. */
+export const staffOrOwnCompanyDocs: Access = ({ req }) => {
+  if (req.user?.collection === 'users') return true
+  const company = companyOf(req.user)
+  return company !== null ? { company: { equals: company } } : false
+}

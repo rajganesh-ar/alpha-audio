@@ -94,6 +94,7 @@ export interface Config {
     'sign-in-links': SignInLink;
     companies: Company;
     'company-users': CompanyUser;
+    'trade-orders': TradeOrder;
     'contract-prices': ContractPrice;
     'price-lists': PriceList;
     'buyer-groups': BuyerGroup;
@@ -133,6 +134,7 @@ export interface Config {
     'sign-in-links': SignInLinksSelect<false> | SignInLinksSelect<true>;
     companies: CompaniesSelect<false> | CompaniesSelect<true>;
     'company-users': CompanyUsersSelect<false> | CompanyUsersSelect<true>;
+    'trade-orders': TradeOrdersSelect<false> | TradeOrdersSelect<true>;
     'contract-prices': ContractPricesSelect<false> | ContractPricesSelect<true>;
     'price-lists': PriceListsSelect<false> | PriceListsSelect<true>;
     'buyer-groups': BuyerGroupsSelect<false> | BuyerGroupsSelect<true>;
@@ -1240,6 +1242,103 @@ export interface CompanyUser {
   collection: 'company-users';
 }
 /**
+ * Approve or reject what waits for Alpha on the ops screen (/ops/trade-orders/).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "trade-orders".
+ */
+export interface TradeOrder {
+  id: number;
+  number: string;
+  status:
+    'reserving' | 'unavailable' | 'pending-approval' | 'approving' | 'confirmed' | 'rejected' | 'cancelled' | 'failed';
+  company: number | Company;
+  placedBy: number | CompanyUser;
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  currency: string;
+  decimals: number;
+  vatRate: number;
+  poNumber?: string | null;
+  note?: string | null;
+  lines?:
+    | {
+        product?: (number | null) | Product;
+        sku: string;
+        title: string;
+        qty: number;
+        unitNet?: number | null;
+        lineNet?: number | null;
+        vat?: number | null;
+        basis?: string | null;
+        priceStatus?: string | null;
+        /**
+         * The price engine’s trace, as the company saw it.
+         */
+        trace?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  totals?: {
+    net?: number | null;
+    vat?: number | null;
+    gross?: number | null;
+  };
+  /**
+   * Each needed approval: kind (company or alpha), reason, status, who and when.
+   */
+  approvals?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  failureReason?: 'stock-lost' | null;
+  closedReason?: string | null;
+  /**
+   * Stock held for a pending order lapses at this time.
+   */
+  holdExpiresAt?: string | null;
+  /**
+   * Ledger reservation ids holding this order’s stock.
+   */
+  reservations?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  unavailableSkus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  idempotencyKey: string;
+  /**
+   * Staff notes; never shown to the dealer.
+   */
+  staffNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contract-prices".
  */
@@ -1535,6 +1634,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'company-users';
         value: number | CompanyUser;
+      } | null)
+    | ({
+        relationTo: 'trade-orders';
+        value: number | TradeOrder;
       } | null)
     | ({
         relationTo: 'contract-prices';
@@ -2175,6 +2278,54 @@ export interface CompanyUsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "trade-orders_select".
+ */
+export interface TradeOrdersSelect<T extends boolean = true> {
+  number?: T;
+  status?: T;
+  company?: T;
+  placedBy?: T;
+  market?: T;
+  currency?: T;
+  decimals?: T;
+  vatRate?: T;
+  poNumber?: T;
+  note?: T;
+  lines?:
+    | T
+    | {
+        product?: T;
+        sku?: T;
+        title?: T;
+        qty?: T;
+        unitNet?: T;
+        lineNet?: T;
+        vat?: T;
+        basis?: T;
+        priceStatus?: T;
+        trace?: T;
+        id?: T;
+      };
+  totals?:
+    | T
+    | {
+        net?: T;
+        vat?: T;
+        gross?: T;
+      };
+  approvals?: T;
+  failureReason?: T;
+  closedReason?: T;
+  holdExpiresAt?: T;
+  reservations?: T;
+  unavailableSkus?: T;
+  idempotencyKey?: T;
+  staffNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

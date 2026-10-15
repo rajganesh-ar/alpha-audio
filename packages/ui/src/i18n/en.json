@@ -410,7 +410,32 @@
       "invalid": "Check the form and try again."
     },
     "brand": "Alpha Audio Ops",
-    "admin": "Admin"
+    "admin": "Admin",
+    "trade": {
+      "title": "Dealer approvals",
+      "empty": "No dealer orders are waiting for Alpha.",
+      "nav": "Dealer approvals",
+      "reasons": {
+        "threshold": "Above the purchaser’s limit",
+        "credit": "Over the company’s credit limit",
+        "price": "A price below the margin floor"
+      },
+      "unit": "Unit (net)",
+      "price": "Price",
+      "belowFloor": "Below the margin floor",
+      "reason": "Note for the dealer (shown on their order)",
+      "approve": "Approve for Alpha",
+      "reject": "Reject",
+      "results": {
+        "approved": "{order} approved.",
+        "rejected": "{order} rejected; its stock is released.",
+        "not-found": "No such order.",
+        "not-pending": "{order} is no longer waiting for approval.",
+        "nothing-to-decide": "{order} has nothing waiting for Alpha.",
+        "busy": "Someone else is deciding on {order}; refresh and try again.",
+        "forbidden": "That decision is not possible."
+      }
+    }
   },
   "search": {
     "metaTitle": "Search",
@@ -465,7 +490,9 @@
     "brand": "Alpha Audio Partners",
     "metaTitle": "Dealer board",
     "nav": {
-      "catalogue": "Catalogue"
+      "catalogue": "Catalogue",
+      "orders": "Orders",
+      "newOrder": "New order"
     },
     "notFound": "That page is not on the dealer board.",
     "signIn": {
@@ -540,6 +567,110 @@
         "promotion": "Promotion",
         "margin-floor": "Price check"
       }
+    },
+    "orderLink": "Order",
+    "order": {
+      "title": "New order",
+      "legend": "Products",
+      "hint": "Enter SKUs and quantities, then review the order with your prices.",
+      "line": "Line {n}",
+      "sku": "SKU",
+      "qty": "Quantity",
+      "review": "Review order",
+      "reviewTitle": "Review",
+      "empty": "Add at least one product to review the order.",
+      "poNumber": "Your PO reference",
+      "note": "Note for Alpha",
+      "place": "Place order",
+      "placePending": "Send for approval",
+      "approvalsNeeded": "This order will wait for approval:",
+      "noApprovals": "This order is confirmed as soon as you place it.",
+      "cannotOrder": "Your role can browse the catalogue but not order. Ask an owner or purchaser.",
+      "onHold": "Your account is on hold, so it cannot order. Contact your account manager.",
+      "fix": "Fix the problems below to place the order.",
+      "net": "Net",
+      "vat": "VAT ({rate}%)",
+      "gross": "Total",
+      "unit": "Unit",
+      "lineTotal": "Line",
+      "problems": {
+        "unavailable": "Not available to your company.",
+        "invalid-quantity": "Enter a whole quantity from 1 to 10,000.",
+        "multiple": "Order in multiples of {multiple}.",
+        "empty": "Add at least one product.",
+        "too-many-lines": "An order can have at most {max} lines.",
+        "minimum-value": "Your minimum order is {amount} before VAT."
+      },
+      "status": {
+        "unavailable": "Some products are no longer in stock: {skus}. Nothing was ordered.",
+        "in-progress": "This order is still being placed. Refresh in a moment.",
+        "rules": "The order no longer meets your order rules. Review it again.",
+        "not-allowed": "Your role cannot place orders.",
+        "on-hold": "Your account is on hold, so it cannot order.",
+        "error": "The order could not be placed. Try again."
+      }
+    },
+    "orders": {
+      "title": "Orders",
+      "caption": "Your company’s orders",
+      "number": "Order",
+      "placed": "Placed",
+      "reference": "Reference",
+      "placedBy": "Placed by",
+      "status": "Status",
+      "total": "Total",
+      "empty": "No orders yet",
+      "emptyBody": "Orders placed by anyone in your company appear here.",
+      "statuses": {
+        "reserving": "Being placed",
+        "unavailable": "Not placed (stock)",
+        "pending-approval": "Waiting for approval",
+        "approving": "Being approved",
+        "confirmed": "Confirmed",
+        "rejected": "Rejected",
+        "cancelled": "Cancelled",
+        "failed": "Failed (stock no longer available)"
+      },
+      "approvals": "Approvals",
+      "approval": {
+        "company": "Your company’s owner",
+        "alpha": "Alpha Audio"
+      },
+      "reasons": {
+        "threshold": "above the purchaser’s approval limit",
+        "credit": "over the credit limit",
+        "price": "a price below Alpha’s floor"
+      },
+      "approvalStates": {
+        "pending": "Waiting",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "decidedBy": "{state} on {date}",
+      "approve": "Approve",
+      "reject": "Reject",
+      "cancel": "Cancel order",
+      "reason": "Reason (optional)",
+      "heldUntil": "Stock is held until {date}.",
+      "closedReason": "Reason: {reason}",
+      "back": "All orders",
+      "decision": {
+        "approved": "Your approval was recorded.",
+        "rejected": "The order was rejected and its stock released.",
+        "cancelled": "The order was cancelled and its stock released.",
+        "forbidden": "You cannot make that decision on this order.",
+        "not-pending": "This order is no longer waiting for approval.",
+        "nothing-to-decide": "Nothing on this order waits for you.",
+        "busy": "Someone else is deciding on this order. Refresh and try again.",
+        "not-found": "That order was not found.",
+        "error": "The decision could not be recorded. Try again."
+      }
+    },
+    "creditMeter": {
+      "label": "Credit",
+      "summary": "{used} used of {limit}",
+      "available": "{amount} available",
+      "none": "No credit line: every order waits for Alpha’s approval."
     }
   }
 }

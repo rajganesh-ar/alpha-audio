@@ -1,7 +1,7 @@
 /**
  * Local development and CI only: tops up the stock the checkout end-to-end tests buy, so the
- * suite can run again and again against one seeded database (each run confirms orders that
- * hold stock for good). Run after the demo seeds:
+ * suite and the dealer order suite can run again and again against one seeded database (each
+ * run confirms orders that hold stock for good). Run after the demo seeds:
  *
  *   pnpm --filter @alpha/web seed:e2e
  *
@@ -11,8 +11,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { createLedger, ensureStaffUser } from '@alpha/payload'
 
-const E2E_SKU = 'SONUSFABER-LUMINA-II'
-const TARGET = 20
+/** What the storefront checkout suite buys and the dealer order suite orders. */
+const TOP_UPS: Record<string, number> = { 'SONUSFABER-LUMINA-II': 40 }
 
 if (process.env.NODE_ENV === 'production') {
   console.error('seed:e2e is for local development and CI and refuses to run in production.')
@@ -37,17 +37,19 @@ if (!shelf) {
   process.exit(1)
 }
 const ledger = createLedger(payload)
-const sellable = await ledger.sellable(E2E_SKU, 'ae')
-if (sellable < TARGET) {
-  await ledger.move({
-    sku: E2E_SKU,
-    qty: TARGET - sellable,
-    from: null,
-    to: 'available',
-    location: shelf.id,
-    doc: { type: 'opening', id: `E2E-${new Date().toISOString().slice(0, 10)}` },
-    user: user.id,
-  })
+for (const [sku, target] of Object.entries(TOP_UPS)) {
+  const sellable = await ledger.sellable(sku, 'ae')
+  if (sellable < target) {
+    await ledger.move({
+      sku,
+      qty: target - sellable,
+      from: null,
+      to: 'available',
+      location: shelf.id,
+      doc: { type: 'opening', id: `E2E-${new Date().toISOString().slice(0, 10)}` },
+      user: user.id,
+    })
+  }
+  payload.logger.info(`E2E stock ready: ${sku} sellable in ae = ${Math.max(sellable, target)}.`)
 }
-payload.logger.info(`E2E stock ready: ${E2E_SKU} sellable in ae = ${Math.max(sellable, TARGET)}.`)
 process.exit(0)

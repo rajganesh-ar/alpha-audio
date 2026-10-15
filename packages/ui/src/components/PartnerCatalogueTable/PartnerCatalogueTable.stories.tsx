@@ -25,6 +25,7 @@ const rows = (t: typeof en): PartnerCatalogueRow[] => [
     status: 'ok',
     stock: '3–9',
     trace: trace(t),
+    orderHref: '/orders/new?sku=MCI-MA352&qty=1',
   },
   {
     sku: 'FOC-ARIA-926',
@@ -34,6 +35,7 @@ const rows = (t: typeof en): PartnerCatalogueRow[] => [
     price: 'AED 7,980.00',
     status: 'needs-approval',
     stock: t('partners.stock.low'),
+    orderHref: '/orders/new?sku=FOC-ARIA-926&qty=1',
   },
   {
     sku: 'SON-ARC',
@@ -65,6 +67,7 @@ const meta = {
     rows: rows(en),
     statusLabels: statusLabels(en),
     emptyLabel: en('partners.catalogue.empty'),
+    orderLabel: en('partners.orderLink'),
   },
 } satisfies Meta<typeof PartnerCatalogueTable>
 export default meta
@@ -92,5 +95,6 @@ export const Rtl: Story = {
     columns: columns(ar),
     rows: rows(ar),
     statusLabels: statusLabels(ar),
+    orderLabel: ar('partners.orderLink'),
   },
 }

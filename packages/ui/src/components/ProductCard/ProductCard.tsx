@@ -23,7 +23,8 @@ export interface ProductCardProps {
 
 /**
  * Product in a grid: lead image at 4:3 (reserved before it loads, so nothing shifts), brand,
- * title as the link that makes the whole card clickable, then price and stock.
+ * title as the link that makes the whole card clickable, then price and stock. The title keeps two
+ * lines of height, so a late web font that rewraps it cannot shift the grid.
  */
 export function ProductCard({
   title,
@@ -66,7 +67,7 @@ export function ProductCard({
         {brand ? (
           <p className="text-xs font-semibold tracking-wide text-ink-muted uppercase">{brand}</p>
         ) : null}
-        <Heading className="font-display text-lg font-bold text-ink">
+        <Heading className="line-clamp-2 min-h-[2lh] font-display text-lg font-bold text-ink">
           <a
             href={href}
             className={cx(

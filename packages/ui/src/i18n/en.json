@@ -117,7 +117,9 @@
       "dimensions": "Dimensions (W × H × D)",
       "dimensionsValue": "{width} × {height} × {depth} mm",
       "inputs": "Inputs",
-      "sku": "Model code"
+      "sku": "Model code",
+      "dbValue": "{value} dB",
+      "wattValue": "{value} W"
     }
   },
   "design": {
@@ -133,5 +135,43 @@
   "catalog": {
     "categoryEmpty": "No products in this category yet.",
     "productsIn": "{count} products"
+  },
+  "listing": {
+    "shop": "Shop",
+    "allProducts": "All products",
+    "filters": "Filters",
+    "filtersToggle": "Filters ({count})",
+    "apply": "Apply filters",
+    "clear": "Clear all",
+    "brand": "Brand",
+    "price": "Price",
+    "anyPrice": "Any price",
+    "priceBand": "{min} to {max}",
+    "priceFrom": "{min} and above",
+    "priceUnder": "Under {max}",
+    "availability": "Availability",
+    "inStockOnly": "In stock only",
+    "specs": "Specifications",
+    "sort": "Sort by",
+    "sortApply": "Sort",
+    "sorts": {
+      "featured": "Featured",
+      "price-asc": "Price: low to high",
+      "price-desc": "Price: high to low",
+      "newest": "Newest",
+      "name": "Name"
+    },
+    "results": "{count} products",
+    "resultsOne": "1 product",
+    "pagination": "Pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page}",
+    "emptyTitle": "No products match these filters",
+    "emptyBody": "Clear a filter, or browse one of these categories.",
+    "noFilters": "No filters for this selection.",
+    "categories": "Categories",
+    "pageTitle": "{title}, page {page}",
+    "description": "Hi-fi, home cinema and streaming, with prices including VAT and live stock."
   }
 }

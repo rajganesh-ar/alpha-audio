@@ -10,14 +10,16 @@ import {
 /**
  * What the proxy does with a request, decided from the URL alone (no database):
  *  - `redirect`: canonicalise the URL (root, missing locale, case, trailing slash).
- *  - `market`: a storefront URL; the proxy checks the pair against the Markets record.
+ *  - `market`: a storefront URL; the proxy checks the pair against the Markets record. A shop
+ *    listing with filter, sort or page parameters also carries `rewrite`: the internal path of
+ *    its dynamic twin (docs/tasks/0007), so the unfiltered page can stay ISR.
  *  - `legacy`: an old-site URL; looked up in LegacyRedirects, then `fallback` on a miss.
  *  - `not-found`: would reach `[market]/[locale]` with a first segment that is no market.
  *  - `next`: anything else (Next routes it, or renders the global 404).
  */
 export type RoutingDecision =
   | { kind: 'redirect'; location: string; status: 308 }
-  | { kind: 'market'; market: string; locale: string }
+  | { kind: 'market'; market: string; locale: string; rewrite?: string }
   | { kind: 'legacy'; fallback: 'next' | 'not-found' }
   | { kind: 'not-found' }
   | { kind: 'next' }
@@ -28,6 +30,43 @@ export type RoutingDecision =
  * 404, but Next renders that as an empty shell and builds the page in the browser.
  */
 export const NOT_FOUND_PATH = '/_not-found'
+
+/**
+ * Internal segment of the dynamic listing twin: `/ae/en/shop/amplifiers/?brand=x` renders
+ * `/ae/en/shop-results/amplifiers/?brand=x`. Requests for the twin itself 404.
+ */
+export const LISTING_TWIN = 'shop-results'
+
+const LISTING_PARAMS = new Set(['brand', 'price', 'stock', 'sort', 'page'])
+
+const isListingParam = (key: string) => LISTING_PARAMS.has(key) || key.startsWith('spec.')
+
+/**
+ * The listing query without no-op values a GET form submits: empty values (the "any price"
+ * radio), `sort=featured` and `page=1`. Null when nothing changes.
+ */
+export function cleanListingSearch(params: URLSearchParams): string | null {
+  const kept = new URLSearchParams()
+  let dropped = false
+  for (const [key, value] of params) {
+    const noop =
+      isListingParam(key) &&
+      (value === '' ||
+        (key === 'sort' && value === 'featured') ||
+        (key === 'page' && value === '1'))
+    if (noop) dropped = true
+    else kept.append(key, value)
+  }
+  if (!dropped) return null
+  const search = kept.toString()
+  return search ? `?${search}` : ''
+}
+
+/** Whether a query changes what a listing shows (tracking parameters do not). */
+export function hasListingParams(params: URLSearchParams): boolean {
+  for (const key of params.keys()) if (isListingParam(key)) return true
+  return false
+}
 
 const redirect = (location: string): RoutingDecision => ({
   kind: 'redirect',
@@ -58,6 +97,18 @@ export function decideRoute(url: URL): RoutingDecision {
     let canonical = ['', market, knownLocale ? locale : second, ...segments.slice(3)].join('/')
     if (knownLocale && !canonical.endsWith('/')) canonical += '/'
     if (canonical !== pathname) return redirect(`${canonical}${search}`)
+    const section = segments[3] ?? ''
+    if (section === LISTING_TWIN) return { kind: 'not-found' }
+    if (knownLocale && section === 'shop' && hasListingParams(url.searchParams)) {
+      const clean = cleanListingSearch(url.searchParams)
+      if (clean !== null) return redirect(`${pathname}${clean}`)
+      return {
+        kind: 'market',
+        market,
+        locale,
+        rewrite: ['', market, locale, LISTING_TWIN, ...segments.slice(4)].join('/'),
+      }
+    }
     return { kind: 'market', market, locale: knownLocale ? locale : second }
   }
 

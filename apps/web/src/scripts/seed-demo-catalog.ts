@@ -77,6 +77,7 @@ for (const c of CATEGORIES) {
       title: c.title.en,
       slug: c.slug,
       order: c.order,
+      ...(c.facetSpecs ? { facetSpecs: c.facetSpecs } : {}),
       ...(c.summary ? { summary: c.summary.en } : {}),
       ...(c.parent ? { parent: categoryIds.get(c.parent) ?? null } : {}),
       arabicReview: 'draft',

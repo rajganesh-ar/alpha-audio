@@ -10,3 +10,4 @@ One file per decision: NNNN-title.md. 0001 is written by task 0001.
 | [0004](0004-stock-ledger.md)                        | Stock ledger: rules, locks and guards          |
 | [0005](0005-purchasing-and-goods-receipt.md)        | Purchasing and goods receipt                   |
 | [0006](0006-storefront-rendering-and-live-stock.md) | Storefront rendering, caching and live stock   |
+| [0007](0007-listing-twin-and-facets.md)             | Category listings: dynamic twin and facets     |

@@ -118,7 +118,9 @@
       "dimensions": "الأبعاد (العرض × الارتفاع × العمق)",
       "dimensionsValue": "{width} × {height} × {depth} مم",
       "inputs": "المداخل",
-      "sku": "رمز الطراز"
+      "sku": "رمز الطراز",
+      "dbValue": "{value} ديسيبل",
+      "wattValue": "{value} واط"
     }
   },
   "design": {
@@ -134,5 +136,43 @@
   "catalog": {
     "categoryEmpty": "لا توجد منتجات في هذه الفئة بعد.",
     "productsIn": "{count} منتجات"
+  },
+  "listing": {
+    "shop": "المتجر",
+    "allProducts": "جميع المنتجات",
+    "filters": "عوامل التصفية",
+    "filtersToggle": "عوامل التصفية ({count})",
+    "apply": "تطبيق",
+    "clear": "مسح الكل",
+    "brand": "العلامة التجارية",
+    "price": "السعر",
+    "anyPrice": "أي سعر",
+    "priceBand": "من {min} إلى {max}",
+    "priceFrom": "{min} فأكثر",
+    "priceUnder": "أقل من {max}",
+    "availability": "التوفر",
+    "inStockOnly": "المتوفر فقط",
+    "specs": "المواصفات",
+    "sort": "الترتيب حسب",
+    "sortApply": "ترتيب",
+    "sorts": {
+      "featured": "المميزة",
+      "price-asc": "السعر: من الأقل إلى الأعلى",
+      "price-desc": "السعر: من الأعلى إلى الأقل",
+      "newest": "الأحدث",
+      "name": "الاسم"
+    },
+    "results": "{count} منتجات",
+    "resultsOne": "منتج واحد",
+    "pagination": "التنقل بين الصفحات",
+    "previous": "السابق",
+    "next": "التالي",
+    "page": "الصفحة {page}",
+    "emptyTitle": "لا توجد منتجات تطابق عوامل التصفية",
+    "emptyBody": "امسح أحد عوامل التصفية أو تصفح إحدى هذه الفئات.",
+    "noFilters": "لا توجد عوامل تصفية لهذا الاختيار.",
+    "categories": "الفئات",
+    "pageTitle": "{title}، الصفحة {page}",
+    "description": "أنظمة صوت عالية الدقة وسينما منزلية وبث، بأسعار شاملة الضريبة ومخزون محدّث."
   }
 }

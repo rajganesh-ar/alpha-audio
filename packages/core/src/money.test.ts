@@ -8,6 +8,18 @@ const ARABIC_INDIC_DIGITS = new RegExp('[\\u0660-\\u0669\\u06F0-\\u06F9]')
 const NBSP = String.fromCharCode(0xa0)
 
 describe('formatMoney', () => {
+  it('drops the fraction only for whole amounts when asked', () => {
+    expect(formatMoney(money(1_000_000, 'AED', 2), 'en-AE', { wholeUnits: true })).toBe(
+      `AED${NBSP}10,000`,
+    )
+    expect(formatMoney(money(25_000_000, 'KWD', 3), 'en-KW', { wholeUnits: true })).toBe(
+      `KWD${NBSP}25,000`,
+    )
+    expect(() => formatMoney(money(1_000_050, 'AED', 2), 'en-AE', { wholeUnits: true })).toThrow(
+      RangeError,
+    )
+  })
+
   it('formats AED with 2 decimals in English', () => {
     expect(formatMoney(money(57_500_00, 'AED', 2), 'en-AE')).toBe(`AED${NBSP}57,500.00`)
   })

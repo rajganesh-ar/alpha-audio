@@ -19,10 +19,15 @@ export function ProductCardView({
   product,
   route,
   stock,
+  headingLevel = 3,
+  image: loading = 'lazy',
 }: {
   product: Product
   route: MarketRoute
   stock: StockPromise | undefined
+  headingLevel?: 2 | 3 | undefined
+  /** `lcp` for the first card of a listing (the LCP on mobile), `eager` for the rest of its row. */
+  image?: 'lcp' | 'eager' | 'lazy' | undefined
 }) {
   const t = translator(getDictionary(route.locale))
   const price = priceOf(product, route)
@@ -32,9 +37,18 @@ export function ProductCardView({
       title={product.title}
       brand={brandOf(product)?.name}
       href={productPath(route, product.slug)}
+      headingLevel={headingLevel}
       media={
         image ? (
-          <Image src={image.url} alt={image.alt} fill sizes="(min-width: 64rem) 22vw, 100vw" />
+          <Image
+            src={image.url}
+            alt={image.alt}
+            fill
+            sizes="(min-width: 64rem) 22vw, 100vw"
+            {...(loading === 'lcp'
+              ? { priority: true, fetchPriority: 'high' as const }
+              : { loading: loading === 'eager' ? ('eager' as const) : ('lazy' as const) })}
+          />
         ) : undefined
       }
       price={

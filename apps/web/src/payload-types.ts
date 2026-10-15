@@ -310,6 +310,10 @@ export interface Category {
   order?: number | null;
   summary?: string | null;
   /**
+   * Spec fields offered as filters on this category’s listing.
+   */
+  facetSpecs?: ('channels' | 'impedanceOhm' | 'minImpedanceOhm' | 'sensitivityDb' | 'powerW')[] | null;
+  /**
    * Arabic copy is published only after the native reviewer signs it off.
    */
   arabicReview: 'draft' | 'reviewed';
@@ -1020,6 +1024,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   parent?: T;
   order?: T;
   summary?: T;
+  facetSpecs?: T;
   arabicReview?: T;
   updatedAt?: T;
   createdAt?: T;

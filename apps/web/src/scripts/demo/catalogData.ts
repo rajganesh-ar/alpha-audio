@@ -17,12 +17,14 @@ export interface DemoCategory {
   summary?: DemoText
   parent?: string
   order: number
+  facetSpecs?: Array<'channels' | 'impedanceOhm' | 'sensitivityDb' | 'powerW'>
 }
 
 export const CATEGORIES: DemoCategory[] = [
   {
     slug: 'amplifiers',
     order: 10,
+    facetSpecs: ['channels', 'powerW'],
     title: { en: 'Amplifiers', ar: 'المضخمات' },
     summary: {
       en: 'Integrated, pre and power amplifiers.',
@@ -50,6 +52,7 @@ export const CATEGORIES: DemoCategory[] = [
   {
     slug: 'loudspeakers',
     order: 20,
+    facetSpecs: ['impedanceOhm', 'sensitivityDb'],
     title: { en: 'Loudspeakers', ar: 'مكبرات الصوت' },
     summary: { en: 'Standmount and floorstanding speakers.', ar: 'مكبرات صوت رفّية وأرضية.' },
   },

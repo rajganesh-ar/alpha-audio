@@ -103,7 +103,7 @@ export default async function MarketLayout({
               homeLabel={t('shell.homeLink')}
               navLabel={t('shell.primaryNav')}
               nav={[
-                { label: t('shell.nav.products'), href: `${home}products/` },
+                { label: t('shell.nav.products'), href: `${home}shop/` },
                 { label: t('shell.nav.brands'), href: `${home}brands/` },
                 { label: t('shell.nav.rooms'), href: `${home}rooms/` },
                 { label: t('shell.nav.support'), href: `${home}support/` },

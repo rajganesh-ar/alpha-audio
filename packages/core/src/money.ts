@@ -127,13 +127,28 @@ export function toDecimalString(amountMinor: bigint, decimals: number): DecimalS
 /**
  * Formats money for display in a market locale such as `en-AE` or `ar-KW`. Always Western
  * digits and always exactly the currency's decimals (KWD 2,944.750, never 2,944.75).
+ *
+ * `wholeUnits` drops the fraction, for amounts that are whole by construction, such as
+ * price-filter band edges ("Under AED 10,000"). It refuses an amount with a fraction, so a
+ * price can never be shown rounded.
  */
-export function formatMoney(value: Money, locale: string): string {
+export function formatMoney(
+  value: Money,
+  locale: string,
+  options: { wholeUnits?: boolean } = {},
+): string {
+  const unit = 10n ** BigInt(value.decimals)
+  if (options.wholeUnits && value.amount % unit !== 0n) {
+    throw new RangeError(
+      `formatMoney(): ${toDecimalString(value.amount, value.decimals)} is not a whole amount`,
+    )
+  }
+  const digits = options.wholeUnits ? 0 : value.decimals
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: value.currency,
     numberingSystem: 'latn',
-    minimumFractionDigits: value.decimals,
-    maximumFractionDigits: value.decimals,
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
   }).format(toDecimalString(value.amount, value.decimals))
 }

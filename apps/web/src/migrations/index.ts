@@ -7,6 +7,7 @@ import * as migration_20261014_185458_purchasing from './20261014_185458_purchas
 import * as migration_20261014_185459_purchasing_constraints from './20261014_185459_purchasing_constraints';
 import * as migration_20261014_193323_catalog from './20261014_193323_catalog';
 import * as migration_20261014_193324_catalog_constraints from './20261014_193324_catalog_constraints';
+import * as migration_20261015_032501_category_facet_specs from './20261015_032501_category_facet_specs';
 
 export const migrations = [
   {
@@ -53,5 +54,10 @@ export const migrations = [
     up: migration_20261014_193324_catalog_constraints.up,
     down: migration_20261014_193324_catalog_constraints.down,
     name: '20261014_193324_catalog_constraints',
+  },
+  {
+    up: migration_20261015_032501_category_facet_specs.up,
+    down: migration_20261015_032501_category_facet_specs.down,
+    name: '20261015_032501_category_facet_specs',
   },
 ];

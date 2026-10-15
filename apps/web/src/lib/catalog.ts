@@ -54,9 +54,12 @@ export const getCategories = (locale: LocaleCode): Promise<Category[]> =>
     { tags: [STOREFRONT_TAGS.catalog], revalidate: REVALIDATE_SECONDS },
   )()
 
-/** Published products in a category (and its children), newest first; the caller filters by market. */
-export const getCategoryProducts = (
-  categoryIds: readonly number[],
+/**
+ * Published products for a listing: in the given categories, or every product when `null`.
+ * The caller keeps those sold in the market; catalogues are hundreds of products, not millions.
+ */
+export const getListingProducts = (
+  categoryIds: readonly number[] | null,
   locale: LocaleCode,
 ): Promise<Product[]> =>
   unstable_cache(
@@ -66,17 +69,31 @@ export const getCategoryProducts = (
           await payload()
         ).find({
           collection: 'products',
-          where: { categories: { in: [...categoryIds] } },
-          limit: 48,
+          ...(categoryIds ? { where: { categories: { in: [...categoryIds] } } } : {}),
+          limit: 1000,
           depth: 1,
           sort: '-createdAt',
           locale,
           ...read,
         })
       ).docs,
-    ['category-products', categoryIds.join(','), locale],
+    ['listing-products', categoryIds ? categoryIds.join(',') : 'all', locale],
     { tags: [STOREFRONT_TAGS.catalog], revalidate: REVALIDATE_SECONDS },
   )()
+
+/** A category and every category below it. */
+export function descendantIds(categories: readonly Category[], id: number): number[] {
+  const parentOf = (c: Category) =>
+    typeof c.parent === 'object' ? (c.parent?.id ?? null) : (c.parent ?? null)
+  const ids = [id]
+  for (let i = 0; i < ids.length; i++) {
+    for (const c of categories) if (parentOf(c) === ids[i] && !ids.includes(c.id)) ids.push(c.id)
+  }
+  return ids
+}
+
+export const parentId = (c: Category): number | null =>
+  typeof c.parent === 'object' ? (c.parent?.id ?? null) : (c.parent ?? null)
 
 /** Root-first chain of a category and its parents, for breadcrumbs. */
 export function categoryTrail(

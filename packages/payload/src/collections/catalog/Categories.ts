@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { canEditCatalog, isStaff, nobody, publishedOrStaff } from '../../access'
 import { revalidateStorefront } from '../../hooks/revalidateStorefront'
 import { arabicReviewField, slugField } from './fields'
+import { FACET_SPECS } from './specs'
 
 const revalidate = revalidateStorefront('catalog')
 
@@ -42,6 +43,16 @@ export const Categories: CollectionConfig = {
       admin: { position: 'sidebar', description: 'Lower comes first.' },
     },
     { name: 'summary', type: 'textarea', localized: true },
+    {
+      name: 'facetSpecs',
+      type: 'select',
+      hasMany: true,
+      options: FACET_SPECS.map((key) => ({ label: key, value: key })),
+      admin: {
+        position: 'sidebar',
+        description: 'Spec fields offered as filters on this category’s listing.',
+      },
+    },
     arabicReviewField,
   ],
 }

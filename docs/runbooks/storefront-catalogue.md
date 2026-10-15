@@ -20,6 +20,13 @@ How products reach the storefront, and what to check when a page looks wrong. Re
 | Product 404 in a market                        | Not published, or not published in that market                       | Tick the market row's Published and publish                                                    |
 | Images missing                                 | Media object missing in storage                                      | Open the media document in the admin; re-upload                                                |
 
+## Category listings and filters
+
+- `/shop/` lists everything sold in the market; `/shop/{category}/` and `/shop/{category}/{subcategory}/` list a category and everything below it.
+- **Filters** are brand, price band (derived from the prices in the category), in stock, and the spec fields chosen under **Facet specs** on the category (a subcategory without its own uses its parent's). A spec with only one value in the category is not offered.
+- Filtered URLs (`?brand=…`) render live on every request and are `noindex`; the plain category URL is the cached, indexed page.
+- A product missing from a listing is not published, not published in that market, or not in that category (or one below it).
+
 ## Stock line states
 
 `In stock` (more than 2 sellable), `Only a few left` (1–2), `Available to order` with the earliest open purchase order date, or `Out of stock`. Sellable is `available` stock across the market's sellable locations.

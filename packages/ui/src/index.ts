@@ -25,6 +25,12 @@ export { EntryCard, type EntryCardProps } from './components/EntryCard/EntryCard
 export { Chip, type ChipProps } from './components/Chip/Chip'
 export { EmptyState, type EmptyStateProps } from './components/EmptyState/EmptyState'
 export { ErrorState, type ErrorStateProps } from './components/ErrorState/ErrorState'
+export {
+  FacetRail,
+  type FacetGroup,
+  type FacetOption,
+  type FacetRailProps,
+} from './components/FacetRail/FacetRail'
 export { Footer, type FooterGroup, type FooterProps } from './components/Footer/Footer'
 export { Gallery, type GalleryProps, type GallerySlide } from './components/Gallery/Gallery'
 export { Grid, type GridProps } from './components/Grid/Grid'
@@ -39,6 +45,7 @@ export {
   type MarketSwitchProps,
 } from './components/MarketSwitch/MarketSwitch'
 export { Marker, type MarkerProps } from './components/Marker/Marker'
+export { Pagination, pageWindow, type PaginationProps } from './components/Pagination/Pagination'
 export { PriceBlock, type PriceBlockProps } from './components/PriceBlock/PriceBlock'
 export { ProductCard, type ProductCardProps } from './components/ProductCard/ProductCard'
 export {
@@ -49,5 +56,6 @@ export {
 export { Section, type SectionProps } from './components/Section/Section'
 export { Select, type SelectOption, type SelectProps } from './components/Select/Select'
 export { Skeleton, type SkeletonProps } from './components/Skeleton/Skeleton'
+export { SortMenu, type SortMenuProps } from './components/SortMenu/SortMenu'
 export { SpecTable, type SpecRow, type SpecTableProps } from './components/SpecTable/SpecTable'
 export { StockLine, type StockLineProps, type StockStatus } from './components/StockLine/StockLine'

@@ -12,6 +12,7 @@ import {
  *  - `/` → `/ae/en/`; `/ae` → `/ae/en/`; `/AE/EN` → `/ae/en/`; storefront paths gain a trailing slash.
  *  - `/{market}/{locale}/…` must be a live market offering that locale (Markets record), else 404.
  *  - Old-site URLs carrying `?bid=` or `?catid=` are looked up in LegacyRedirects (301).
+ *  - Filtered, sorted or paged shop listings render their dynamic twin (`shop-results`).
  *  - `cf-ipcountry` sets the `suggestedMarket` cookie for the banner. It never redirects.
  */
 export async function proxy(request: NextRequest): Promise<NextResponse> {
@@ -49,6 +50,11 @@ async function respond(request: NextRequest, decision: RoutingDecision): Promise
       } catch (error) {
         // Unreadable record: let the layout decide (it renders no shell for an invalid pair).
         console.error('market_check_failed', error)
+      }
+      if (decision.rewrite) {
+        const target = new URL(decision.rewrite, request.url)
+        target.search = request.nextUrl.search
+        return NextResponse.rewrite(target)
       }
       return NextResponse.next()
     }

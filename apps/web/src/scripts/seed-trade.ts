@@ -19,6 +19,7 @@ const TRADE_USERS = {
   harmonyOwner: 'owner@harmony.example',
   harmonyArabic: 'arabic@harmony.example',
   harmonyViewer: 'viewer@harmony.example',
+  harmonyBuyer: 'buyer@harmony.example',
   gulfOwner: 'owner@gulf-integrators.example',
 } as const
 
@@ -39,8 +40,58 @@ const existing = await payload.find({
   where: { name: { equals: 'Harmony Systems LLC' } },
   ...as(),
 })
+
+/**
+ * Dealer order settings (docs/tasks/0015), applied on every run so a database seeded before
+ * dealer orders gets them too: Harmony's credit and a purchaser with an approval threshold, and
+ * Gulf Integrators' order rules.
+ */
+async function orderSetup(): Promise<void> {
+  const company = async (name: string) =>
+    (await payload.find({ collection: 'companies', where: { name: { equals: name } }, ...as() }))
+      .docs[0]
+  const harmony = await company('Harmony Systems LLC')
+  const gulf = await company('Gulf Integrators FZE')
+  if (!harmony || !gulf) return
+  await payload.update({
+    collection: 'companies',
+    id: harmony.id,
+    data: { creditLimit: 50_000_000 },
+    ...as(),
+  })
+  await payload.update({
+    collection: 'companies',
+    id: gulf.id,
+    data: { settings: { stockVisibility: 'banded', orderMultiple: 2, minOrderValue: 1_000_000 } },
+    ...as(),
+  })
+  const buyer = await payload.find({
+    collection: 'company-users',
+    where: { email: { equals: TRADE_USERS.harmonyBuyer } },
+    ...as(),
+  })
+  if (!buyer.docs.length)
+    await payload.create({
+      collection: 'company-users',
+      data: {
+        email: TRADE_USERS.harmonyBuyer,
+        password: TRADE_PASSWORD,
+        company: harmony.id,
+        role: 'purchaser',
+        // AED 1,000.00 net: most orders need the owner's approval.
+        approvalThreshold: 100_000,
+        locale: 'en',
+        name: 'Sami Khoury',
+      },
+      ...as(),
+    })
+}
+
 if (existing.docs.length) {
-  payload.logger.info('Trade demo already seeded (Harmony Systems LLC exists); nothing to do.')
+  await orderSetup()
+  payload.logger.info(
+    'Trade demo already seeded (Harmony Systems LLC exists); order settings updated.',
+  )
   process.exit(0)
 }
 
@@ -153,6 +204,7 @@ for (const [email, company, role, locale, name] of people) {
     ...as(),
   })
 }
+await orderSetup()
 payload.logger.info(
   `Trade demo ready: sign in on the partners app as ${Object.values(TRADE_USERS).join(', ')}.`,
 )

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { cx } from '../../lib/cx'
+import { FOCUS_RING } from '../../lib/styles'
 import { Icon } from '../Icon/Icon'
 import { Skeleton } from '../Skeleton/Skeleton'
 
@@ -17,6 +18,8 @@ export interface PartnerCatalogueRow {
   stock?: string | undefined
   /** "Why this price" (a PriceTraceDrawer). */
   trace?: ReactNode | undefined
+  /** Starts an order with this product (a link to the quick order review). */
+  orderHref?: string | undefined
 }
 
 export interface PartnerCatalogueTableProps {
@@ -25,6 +28,8 @@ export interface PartnerCatalogueTableProps {
   rows: readonly PartnerCatalogueRow[]
   statusLabels: { 'needs-approval': string; unavailable: string }
   emptyLabel?: string | undefined
+  /** Visible text of each row's order link, e.g. "Order"; the product name is added for screen readers. */
+  orderLabel?: string | undefined
   loading?: boolean | undefined
   loadingLabel?: string | undefined
   error?: string | undefined
@@ -41,6 +46,7 @@ export function PartnerCatalogueTable({
   rows,
   statusLabels,
   emptyLabel,
+  orderLabel,
   loading = false,
   loadingLabel,
   error,
@@ -96,6 +102,19 @@ export function PartnerCatalogueTable({
                 ) : null}
                 <span className="block font-semibold text-ink">{row.title}</span>
                 <span className="block font-mono text-sm text-ink-muted">{row.sku}</span>
+                {row.orderHref && orderLabel ? (
+                  <a
+                    href={row.orderHref}
+                    className={cx(
+                      'mt-1 inline-flex min-h-11 items-center gap-1 rounded-control text-sm font-semibold text-ink underline underline-offset-4',
+                      FOCUS_RING,
+                    )}
+                  >
+                    {orderLabel}
+                    <span className="sr-only">: {row.title}</span>
+                    <Icon name="arrow-forward" size={16} />
+                  </a>
+                ) : null}
               </th>
               <td className="py-3 pe-4 text-end text-ink-muted tabular-nums">
                 {row.rrp ? <bdi>{row.rrp}</bdi> : '—'}

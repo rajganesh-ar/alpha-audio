@@ -41,6 +41,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: Se
     channel: catalogue?.company.channel ?? 'dealer',
   }
   const view = catalogue ? catalogueView(catalogue.rows, ctx) : []
+  const canOrder = ['owner', 'purchaser'].includes(account.user.role) && !account.hold
   const stateLabels = {
     applied: t('partners.trace.applied'),
     checked: t('partners.trace.checked'),
@@ -114,8 +115,13 @@ export default async function CataloguePage({ searchParams }: { searchParams: Se
               'needs-approval': t('partners.catalogue.needsApproval'),
               unavailable: t('partners.catalogue.unavailable'),
             }}
+            orderLabel={t('partners.orderLink')}
             rows={view.map(({ row, trace }) => ({
               ...row,
+              orderHref:
+                canOrder && row.status !== 'unavailable'
+                  ? `/orders/new?${new URLSearchParams({ sku: row.sku, qty: '1' }).toString()}`
+                  : undefined,
               trace: trace.length ? (
                 <PriceTraceDrawer
                   label={t('partners.trace.label')}

@@ -18,3 +18,4 @@ One file per decision: NNNN-title.md. 0001 is written by task 0001.
 | [0012](0012-customer-sign-in.md)                    | Customers sign in with an emailed one-time link              |
 | [0013](0013-trade-pricing.md)                       | Trade prices resolved per session, from staff-only rules     |
 | [0014](0014-partners-app.md)                        | The dealer board is its own app, on one shared configuration |
+| [0015](0015-dealer-orders.md)                       | Dealer orders are their own collection and state machine     |

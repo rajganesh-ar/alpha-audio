@@ -19,6 +19,8 @@ import * as migration_20261015_095447_product_search from './20261015_095447_pro
 import * as migration_20261015_102240_customers from './20261015_102240_customers';
 import * as migration_20261015_105401_trade from './20261015_105401_trade';
 import * as migration_20261015_111227_company_user_locale from './20261015_111227_company_user_locale';
+import * as migration_20261015_123205_trade_orders from './20261015_123205_trade_orders';
+import * as migration_20261015_123206_trade_orders_constraints from './20261015_123206_trade_orders_constraints';
 
 export const migrations = [
   {
@@ -125,5 +127,15 @@ export const migrations = [
     up: migration_20261015_111227_company_user_locale.up,
     down: migration_20261015_111227_company_user_locale.down,
     name: '20261015_111227_company_user_locale',
+  },
+  {
+    up: migration_20261015_123205_trade_orders.up,
+    down: migration_20261015_123205_trade_orders.down,
+    name: '20261015_123205_trade_orders',
+  },
+  {
+    up: migration_20261015_123206_trade_orders_constraints.up,
+    down: migration_20261015_123206_trade_orders_constraints.down,
+    name: '20261015_123206_trade_orders_constraints',
   },
 ]

@@ -10,3 +10,4 @@ See the Observability section of the spec for the required list.
 - [My Alpha accounts](my-alpha.md)
 - [Trade pricing](trade-pricing.md)
 - [Dealer board](partners.md)
+- [Dealer orders](dealer-orders.md)

@@ -11,7 +11,7 @@ export function BoardShell({
   children,
 }: {
   partner: Partner
-  current: 'catalogue'
+  current: 'catalogue' | 'orders'
   children: ReactNode
 }) {
   const { account } = partner
@@ -31,6 +31,7 @@ export function BoardShell({
               href: '/catalogue',
               current: current === 'catalogue',
             },
+            { label: t('partners.nav.orders'), href: '/orders', current: current === 'orders' },
           ]}
           company={account.company.name}
           tier={

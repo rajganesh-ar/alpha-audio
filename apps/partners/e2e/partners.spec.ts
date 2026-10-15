@@ -32,7 +32,7 @@ test('a dealer signs in and sees its own prices, the RRP, the trace and exact st
   await expect(page.getByRole('heading', { level: 1, name: 'Catalogue' })).toBeVisible()
   const header = page.getByRole('banner')
   await expect(header).toContainText('Harmony Systems LLC')
-  await expect(header).toContainText(money('Gold · Credit limit AED 50,000.00'))
+  await expect(header).toContainText(money('Gold · Credit limit AED 500,000.00'))
 
   const amp = row(page, MA352)
   await expect(amp).toContainText(money('AED 34,500.00'))

@@ -25,6 +25,7 @@ import {
 import { Notice } from '@/components/commerce/Notice'
 import { summaryRows } from '@/components/commerce/summaryRows'
 import { checkoutPaths, defaultProvider, offeredMethods } from '@/lib/api/checkout'
+import { customerSession } from '@/lib/account'
 import { viewBag } from '@/lib/commerce/bag'
 import { bagCookie } from '@/lib/commerce/cookies'
 import { newFormKey } from '@/lib/commerce/tokens'
@@ -82,7 +83,13 @@ export default async function CheckoutPage({
 
   const locale = numberLocale(route)
   const draft = view.cart.draft
-  const value = (name: string) => (typeof draft[name] === 'string' ? (draft[name] as string) : '')
+  // A signed-in customer starts with their details (docs/tasks/0012); the draft wins once typed.
+  const { customer } = await customerSession()
+  const known: Record<string, string> = customer
+    ? { email: customer.email, name: customer.name ?? '', phone: customer.phone ?? '' }
+    : {}
+  const value = (name: string) =>
+    typeof draft[name] === 'string' ? (draft[name] as string) : (known[name] ?? '')
   const status = typeof search['status'] === 'string' ? search['status'] : undefined
   const scheme = isAddressScheme(route.market.addressScheme) ? route.market.addressScheme : null
   const methods = offeredMethods(route, defaultProvider(route))

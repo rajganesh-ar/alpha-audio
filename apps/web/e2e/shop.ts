@@ -4,10 +4,10 @@ import type { Translate } from '@alpha/ui'
 /** Storefront steps shared by the e2e suites. Buys the product `seed:e2e` keeps in stock. */
 export const PRODUCT = 'sonus-faber-lumina-ii'
 
-export const detailsFor = (page: Page, t: Translate) => ({
+export const detailsFor = (page: Page, t: Translate, email = 'layla@example.com') => ({
   async fill() {
     await page.getByLabel(t('checkout.name')).fill('Layla Haddad')
-    await page.getByLabel(t('checkout.email')).fill('layla@example.com')
+    await page.getByLabel(t('checkout.email')).fill(email)
     await page.getByLabel(t('checkout.phone')).fill('+971 50 123 4567')
     await page.getByLabel(t('checkout.address.city')).fill('Dubai')
     await page.getByLabel(t('checkout.address.area')).fill('Al Quoz')
@@ -39,11 +39,12 @@ export async function buy(
   page: Page,
   locale: 'en' | 'ar',
   t: Translate,
+  email?: string,
 ): Promise<{ number: string; orderUrl: string }> {
   await emptyBag(page, locale, t)
   await addToBag(page, locale, t)
   await page.getByRole('link', { name: t('bag.checkout') }).click()
-  await detailsFor(page, t).fill()
+  await detailsFor(page, t, email).fill()
   await page
     .getByRole('button', { name: new RegExp(t('checkout.pay', { amount: '' }).trim()) })
     .click()

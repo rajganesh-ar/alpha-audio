@@ -1,4 +1,4 @@
-import type { NotificationTemplate } from '@alpha/core'
+import type { OrderNotificationTemplate } from '@alpha/core'
 import type { LocaleCode } from '../markets/codes'
 
 /**
@@ -26,7 +26,8 @@ export interface EmailMessages {
   tracking: string
   track: string
   footer: string
-  templates: Record<NotificationTemplate, EmailCopy>
+  templates: Record<OrderNotificationTemplate, EmailCopy>
+  signIn: EmailCopy & { action: string; ignore: string }
 }
 
 export const EMAIL_MESSAGES: Record<LocaleCode, EmailMessages> = {
@@ -45,6 +46,14 @@ export const EMAIL_MESSAGES: Record<LocaleCode, EmailMessages> = {
     tracking: 'Tracking number',
     track: 'Track the parcel',
     footer: 'Alpha Audio. Reply to this email if you need help with your order.',
+    signIn: {
+      subject: 'Your Alpha Audio sign-in link',
+      heading: 'Sign in to My Alpha',
+      body: 'Use this link to sign in. It works once, for the next 15 minutes.',
+      action: 'Sign in',
+      ignore:
+        'If you did not ask to sign in, ignore this email: nobody can sign in without the link.',
+    },
     templates: {
       'order-confirmed': {
         subject: 'Order {number} confirmed',
@@ -83,6 +92,13 @@ export const EMAIL_MESSAGES: Record<LocaleCode, EmailMessages> = {
     tracking: 'رقم التتبع',
     track: 'تتبع الشحنة',
     footer: 'ألفا أوديو. رد على هذه الرسالة إذا احتجت إلى مساعدة في طلبك.',
+    signIn: {
+      subject: 'رابط تسجيل الدخول إلى ألفا أوديو',
+      heading: 'سجّل الدخول إلى ماي ألفا',
+      body: 'استخدم هذا الرابط لتسجيل الدخول. يعمل مرة واحدة خلال الدقائق الخمس عشرة القادمة.',
+      action: 'تسجيل الدخول',
+      ignore: 'إذا لم تطلب تسجيل الدخول فتجاهل هذه الرسالة: لا يمكن لأحد الدخول دون الرابط.',
+    },
     templates: {
       'order-confirmed': {
         subject: 'تم تأكيد الطلب {number}',

@@ -431,5 +431,34 @@
     "contents": "On this page",
     "reviewed": "Last reviewed {date}",
     "title": "Legal"
+  },
+  "account": {
+    "metaTitle": "My Alpha",
+    "title": "My Alpha",
+    "nav": "My Alpha",
+    "orders": "Orders",
+    "signOut": "Sign out",
+    "signInTitle": "Sign in to My Alpha",
+    "signInBody": "Enter your email and we will send you a link to sign in. No password needed.",
+    "email": "Email",
+    "send": "Email me a sign-in link",
+    "status": {
+      "sent": "Check your email: we sent you a sign-in link. It works once, for 15 minutes.",
+      "invalid-email": "Enter a valid email address.",
+      "rate-limited": "Too many sign-in links were requested. Try again in an hour.",
+      "expired": "That sign-in link has expired. Ask for a new one.",
+      "used": "That sign-in link has already been used. Ask for a new one.",
+      "unknown": "That sign-in link is not valid. Ask for a new one.",
+      "signed-out": "You have signed out.",
+      "error": "Something went wrong. Try again."
+    },
+    "verifyTitle": "Sign in to My Alpha",
+    "verifyBody": "Press the button to finish signing in on this device.",
+    "verify": "Sign in",
+    "ordersEmpty": "No orders yet",
+    "ordersEmptyBody": "Orders you place with this email address appear here.",
+    "orderPlaced": "Placed {date}",
+    "viewOrder": "View order {number}",
+    "back": "All orders"
   }
 }

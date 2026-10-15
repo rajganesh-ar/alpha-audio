@@ -7,3 +7,4 @@ See the Observability section of the spec for the required list.
 - [Storefront catalogue](storefront-catalogue.md)
 - [Bag, checkout and orders](checkout.md)
 - [Order fulfilment](order-fulfilment.md)
+- [My Alpha accounts](my-alpha.md)

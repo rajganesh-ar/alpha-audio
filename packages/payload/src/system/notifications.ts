@@ -6,7 +6,8 @@ import {
   type NotificationTemplate,
 } from '@alpha/core'
 import { isLocaleCode, type LocaleCode } from '../markets/codes'
-import { renderEmail, type RenderedEmail } from '../notifications/render'
+import { renderEmail, renderSignInEmail, type RenderedEmail } from '../notifications/render'
+import { open } from './secretBox'
 import { orderAccessToken } from './orderTokens'
 
 /**
@@ -113,7 +114,19 @@ export async function renderNotification(
     disableErrors: true,
   })
   if (!row) return null
-  const orderId = typeof row.order === 'object' ? row.order.id : row.order
+  const locale = (isLocaleCode(row.locale) ? row.locale : 'en') as LocaleCode
+  const meta = { status: row.status, attempts: Number(row.attempts ?? 0) }
+  if (row.template === 'sign-in') {
+    // A sent link is cleared; nothing to render (and nothing to resend).
+    const link = row.secret ? open(payload, row.secret) : null
+    if (!link)
+      return meta.status === 'sent'
+        ? { email: { ...renderSignInEmail(locale, ''), to: row.to }, ...meta }
+        : null
+    return { email: { ...renderSignInEmail(locale, link), to: row.to }, ...meta }
+  }
+  const orderId = typeof row.order === 'object' ? row.order?.id : row.order
+  if (orderId === undefined || orderId === null) return null
   const order = (await payload.findByID({
     collection: 'orders',
     id: orderId,
@@ -127,7 +140,6 @@ export async function renderNotification(
       order.currency as CurrencyCode,
       Number(order.decimals) as CurrencyDecimals,
     )
-  const locale = (isLocaleCode(row.locale) ? row.locale : 'en') as LocaleCode
   const origin = payload.config.serverURL.replace(/\/$/, '')
   const link = `${origin}/${order.market}/${locale}/orders/${encodeURIComponent(order.number)}/?token=${orderAccessToken(payload, order.idempotencyKey)}`
   const shipment = typeof order.shipment === 'object' && order.shipment ? order.shipment : null
@@ -196,7 +208,8 @@ export async function deliverNotification(
   await payload.update({
     collection: 'notifications',
     id: notificationId,
-    data: { attempts, status: 'sent', sentAt: now().toISOString(), lastError: null },
+    // A sent sign-in link is not kept, even encrypted.
+    data: { attempts, status: 'sent', sentAt: now().toISOString(), lastError: null, secret: null },
     ...system,
   })
   return 'sent'

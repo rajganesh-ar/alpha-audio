@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { money } from '@alpha/core'
 import { orderAccessToken } from '../system/orderTokens'
 import { EMAIL_MESSAGES } from './messages'
-import { renderEmail, type EmailOrder } from './render'
+import { renderEmail, renderSignInEmail, type EmailOrder } from './render'
 
 const aed = (n: number) => money(n, 'AED', 2)
 const order = (locale: 'en' | 'ar'): EmailOrder => ({
@@ -56,5 +56,20 @@ describe('order emails', () => {
     expect(orderAccessToken({ secret: 's1' }, 'key')).toBe(token)
     expect(orderAccessToken({ secret: 's2' }, 'key')).not.toBe(token)
     expect(token).toMatch(/^[\w-]{43}$/)
+  })
+
+  it('renders the sign-in email with only the link, in both languages', () => {
+    const en = renderSignInEmail(
+      'en',
+      'https://www.alphaaudios.com/ae/en/account/verify/?token=abc',
+    )
+    expect(en.subject).toBe('Your Alpha Audio sign-in link')
+    expect(en.text).toContain(
+      'Sign in: https://www.alphaaudios.com/ae/en/account/verify/?token=abc',
+    )
+    expect(en.html).toContain('href="https://www.alphaaudios.com/ae/en/account/verify/?token=abc"')
+    const ar = renderSignInEmail('ar', 'https://x/')
+    expect(ar.html).toContain('<html lang="ar" dir="rtl">')
+    expect(ar.subject).toBe('رابط تسجيل الدخول إلى ألفا أوديو')
   })
 })

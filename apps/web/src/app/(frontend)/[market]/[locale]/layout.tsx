@@ -116,6 +116,7 @@ export default async function MarketLayout({
                     label={t('ui.quietActions')}
                     actions={[
                       { label: t('ui.search'), icon: 'search', href: `${home}search/` },
+                      { label: t('ui.account'), icon: 'user', href: `${home}account/` },
                       { label: t('ui.bag'), icon: 'bag', href: `${home}bag/` },
                     ]}
                   />

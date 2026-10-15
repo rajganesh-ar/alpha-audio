@@ -1,0 +1,3 @@
+/* Dealer board styles: Tailwind 4, the Alpha tokens and theme, and the @alpha/ui components. */
+@import 'tailwindcss';
+@import '@alpha/ui/styles.css';

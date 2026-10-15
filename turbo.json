@@ -17,6 +17,7 @@
         "DATABASE_URL",
         "PAYLOAD_SECRET",
         "NEXT_PUBLIC_SERVER_URL",
+        "PARTNERS_SERVER_URL",
         "S3_ENDPOINT",
         "S3_REGION",
         "S3_BUCKET",
@@ -24,6 +25,8 @@
         "S3_SECRET_ACCESS_KEY",
         "S3_FORCE_PATH_STYLE",
         "SMTP_URL",
+        "EMAIL_FROM_ADDRESS",
+        "EMAIL_FROM_NAME",
         "PAYMENT_PROVIDER",
         "PAYMENT_SANDBOX_SECRET",
         "PAYMENT_SANDBOX_ALLOWED"

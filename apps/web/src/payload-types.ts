@@ -1212,6 +1212,7 @@ export interface PriceList {
 export interface CompanyUser {
   id: number;
   name?: string | null;
+  locale: 'en' | 'ar';
   company: number | Company;
   role: 'owner' | 'purchaser' | 'viewer' | 'installer';
   /**
@@ -2153,6 +2154,7 @@ export interface CompaniesSelect<T extends boolean = true> {
  */
 export interface CompanyUsersSelect<T extends boolean = true> {
   name?: T;
+  locale?: T;
   company?: T;
   role?: T;
   approvalThreshold?: T;

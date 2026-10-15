@@ -21,7 +21,24 @@ export const CompanyUsers: CollectionConfig = {
   },
   access: { read: staffOrColleagues, create: isStaff, update: isStaff, delete: nobody },
   fields: [
-    { name: 'name', type: 'text' },
+    {
+      type: 'row',
+      fields: [
+        { name: 'name', type: 'text', admin: { width: '70%' } },
+        {
+          // The dealer board's language for this person (docs/tasks/0014); they cannot change it yet.
+          name: 'locale',
+          type: 'select',
+          required: true,
+          defaultValue: 'en',
+          options: [
+            { label: 'English', value: 'en' },
+            { label: 'العربية', value: 'ar' },
+          ],
+          admin: { width: '30%' },
+        },
+      ],
+    },
     {
       type: 'row',
       fields: [

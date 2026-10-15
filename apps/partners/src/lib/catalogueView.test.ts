@@ -83,6 +83,9 @@ describe('catalogueView', () => {
         ),
       ),
     ).toBe('KWD 12.345')
+    expect(
+      plain(traceValue({ rule: 'project', seen: true, matched: true, value: '4500.00' }, ctx())),
+    ).toBe('AED 4,500.00')
   })
 
   it('words stock: band, low, out of stock with or without a date, hidden', () => {

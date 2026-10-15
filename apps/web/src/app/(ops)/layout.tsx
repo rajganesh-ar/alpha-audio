@@ -30,6 +30,7 @@ export default function OpsLayout({ children }: { children: ReactNode }) {
               nav={[
                 { label: t('ops.title'), href: '/ops/orders/' },
                 { label: t('ops.trade.nav'), href: '/ops/trade-orders/' },
+                { label: t('ops.projects.nav'), href: '/ops/projects/' },
                 { label: t('ops.admin'), href: '/admin' },
               ]}
             />

@@ -14,8 +14,16 @@ import { requirePartner } from '@/lib/session'
 
 type Search = Promise<Record<string, string | string[] | undefined>>
 
-const PLACE_STATUSES = ['unavailable', 'in-progress', 'rules', 'not-allowed', 'on-hold', 'error']
-const QUOTE_STATUSES = ['not-allowed', 'lines', 'error']
+const PLACE_STATUSES = [
+  'unavailable',
+  'in-progress',
+  'rules',
+  'not-allowed',
+  'on-hold',
+  'project-unavailable',
+  'error',
+]
+const QUOTE_STATUSES = ['not-allowed', 'lines', 'project-unavailable', 'error']
 const list = (v: string | string[] | undefined) =>
   v === undefined ? [] : Array.isArray(v) ? v : [v]
 
@@ -36,7 +44,14 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
   const t = copy(locale)
   const fmt = formatLocale(locale, account.company.market)
   const lines = draftLines(list(params['sku']), list(params['qty']))
-  const draft = await previewTradeOrder(partner.payload, partner.user, lines, { locale })
+  const projectParam = list(params['project'])[0]?.slice(0, 40) || null
+  const draft = await previewTradeOrder(partner.payload, partner.user, lines, {
+    locale,
+    project: projectParam,
+  })
+  const projectHidden: Record<string, string> = draft?.project
+    ? { project: draft.project.number }
+    : {}
   const status = list(params['status'])[0]
   const known = status && PLACE_STATUSES.includes(status) ? status : null
   const quoteStatus = list(params['quote'])[0]
@@ -79,6 +94,17 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
             {draft.hold ? t('partners.order.onHold') : t('partners.order.cannotOrder')}
           </Notice>
         ) : null}
+        {draft?.project ? (
+          <Notice tone="info">
+            {t('partners.projects.forProject', {
+              number: draft.project.number,
+              name: draft.project.name,
+            })}
+          </Notice>
+        ) : null}
+        {draft?.projectUnavailable ? (
+          <Notice tone="critical">{t('partners.projects.projectUnavailable')}</Notice>
+        ) : null}
         {draft?.credit ? <Credit credit={draft.credit} t={t} locale={fmt} /> : null}
         <QuickOrder
           action="/orders/new"
@@ -94,6 +120,7 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
             error: problems.lines.get(l.sku),
           }))}
           blankRows={lines.length ? 2 : 4}
+          hidden={projectHidden}
         />
         {reviewing && draft ? (
           <section aria-labelledby="review" className="flex flex-col gap-6">
@@ -169,6 +196,9 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
             {draft.canOrder && !blocked ? (
               <form method="post" action="/api/v1/orders" className="flex flex-col gap-4">
                 <input type="hidden" name="idempotencyKey" value={randomUUID()} />
+                {draft.project ? (
+                  <input type="hidden" name="project" value={draft.project.number} />
+                ) : null}
                 {draft.lines.map((l) => (
                   <span key={l.sku}>
                     <input type="hidden" name="sku" value={l.sku} />

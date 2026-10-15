@@ -49,6 +49,12 @@ export interface ContractPrice extends Validity {
   price: bigint
 }
 
+/** A project price granted on an approved registration (docs/tasks/0017): net, market minor units. */
+export interface ProjectPrice {
+  sku: string
+  price: bigint
+}
+
 export interface PriceListItem {
   sku: string
   price: bigint
@@ -85,6 +91,8 @@ export interface PricingSettings {
 export interface PricingData {
   products: ReadonlyMap<string, PricingProduct>
   contracts: readonly ContractPrice[]
+  /** Prices of the project the order or quote is for (approved, in date); empty otherwise. */
+  projectPrices?: readonly ProjectPrice[] | undefined
   /** The company's price list (or its buyer group's), already chosen for the market. */
   priceList: ({ items: readonly PriceListItem[] } & Validity) | null
   groupDiscounts: readonly GroupDiscount[]

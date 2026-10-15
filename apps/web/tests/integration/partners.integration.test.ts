@@ -99,6 +99,7 @@ describe('partner catalogue', () => {
     // The internal steps never leave the server.
     expect(amp?.line.trace.map((s) => s.rule)).toEqual([
       'contract',
+      'project',
       'price-list',
       'dealer-list',
       'group-discount',

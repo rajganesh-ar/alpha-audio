@@ -112,6 +112,14 @@ export const TradeOrders: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'project',
+      label: 'Project registration',
+      type: 'text',
+      index: true,
+      access: system,
+      admin: { ...readOnly, description: 'Priced at this project’s prices (docs/tasks/0017).' },
+    },
     { name: 'note', label: 'Dealer’s note', type: 'textarea', access: system, admin: readOnly },
     {
       name: 'lines',

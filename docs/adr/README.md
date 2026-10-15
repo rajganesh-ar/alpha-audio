@@ -20,3 +20,4 @@ One file per decision: NNNN-title.md. 0001 is written by task 0001.
 | [0014](0014-partners-app.md)                        | The dealer board is its own app, on one shared configuration                 |
 | [0015](0015-dealer-orders.md)                       | Dealer orders are their own collection and state machine                     |
 | [0016](0016-dealer-quotes.md)                       | Quotes lock prices and hold stock; ordering a quote reuses the order service |
+| [0017](0017-project-registrations.md)               | Project prices come from staff-approved registrations                        |

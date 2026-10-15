@@ -12,7 +12,7 @@
  */
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { ensureStaffUser } from '@alpha/payload'
+import { createProjects, ensureStaffUser } from '@alpha/payload'
 
 const TRADE_PASSWORD = 'partners-demo-123'
 const TRADE_USERS = {
@@ -65,6 +65,43 @@ async function orderSetup(): Promise<void> {
     data: { settings: { stockVisibility: 'banded', orderMultiple: 2, minOrderValue: 1_000_000 } },
     ...as(),
   })
+  // An approved demo project (docs/tasks/0017): Lumina II at a project price for Harmony.
+  const lumina = (
+    await payload.find({
+      collection: 'products',
+      where: { sku: { equals: 'SONUSFABER-LUMINA-II' } },
+      ...as(),
+    })
+  ).docs[0]
+  const owner = (
+    await payload.find({
+      collection: 'company-users',
+      where: { email: { equals: TRADE_USERS.harmonyOwner } },
+      ...as(),
+    })
+  ).docs[0]
+  if (lumina && owner) {
+    const projects = createProjects(payload)
+    const registered = await projects.register({
+      company: { id: harmony.id, market: 'ae' },
+      registrant: { id: owner.id, role: 'owner' },
+      idempotencyKey: 'demo-palm-villa',
+      name: 'Palm villa cinema',
+      endCustomer: 'Private client',
+      expectedClose: new Date(Date.now() + 60 * 24 * 3600_000).toISOString().slice(0, 10),
+      lines: [{ sku: lumina.sku, productId: lumina.id, title: 'Lumina II', qty: 12 }],
+      details: { city: 'Dubai', note: 'Demo registration (seed:trade).' },
+    })
+    if (registered.ok && registered.project.status === 'submitted')
+      await projects.decide(registered.project.number, {
+        by: user.id,
+        decision: 'approve',
+        // AED 4,500.00 net, below the dealer list (5,266.67).
+        prices: { [lumina.sku]: 450_000n },
+        validityDays: 365,
+        note: 'Approved for the demo.',
+      })
+  }
   const buyer = await payload.find({
     collection: 'company-users',
     where: { email: { equals: TRADE_USERS.harmonyBuyer } },

@@ -30,6 +30,7 @@ export interface CatalogueViewRow {
 
 const BASE_RULES: ReadonlySet<TraceStep['rule']> = new Set([
   'contract',
+  'project',
   'price-list',
   'dealer-list',
 ])

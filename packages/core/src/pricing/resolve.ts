@@ -74,7 +74,7 @@ function bestRule(
 /**
  * Trade prices for a company (spec: Server logic → Price engine; docs/tasks/0013). Pure: the
  * caller loads `data` for this company only. The base price is the first match of contract,
- * project (not yet modelled), price list, then dealer list (RRP excl. VAT × channel factor, or
+ * project (an approved registration's price), price list, then dealer list (RRP excl. VAT × channel factor, or
  * landed cost ÷ (1 − target margin)). A dealer-list base takes the group discount, the best
  * volume break and a non-stackable promotion; a stackable promotion applies to any base. Units
  * below the margin floor need approval. Prices are net; VAT is added on top per line.
@@ -115,7 +115,10 @@ export function resolvePrices(
       .sort((a, b) => Number(a.price - b.price))[0]
     step('contract', true, Boolean(contract), contract ? fmt(contract.price) : null)
     if (contract) [base, basis] = [contract.price, 'contract']
-    step('project', base === null, false)
+    const project =
+      base === null ? data.projectPrices?.find((p) => p.sku === product.sku) : undefined
+    step('project', base === null, Boolean(project), project ? fmt(project.price) : null)
+    if (base === null && project) [base, basis] = [project.price, 'project']
     const listed =
       base === null && data.priceList && live(data.priceList, ctx.at)
         ? data.priceList.items.find((i) => i.sku === product.sku)

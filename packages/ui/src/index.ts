@@ -106,3 +106,8 @@ export {
   type QuickOrderProps,
   type QuickOrderRow,
 } from './components/QuickOrder/QuickOrder'
+export {
+  ProjectRegistrationForm,
+  type ProjectFormValues,
+  type ProjectRegistrationFormProps,
+} from './components/ProjectRegistrationForm/ProjectRegistrationForm'

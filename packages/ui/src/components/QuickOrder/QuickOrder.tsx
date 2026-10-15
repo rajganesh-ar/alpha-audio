@@ -23,6 +23,8 @@ export interface QuickOrderProps {
   qtyLabel: string
   submitLabel: string
   hint?: string | undefined
+  /** Carried through the review, e.g. the project the order is for. */
+  hidden?: Readonly<Record<string, string>> | undefined
   loading?: boolean | undefined
   loadingLabel?: string | undefined
   error?: string | undefined
@@ -43,6 +45,7 @@ export function QuickOrder({
   qtyLabel,
   submitLabel,
   hint,
+  hidden = {},
   loading = false,
   loadingLabel,
   error,
@@ -58,6 +61,9 @@ export function QuickOrder({
       className="flex flex-col gap-4"
       aria-busy={loading || undefined}
     >
+      {Object.entries(hidden).map(([name, value]) => (
+        <input key={name} type="hidden" name={name} value={value} />
+      ))}
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 text-lg font-semibold text-ink">{legend}</legend>
         {hint ? <p className="text-sm text-ink-muted">{hint}</p> : null}

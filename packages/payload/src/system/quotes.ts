@@ -160,7 +160,12 @@ export class PostgresQuoteStore implements QuoteStore {
   }
 
   async insertQuote(quote: NewQuote) {
-    const d = quote.details as { reference?: string | null; note?: string | null; vatRate?: number }
+    const d = quote.details as {
+      reference?: string | null
+      note?: string | null
+      vatRate?: number
+      project?: string | null
+    }
     try {
       const doc = await this.payload.create({
         collection: 'quotes',
@@ -175,6 +180,7 @@ export class PostgresQuoteStore implements QuoteStore {
           vatRate: d.vatRate ?? 0,
           reference: d.reference ?? null,
           note: d.note ?? null,
+          project: d.project ?? null,
           lines: linesData(quote.lines),
           totals: {
             net: Number(quote.totals.net.amount),
@@ -255,6 +261,8 @@ export interface QuoteInput {
   idempotencyKey: string
   reference?: string | null | undefined
   note?: string | null | undefined
+  /** An approved project registration of the company (docs/tasks/0017). */
+  project?: string | null | undefined
   locale: LocaleCode
 }
 
@@ -264,10 +272,11 @@ export async function createQuoteFromDraft(
   user: unknown,
   input: QuoteInput,
   now?: () => Date,
-): Promise<CreateQuoteResult | null> {
+): Promise<CreateQuoteResult | { ok: false; reason: 'project-unavailable' } | null> {
   const at = now?.() ?? new Date()
-  const draft = await priceDraft(payload, user, input.lines, input.locale, at)
+  const draft = await priceDraft(payload, user, input.lines, input.locale, at, input.project)
   if (!draft) return null
+  if (draft.projectUnavailable) return { ok: false, reason: 'project-unavailable' }
   const settings = (await payload.findGlobal({ slug: 'pricing-settings', ...system })) as {
     quoteValidityDays?: number | null
   }
@@ -283,6 +292,7 @@ export async function createQuoteFromDraft(
       reference: input.reference?.trim().slice(0, 120) || null,
       note: input.note?.trim().slice(0, 1000) || null,
       vatRate: draft.session.context.vatRate,
+      project: draft.project?.number ?? null,
     },
   })
 }
@@ -314,6 +324,7 @@ export async function orderQuote(
   })) as {
     reference?: string | null
     note?: string | null
+    project?: string | null
   }
   const parties = await orderParties(payload, session, user)
   return createQuotes(payload, now).toOrder(number, {
@@ -321,6 +332,7 @@ export async function orderQuote(
     details: {
       poNumber: raw.reference ?? null,
       note: raw.note ?? null,
+      project: raw.project ?? null,
       vatRate: session.context.vatRate,
     },
   })

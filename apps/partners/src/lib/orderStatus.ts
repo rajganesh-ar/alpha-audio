@@ -38,3 +38,25 @@ export const quoteState = (status: string, validUntil: string, now = Date.now())
   (status === 'open' && Date.parse(validUntil) <= now
     ? 'expired'
     : status) as keyof typeof QUOTE_TONE
+
+type ProjectState = 'submitted' | 'reviewing' | 'approved' | 'rejected' | 'withdrawn' | 'expired'
+
+/** How each project registration status reads as a badge. */
+export const PROJECT_TONE: Record<ProjectState, BadgeTone> = {
+  submitted: 'caution',
+  reviewing: 'caution',
+  approved: 'positive',
+  rejected: 'critical',
+  withdrawn: 'neutral',
+  expired: 'critical',
+}
+
+/** An approved project past its validity reads as expired. */
+export const projectStateOf = (
+  status: string,
+  validUntil: string | null | undefined,
+  now = Date.now(),
+) =>
+  (status === 'approved' && validUntil && Date.parse(validUntil) <= now
+    ? 'expired'
+    : status) as ProjectState

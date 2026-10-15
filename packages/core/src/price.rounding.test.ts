@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { divideRoundHalfUp, money, roundToDecimals, vatShare, vatShareOf } from './money'
+import { divideRoundHalfUp, money, roundToDecimals, vatOnNet, vatShare, vatShareOf } from './money'
 
 /**
  * Mandatory test (CLAUDE.md): 2-decimal and 3-decimal currencies, VAT as
@@ -99,5 +99,16 @@ describe('roundToDecimals', () => {
     expect(() => roundToDecimals(Number.POSITIVE_INFINITY, 2)).toThrow(RangeError)
     expect(() => roundToDecimals(1, -1)).toThrow(RangeError)
     expect(() => roundToDecimals(1, 1.5)).toThrow(RangeError)
+  })
+})
+
+describe('vatOnNet (trade prices, VAT added on top)', () => {
+  it.each([
+    ['UAE 5 %, AED', 1_000_000n, 5, 50_000n],
+    ['KSA 15 %, SAR', 33_33n, 15, 5_00n], // 3333 × 0.15 = 499.95 → 500
+    ['Bahrain 10 %, BHD 3 dp', 12_345n, 10, 1_235n], // 1234.5 → 1235 (half up)
+    ['Kuwait 0 %', 9_999n, 0, 0n],
+  ])('%s', (_label, net, rate, expected) => {
+    expect(vatOnNet(net, rate)).toBe(expected)
   })
 })

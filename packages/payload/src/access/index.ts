@@ -84,3 +84,51 @@ export const staffOrOwnShipments: Access = ({ req }) => {
     return { 'order.contact.email': { equals: email } }
   return false
 }
+
+/** A signed-in company user (dealer board; docs/tasks/0013). */
+export const isCompanyUser = (user: { collection?: string } | null | undefined): boolean =>
+  user?.collection === 'company-users'
+
+/** The company id of a signed-in company user (relationship populated or not). */
+export function companyOf(user: unknown): number | null {
+  const company = (user as { collection?: string; company?: unknown } | null)?.company
+  if (!isCompanyUser(user as { collection?: string })) return null
+  if (typeof company === 'number') return company
+  if (company && typeof company === 'object' && 'id' in company)
+    return Number((company as { id: unknown }).id)
+  return null
+}
+
+const companyRole = (user: unknown): string | null =>
+  isCompanyUser(user as { collection?: string })
+    ? String((user as { role?: unknown }).role ?? '')
+    : null
+
+/** Companies: staff read all; a company user reads only their own company (spec: company scope). */
+export const staffOrOwnCompany: Access = ({ req }) => {
+  if (req.user?.collection === 'users') return true
+  const company = companyOf(req.user)
+  return company !== null ? { id: { equals: company } } : false
+}
+
+/** Company users: staff read all; a company user reads the users of their own company. */
+export const staffOrColleagues: Access = ({ req }) => {
+  if (req.user?.collection === 'users') return true
+  const company = companyOf(req.user)
+  return company !== null ? { company: { equals: company } } : false
+}
+
+/**
+ * Credit, terms and order settings of a company: staff, and the company's own owner or
+ * purchaser. Viewers and installers see the catalogue, not the account's commercial terms.
+ */
+export const canReadCompanyTerms: FieldAccess = ({ req, doc }) => {
+  if (req.user?.collection === 'users') return true
+  const company = companyOf(req.user)
+  const role = companyRole(req.user)
+  return (
+    company !== null &&
+    Number((doc as { id?: unknown } | undefined)?.id) === company &&
+    (role === 'owner' || role === 'purchaser')
+  )
+}

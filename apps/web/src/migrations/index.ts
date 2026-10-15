@@ -1,22 +1,23 @@
-import * as migration_20261014_023806_initial_schema from './20261014_023806_initial_schema';
-import * as migration_20261014_023807_pgvector from './20261014_023807_pgvector';
-import * as migration_20261014_093836_markets_and_legacy_redirects from './20261014_093836_markets_and_legacy_redirects';
-import * as migration_20261014_181649_inventory_ledger from './20261014_181649_inventory_ledger';
-import * as migration_20261014_181650_ledger_constraints from './20261014_181650_ledger_constraints';
-import * as migration_20261014_185458_purchasing from './20261014_185458_purchasing';
-import * as migration_20261014_185459_purchasing_constraints from './20261014_185459_purchasing_constraints';
-import * as migration_20261014_193323_catalog from './20261014_193323_catalog';
-import * as migration_20261014_193324_catalog_constraints from './20261014_193324_catalog_constraints';
-import * as migration_20261015_032501_category_facet_specs from './20261015_032501_category_facet_specs';
-import * as migration_20261015_041146_brand_agreements from './20261015_041146_brand_agreements';
-import * as migration_20261015_073407_checkout from './20261015_073407_checkout';
-import * as migration_20261015_073408_checkout_constraints from './20261015_073408_checkout_constraints';
-import * as migration_20261015_073659_jobs_expire_checkouts from './20261015_073659_jobs_expire_checkouts';
-import * as migration_20261015_092240_fulfilment from './20261015_092240_fulfilment';
-import * as migration_20261015_092241_fulfilment_constraints from './20261015_092241_fulfilment_constraints';
-import * as migration_20261015_095446_pages from './20261015_095446_pages';
-import * as migration_20261015_095447_product_search from './20261015_095447_product_search';
+import * as migration_20261014_023806_initial_schema from './20261014_023806_initial_schema'
+import * as migration_20261014_023807_pgvector from './20261014_023807_pgvector'
+import * as migration_20261014_093836_markets_and_legacy_redirects from './20261014_093836_markets_and_legacy_redirects'
+import * as migration_20261014_181649_inventory_ledger from './20261014_181649_inventory_ledger'
+import * as migration_20261014_181650_ledger_constraints from './20261014_181650_ledger_constraints'
+import * as migration_20261014_185458_purchasing from './20261014_185458_purchasing'
+import * as migration_20261014_185459_purchasing_constraints from './20261014_185459_purchasing_constraints'
+import * as migration_20261014_193323_catalog from './20261014_193323_catalog'
+import * as migration_20261014_193324_catalog_constraints from './20261014_193324_catalog_constraints'
+import * as migration_20261015_032501_category_facet_specs from './20261015_032501_category_facet_specs'
+import * as migration_20261015_041146_brand_agreements from './20261015_041146_brand_agreements'
+import * as migration_20261015_073407_checkout from './20261015_073407_checkout'
+import * as migration_20261015_073408_checkout_constraints from './20261015_073408_checkout_constraints'
+import * as migration_20261015_073659_jobs_expire_checkouts from './20261015_073659_jobs_expire_checkouts'
+import * as migration_20261015_092240_fulfilment from './20261015_092240_fulfilment'
+import * as migration_20261015_092241_fulfilment_constraints from './20261015_092241_fulfilment_constraints'
+import * as migration_20261015_095446_pages from './20261015_095446_pages'
+import * as migration_20261015_095447_product_search from './20261015_095447_product_search'
 import * as migration_20261015_102240_customers from './20261015_102240_customers'
+import * as migration_20261015_105401_trade from './20261015_105401_trade'
 
 export const migrations = [
   {
@@ -113,5 +114,10 @@ export const migrations = [
     up: migration_20261015_102240_customers.up,
     down: migration_20261015_102240_customers.down,
     name: '20261015_102240_customers',
+  },
+  {
+    up: migration_20261015_105401_trade.up,
+    down: migration_20261015_105401_trade.down,
+    name: '20261015_105401_trade',
   },
 ]

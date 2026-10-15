@@ -16,6 +16,7 @@ import {
   type NewTradeOrder,
   type PriceLine,
   type RuleCheck,
+  type SubmitInput,
   type SubmitResult,
   type TraceStep,
   type TradeLine,
@@ -340,6 +341,10 @@ export interface TradeOrderDraft {
   credit: CreditPosition | null
   hold: boolean
   canOrder: boolean
+  /** Owners and purchasers quote even on hold (spec: a hold blocks checkout, not quoting). */
+  canQuote: boolean
+  /** How long a quote of these lines would keep its prices (PricingSettings). */
+  quoteValidityDays: number
 }
 
 const big = (v: number | null | undefined) =>
@@ -356,7 +361,47 @@ export function mergeDraftLines(lines: readonly OrderDraftLine[]): OrderDraftLin
   return [...merged].map(([sku, qty]) => ({ sku, qty }))
 }
 
-async function draftFor(
+/** The company's ordering terms and the placer's role and threshold (system reads). */
+export async function orderParties(
+  payload: Payload,
+  session: CompanyContext,
+  user: unknown,
+): Promise<Pick<SubmitInput, 'company' | 'placer'>> {
+  const [terms, placer] = await Promise.all([
+    payload.findByID({ collection: 'companies', id: session.company.id, ...system }),
+    payload.findByID({
+      collection: 'company-users',
+      id: Number((user as { id: unknown }).id),
+      ...system,
+    }),
+  ])
+  const t = terms as unknown as CompanyTerms
+  const p = placer as unknown as PlacerDoc
+  return {
+    company: {
+      id: session.company.id,
+      market: session.company.market,
+      hold: Boolean(t.hold),
+      creditLimit: big(t.creditLimit),
+      rules: {
+        orderMultiple: t.settings?.orderMultiple ?? null,
+        minOrderValue: big(t.settings?.minOrderValue),
+      },
+    },
+    placer: { id: p.id, role: p.role ?? 'viewer', approvalThreshold: big(p.approvalThreshold) },
+  }
+}
+
+const AED_MICROS = 1_000_000n
+const fxDecimal = (micros: bigint) =>
+  `${micros / AED_MICROS}.${String(micros % AED_MICROS).padStart(6, '0')}`
+
+/**
+ * The draft lines priced for the signed-in company user now, with the company's terms, the
+ * placer, and the FX rates the engine used (quotes lock them). Null for anyone who is not a
+ * company user.
+ */
+export async function priceDraft(
   payload: Payload,
   user: unknown,
   raw: readonly OrderDraftLine[],
@@ -366,13 +411,8 @@ async function draftFor(
   const session = await companyContext(payload, user, at)
   if (!session) return null
   const lines = mergeDraftLines(raw)
-  const [terms, placer, products] = await Promise.all([
-    payload.findByID({ collection: 'companies', id: session.company.id, ...system }),
-    payload.findByID({
-      collection: 'company-users',
-      id: Number((user as { id: unknown }).id),
-      ...system,
-    }),
+  const [parties, products] = await Promise.all([
+    orderParties(payload, session, user),
     lines.length
       ? payload.find({
           collection: 'products',
@@ -416,23 +456,14 @@ async function draftFor(
       trace: r?.trace ?? [],
     }
   })
-  const t = terms as unknown as CompanyTerms
-  const p = placer as unknown as PlacerDoc
   return {
     session,
     tradeLines,
     totals: priced.totals,
-    company: {
-      id: session.company.id,
-      market: session.company.market,
-      hold: Boolean(t.hold),
-      creditLimit: big(t.creditLimit),
-      rules: {
-        orderMultiple: t.settings?.orderMultiple ?? null,
-        minOrderValue: big(t.settings?.minOrderValue),
-      },
-    },
-    placer: { id: p.id, role: p.role ?? 'viewer', approvalThreshold: big(p.approvalThreshold) },
+    ...parties,
+    fxRates: Object.fromEntries(
+      Object.entries(data.settings.fxAedMicros).map(([c, m]) => [c, fxDecimal(m)]),
+    ),
   }
 }
 
@@ -443,9 +474,12 @@ export async function previewTradeOrder(
   lines: readonly OrderDraftLine[],
   options: { locale: LocaleCode; at?: Date },
 ): Promise<TradeOrderDraft | null> {
-  const draft = await draftFor(payload, user, lines, options.locale, options.at ?? new Date())
+  const draft = await priceDraft(payload, user, lines, options.locale, options.at ?? new Date())
   if (!draft) return null
   const service = createTradeOrders(payload)
+  const settings = (await payload.findGlobal({ slug: 'pricing-settings', ...system })) as {
+    quoteValidityDays?: number | null
+  }
   const preview = await service.preview({
     company: draft.company,
     placer: draft.placer,
@@ -463,6 +497,8 @@ export async function previewTradeOrder(
       : null,
     hold: draft.company.hold,
     canOrder: ORDERING_ROLES.includes(draft.placer.role) && !draft.company.hold,
+    canQuote: ORDERING_ROLES.includes(draft.placer.role),
+    quoteValidityDays: settings.quoteValidityDays ?? 7,
   }
 }
 
@@ -481,7 +517,7 @@ export async function placeTradeOrder(
   input: PlaceInput,
   now?: () => Date,
 ): Promise<SubmitResult | null> {
-  const draft = await draftFor(payload, user, input.lines, input.locale, now?.() ?? new Date())
+  const draft = await priceDraft(payload, user, input.lines, input.locale, now?.() ?? new Date())
   if (!draft) return null
   return createTradeOrders(payload, now).submit({
     company: draft.company,

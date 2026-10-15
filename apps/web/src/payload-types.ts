@@ -95,6 +95,7 @@ export interface Config {
     companies: Company;
     'company-users': CompanyUser;
     'trade-orders': TradeOrder;
+    quotes: Quote;
     'contract-prices': ContractPrice;
     'price-lists': PriceList;
     'buyer-groups': BuyerGroup;
@@ -135,6 +136,7 @@ export interface Config {
     companies: CompaniesSelect<false> | CompaniesSelect<true>;
     'company-users': CompanyUsersSelect<false> | CompanyUsersSelect<true>;
     'trade-orders': TradeOrdersSelect<false> | TradeOrdersSelect<true>;
+    quotes: QuotesSelect<false> | QuotesSelect<true>;
     'contract-prices': ContractPricesSelect<false> | ContractPricesSelect<true>;
     'price-lists': PriceListsSelect<false> | PriceListsSelect<true>;
     'buyer-groups': BuyerGroupsSelect<false> | BuyerGroupsSelect<true>;
@@ -1340,6 +1342,92 @@ export interface TradeOrder {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quotes".
+ */
+export interface Quote {
+  id: number;
+  number: string;
+  status: 'open' | 'ordering' | 'ordered' | 'withdrawn' | 'expired';
+  company: number | Company;
+  createdBy: number | CompanyUser;
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  currency: string;
+  decimals: number;
+  vatRate: number;
+  reference?: string | null;
+  note?: string | null;
+  lines?:
+    | {
+        product?: (number | null) | Product;
+        sku: string;
+        title: string;
+        qty: number;
+        unitNet?: number | null;
+        lineNet?: number | null;
+        vat?: number | null;
+        basis?: string | null;
+        priceStatus?: string | null;
+        /**
+         * Stock held for this line.
+         */
+        held?: boolean | null;
+        /**
+         * The price engine’s trace, as the company saw it.
+         */
+        trace?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  totals?: {
+    net?: number | null;
+    vat?: number | null;
+    gross?: number | null;
+  };
+  /**
+   * Prices are locked and stock held until then.
+   */
+  validUntil: string;
+  orderNumber?: string | null;
+  fxLockedAt?: string | null;
+  fxRates?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Ledger holds by line (null where not held).
+   */
+  reservations?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  idempotencyKey: string;
+  /**
+   * Staff notes; never shown to the dealer.
+   */
+  staffNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contract-prices".
  */
 export interface ContractPrice {
@@ -1638,6 +1726,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'trade-orders';
         value: number | TradeOrder;
+      } | null)
+    | ({
+        relationTo: 'quotes';
+        value: number | Quote;
       } | null)
     | ({
         relationTo: 'contract-prices';
@@ -2329,6 +2421,54 @@ export interface TradeOrdersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quotes_select".
+ */
+export interface QuotesSelect<T extends boolean = true> {
+  number?: T;
+  status?: T;
+  company?: T;
+  createdBy?: T;
+  market?: T;
+  currency?: T;
+  decimals?: T;
+  vatRate?: T;
+  reference?: T;
+  note?: T;
+  lines?:
+    | T
+    | {
+        product?: T;
+        sku?: T;
+        title?: T;
+        qty?: T;
+        unitNet?: T;
+        lineNet?: T;
+        vat?: T;
+        basis?: T;
+        priceStatus?: T;
+        held?: T;
+        trace?: T;
+        id?: T;
+      };
+  totals?:
+    | T
+    | {
+        net?: T;
+        vat?: T;
+        gross?: T;
+      };
+  validUntil?: T;
+  orderNumber?: T;
+  fxLockedAt?: T;
+  fxRates?: T;
+  reservations?: T;
+  idempotencyKey?: T;
+  staffNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contract-prices_select".
  */
 export interface ContractPricesSelect<T extends boolean = true> {
@@ -2638,6 +2778,10 @@ export interface PricingSetting {
    */
   marginFloor: number;
   /**
+   * Dealer quotes keep their prices and hold stock this long (docs/tasks/0016).
+   */
+  quoteValidityDays: number;
+  /**
    * AED for one unit of each currency, e.g. SAR 0.979, KWD 11.95. Used for the margin floor.
    */
   fxRates?:
@@ -2747,6 +2891,7 @@ export interface PricingSettingsSelect<T extends boolean = true> {
       };
   targetMargin?: T;
   marginFloor?: T;
+  quoteValidityDays?: T;
   fxRates?:
     | T
     | {

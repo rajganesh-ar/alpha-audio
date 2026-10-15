@@ -11,3 +11,4 @@ See the Observability section of the spec for the required list.
 - [Trade pricing](trade-pricing.md)
 - [Dealer board](partners.md)
 - [Dealer orders](dealer-orders.md)
+- [Dealer quotes](dealer-quotes.md)

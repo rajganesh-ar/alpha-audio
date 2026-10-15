@@ -35,6 +35,11 @@ export interface SubmitInput {
   lines: TradeLine[]
   totals: TradeTotals
   details: Readonly<Record<string, unknown>>
+  /**
+   * Stock already held for the lines (a quote's holds, by line index). Each is moved to the
+   * order; one that lapsed is reserved again.
+   */
+  holds?: ReadonlyArray<Id | null> | undefined
 }
 
 export type SubmitResult =
@@ -132,12 +137,23 @@ export class TradeOrderService {
     const holdExpiresAt = pending ? new Date(now.getTime() + PENDING_HOLD_MS) : null
     const held: Id[] = []
     const missing: string[] = []
-    for (const line of order.lines) {
+    const doc = { type: 'order' as const, id: order.number }
+    for (const [i, line] of order.lines.entries()) {
+      const existing = input.holds?.[i]
+      if (existing !== undefined && existing !== null) {
+        try {
+          held.push((await this.ledger.confirm(existing, { doc, expiresAt: holdExpiresAt })).id)
+          continue
+        } catch (error) {
+          if (!(error instanceof LedgerError)) throw error
+          // The quote's hold lapsed or was released: reserve afresh below.
+        }
+      }
       const r = await this.ledger.reserve({
         sku: line.sku,
         qty: line.qty,
         market: order.market,
-        doc: { type: 'order', id: order.number },
+        doc,
         expiresAt: holdExpiresAt,
       })
       if (r.ok) held.push(r.reservation.id)

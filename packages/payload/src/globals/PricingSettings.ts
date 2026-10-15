@@ -62,6 +62,20 @@ export const PricingSettings: GlobalConfig = {
       ],
     },
     {
+      name: 'quoteValidityDays',
+      label: 'Quote validity (days)',
+      type: 'number',
+      required: true,
+      defaultValue: 7,
+      admin: {
+        description: 'Dealer quotes keep their prices and hold stock this long (docs/tasks/0016).',
+      },
+      validate: (v: unknown) =>
+        typeof v === 'number' && Number.isSafeInteger(v) && v >= 1 && v <= 30
+          ? true
+          : 'Quote validity is a whole number of days from 1 to 30.',
+    },
+    {
       name: 'fxRates',
       label: 'FX rates to AED',
       type: 'array',

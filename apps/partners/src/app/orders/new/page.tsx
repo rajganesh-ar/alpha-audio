@@ -15,6 +15,7 @@ import { requirePartner } from '@/lib/session'
 type Search = Promise<Record<string, string | string[] | undefined>>
 
 const PLACE_STATUSES = ['unavailable', 'in-progress', 'rules', 'not-allowed', 'on-hold', 'error']
+const QUOTE_STATUSES = ['not-allowed', 'lines', 'error']
 const list = (v: string | string[] | undefined) =>
   v === undefined ? [] : Array.isArray(v) ? v : [v]
 
@@ -38,6 +39,8 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
   const draft = await previewTradeOrder(partner.payload, partner.user, lines, { locale })
   const status = list(params['status'])[0]
   const known = status && PLACE_STATUSES.includes(status) ? status : null
+  const quoteStatus = list(params['quote'])[0]
+  const quoteKnown = quoteStatus && QUOTE_STATUSES.includes(quoteStatus) ? quoteStatus : null
   const ctx = {
     t,
     locale: fmt,
@@ -49,6 +52,8 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
   const problems = draft ? problemText(draft.problems, t, fmt) : { lines: new Map(), order: [] }
   const reviewing = lines.length > 0 && draft !== null
   const blocked = problems.lines.size > 0 || problems.order.length > 0
+  // Order rules (multiples, minimum value) apply when ordering; a quote needs priceable lines.
+  const quoteBlocked = (draft?.problems.lines ?? []).some((p) => p.problem !== 'multiple')
   const pending = (draft?.approvals.length ?? 0) > 0
   const money = (m: Parameters<typeof formatMoney>[0] | null) =>
     m ? formatMoney(m, fmt) : undefined
@@ -65,6 +70,9 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
               skus: list(params['skus'])[0] ?? '',
             })}
           </Notice>
+        ) : null}
+        {quoteKnown ? (
+          <Notice tone="critical">{t(`partners.quotes.status.${quoteKnown}` as MessageKey)}</Notice>
         ) : null}
         {draft && !draft.canOrder ? (
           <Notice tone="critical">
@@ -189,6 +197,30 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
                 <div>
                   <Button type="submit" icon="arrow-forward" iconPosition="end">
                     {pending ? t('partners.order.placePending') : t('partners.order.place')}
+                  </Button>
+                </div>
+              </form>
+            ) : null}
+            {draft.canQuote && !quoteBlocked ? (
+              <form
+                method="post"
+                action="/api/v1/quotes"
+                className="flex flex-col gap-4 rounded-card border border-line p-4"
+              >
+                <p className="text-sm text-ink-muted">
+                  {t('partners.quotes.saveHint', { days: draft.quoteValidityDays })}
+                </p>
+                <input type="hidden" name="idempotencyKey" value={randomUUID()} />
+                {draft.lines.map((l) => (
+                  <span key={l.sku}>
+                    <input type="hidden" name="sku" value={l.sku} />
+                    <input type="hidden" name="qty" value={String(l.qty)} />
+                  </span>
+                ))}
+                <Input label={t('partners.quotes.reference')} name="reference" maxLength={120} />
+                <div>
+                  <Button type="submit" variant="secondary">
+                    {t('partners.quotes.save')}
                   </Button>
                 </div>
               </form>

@@ -10,3 +10,4 @@ export {
 export { MemoryCheckoutStore } from './checkout/memoryStore'
 export { MemoryFulfilmentStore } from './fulfilment/memoryStore'
 export { MemoryTradeOrderStore } from './tradeOrders/memoryStore'
+export { MemoryQuoteStore } from './quotes/memoryStore'

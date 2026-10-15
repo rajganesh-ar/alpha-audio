@@ -492,7 +492,8 @@
     "nav": {
       "catalogue": "Catalogue",
       "orders": "Orders",
-      "newOrder": "New order"
+      "newOrder": "New order",
+      "quotes": "Quotes"
     },
     "notFound": "That page is not on the dealer board.",
     "signIn": {
@@ -671,6 +672,49 @@
       "summary": "{used} used of {limit}",
       "available": "{amount} available",
       "none": "No credit line: every order waits for Alpha’s approval."
+    },
+    "quotes": {
+      "save": "Save as quote",
+      "saveHint": "A quote keeps these prices for {days} days and holds the stock it can meanwhile.",
+      "reference": "Your reference (project or customer)",
+      "title": "Quotes",
+      "caption": "Your company’s quotes",
+      "number": "Quote",
+      "created": "Created",
+      "validUntil": "Valid until",
+      "empty": "No quotes yet",
+      "emptyBody": "Save an order review as a quote to keep its prices for a few days.",
+      "statuses": {
+        "open": "Open",
+        "ordering": "Being ordered",
+        "ordered": "Ordered",
+        "withdrawn": "Withdrawn",
+        "expired": "Expired"
+      },
+      "held": "Stock held",
+      "notHeld": "Not held: ordered from stock when the quote is ordered",
+      "lockedNote": "Prices and FX were locked on {date} and hold until {until}.",
+      "order": "Order this quote",
+      "withdraw": "Withdraw quote",
+      "becameOrder": "This quote became order {order}.",
+      "expiredNote": "This quote has expired. Review the lines again at today’s prices.",
+      "reviewAgain": "Review at today’s prices",
+      "back": "All quotes",
+      "results": {
+        "withdrawn": "The quote was withdrawn and its stock released.",
+        "not-found": "That quote was not found.",
+        "not-open": "This quote is no longer open.",
+        "expired": "This quote has expired.",
+        "busy": "This quote is being ordered. Refresh in a moment.",
+        "forbidden": "Your role cannot do that.",
+        "order-refused": "The order could not be placed: {reason}",
+        "error": "Something went wrong. Try again."
+      },
+      "status": {
+        "not-allowed": "Your role cannot save quotes.",
+        "lines": "Some lines cannot be quoted; fix them first.",
+        "error": "The quote could not be saved. Try again."
+      }
     }
   }
 }

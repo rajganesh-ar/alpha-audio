@@ -1,7 +1,10 @@
 import type { Payload } from 'payload'
 import { z } from 'zod'
 import {
+  createQuoteFromDraft,
   decideTradeOrder,
+  orderQuote,
+  withdrawQuote,
   partnerCatalogue,
   partnerCookie,
   partnerLine,
@@ -120,6 +123,7 @@ async function readOrder(request: Request): Promise<unknown> {
       lines: draftLines(all('sku'), all('qty')),
       idempotencyKey: text('idempotencyKey'),
       poNumber: text('poNumber'),
+      reference: text('reference'),
       note: text('note'),
     }
   } catch {
@@ -231,5 +235,104 @@ export async function postOrderAction(
     result.reason === 'not-found' ? 404 : result.reason === 'forbidden' ? 403 : 409,
     result.reason,
     'The decision was not recorded.',
+  )
+}
+
+const quoteBody = z.object({
+  lines: z
+    .array(z.object({ sku: z.string().min(1).max(64), qty: z.number().int() }))
+    .min(1)
+    .max(200),
+  idempotencyKey: z.string().regex(/^[\w-]{8,100}$/),
+  reference: z.string().max(120).optional(),
+  note: z.string().max(1000).optional(),
+})
+
+/** `POST /api/v1/quotes`: saves the signed-in company user's lines as a quote, idempotent on the key. */
+export async function postQuote({ payload }: Deps, request: Request) {
+  if (crossSite(request)) return problem(403, 'cross-site', 'Cross-site requests are refused.')
+  const form = isForm(request)
+  const user = await signedIn(payload, request)
+  if (!user) return form ? seeOther('/login') : problem(401, 'unauthenticated', 'Sign in.')
+  const parsed = quoteBody.safeParse(await readOrder(request))
+  if (!parsed.success)
+    return form
+      ? seeOther('/orders/new?status=error')
+      : problem(400, 'invalid-request', 'The request is invalid.', parsed.error.flatten())
+  const result = await createQuoteFromDraft(payload, user, {
+    ...parsed.data,
+    locale: userLocale(user),
+  })
+  if (!result) return form ? seeOther('/login') : problem(401, 'unauthenticated', 'Sign in.')
+  if (result.ok) {
+    if (form) return seeOther(`/quotes/${result.quote.number}?saved=1`)
+    return json({ quote: result.quote, created: result.created }, result.created ? 201 : 200)
+  }
+  if (form)
+    return seeOther(`/orders/new?${reviewQuery(parsed.data.lines, { quote: result.reason })}`)
+  return problem(
+    result.reason === 'not-allowed' ? 403 : 422,
+    result.reason,
+    'The quote was not saved.',
+    result.reason === 'lines' ? result.problems : undefined,
+  )
+}
+
+/** `GET /api/v1/quotes`: the company's quotes (access scopes them to the company). */
+export async function getQuotes({ payload }: Deps, request: Request) {
+  const user = await signedIn(payload, request)
+  if (!user || (user as { collection?: string }).collection !== 'company-users')
+    return problem(401, 'unauthenticated', 'Sign in with a company account.')
+  const quotes = await payload.find({
+    collection: 'quotes',
+    user,
+    overrideAccess: false,
+    depth: 0,
+    sort: '-createdAt',
+    limit: 50,
+  })
+  return json(quotes)
+}
+
+/** `POST /api/v1/quotes/{number}/{order|withdraw}` for the signed-in company user. */
+export async function postQuoteAction(
+  { payload }: Deps,
+  request: Request,
+  number: string,
+  action: string,
+) {
+  if (crossSite(request)) return problem(403, 'cross-site', 'Cross-site requests are refused.')
+  const form = isForm(request)
+  if (action !== 'order' && action !== 'withdraw')
+    return problem(404, 'not-found', 'Unknown action.')
+  const user = await signedIn(payload, request)
+  if (!user || (user as { collection?: string }).collection !== 'company-users')
+    return form ? seeOther('/login') : problem(401, 'unauthenticated', 'Sign in.')
+  const back = `/quotes/${encodeURIComponent(number)}`
+  if (action === 'withdraw') {
+    const result = await withdrawQuote(payload, user, number)
+    if (form) return seeOther(`${back}?result=${result.ok ? 'withdrawn' : result.reason}`)
+    return result.ok
+      ? json({ quote: result.quote })
+      : problem(
+          result.reason === 'not-found' ? 404 : result.reason === 'forbidden' ? 403 : 409,
+          result.reason,
+          'Not withdrawn.',
+        )
+  }
+  const result = await orderQuote(payload, user, number)
+  if (result.ok) {
+    if (form) return seeOther(`/orders/${result.order.number}?placed=1`)
+    return json({ quote: result.quote, order: result.order }, 201)
+  }
+  if (form) {
+    const refusal = result.reason === 'order-refused' ? result.refusal.reason : null
+    return seeOther(`${back}?result=${result.reason}${refusal ? `&refusal=${refusal}` : ''}`)
+  }
+  return problem(
+    result.reason === 'not-found' ? 404 : result.reason === 'order-refused' ? 422 : 409,
+    result.reason,
+    'The quote was not ordered.',
+    result.reason === 'order-refused' ? result.refusal : undefined,
   )
 }

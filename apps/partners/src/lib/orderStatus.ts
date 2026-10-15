@@ -20,3 +20,21 @@ export const dateTime = (iso: string | null | undefined, locale: string, timeZon
         new Date(iso),
       )
     : ''
+
+/** How each quote status reads as a badge. */
+export const QUOTE_TONE: Record<
+  'open' | 'ordering' | 'ordered' | 'withdrawn' | 'expired',
+  BadgeTone
+> = {
+  open: 'positive',
+  ordering: 'caution',
+  ordered: 'neutral',
+  withdrawn: 'neutral',
+  expired: 'critical',
+}
+
+/** An open quote past its validity reads as expired, whether or not anyone has used it since. */
+export const quoteState = (status: string, validUntil: string, now = Date.now()) =>
+  (status === 'open' && Date.parse(validUntil) <= now
+    ? 'expired'
+    : status) as keyof typeof QUOTE_TONE

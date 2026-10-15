@@ -71,6 +71,7 @@ export interface Config {
     brands: Brand;
     categories: Category;
     'brand-agreements': BrandAgreement;
+    pages: Page;
     media: Media;
     warehouses: Warehouse;
     locations: Location;
@@ -100,6 +101,7 @@ export interface Config {
     brands: BrandsSelect<false> | BrandsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'brand-agreements': BrandAgreementsSelect<false> | BrandAgreementsSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     warehouses: WarehousesSelect<false> | WarehousesSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
@@ -365,6 +367,57 @@ export interface BrandAgreement {
   notes?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  title: string;
+  /**
+   * Latin lowercase, e.g. returns. The URL is /legal/{slug}/ for legal pages.
+   */
+  slug: string;
+  kind: 'legal';
+  /**
+   * Markets this page is published in.
+   */
+  markets: ('ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om')[];
+  /**
+   * Last legal review; shown on the page.
+   */
+  reviewedAt?: string | null;
+  summary?: string | null;
+  body: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  seo?: {
+    /**
+     * Defaults to the title.
+     */
+    title?: string | null;
+    description?: string | null;
+  };
+  /**
+   * Arabic copy is published only after the native reviewer signs it off.
+   */
+  arabicReview: 'draft' | 'reviewed';
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1107,6 +1160,10 @@ export interface PayloadLockedDocument {
         value: number | BrandAgreement;
       } | null)
     | ({
+        relationTo: 'pages';
+        value: number | Page;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
@@ -1317,6 +1374,29 @@ export interface BrandAgreementsSelect<T extends boolean = true> {
   notes?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  kind?: T;
+  markets?: T;
+  reviewedAt?: T;
+  summary?: T;
+  body?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  arabicReview?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

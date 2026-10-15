@@ -10,6 +10,7 @@ import {
   Home,
   LEDGER_QUEUE,
   catalogCollections,
+  contentCollections,
   LegacyRedirects,
   Markets,
   inventoryCollections,
@@ -73,6 +74,7 @@ export default buildConfig({
   },
   collections: [
     ...catalogCollections,
+    ...contentCollections,
     Media,
     ...inventoryCollections,
     ...purchasingCollections,

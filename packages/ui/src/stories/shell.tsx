@@ -21,10 +21,9 @@ export const marketOptions = (current: 'en' | 'ar'): MarketOption[] => [
 ]
 
 export const nav = (t: Translate, locale: 'en' | 'ar'): NavItem[] => [
-  { label: t('shell.nav.products'), href: `/ae/${locale}/products/` },
+  { label: t('shell.nav.products'), href: `/ae/${locale}/shop/` },
   { label: t('shell.nav.brands'), href: `/ae/${locale}/brands/`, current: true },
-  { label: t('shell.nav.rooms'), href: `/ae/${locale}/rooms/` },
-  { label: t('shell.nav.support'), href: `/ae/${locale}/support/` },
+  { label: t('shell.nav.design'), href: `/ae/${locale}/design/advisor/` },
 ]
 
 export const quietActions = (t: Translate, locale: 'en' | 'ar'): QuietAction[] => [
@@ -38,11 +37,11 @@ export const footerGroups = (t: Translate, locale: 'en' | 'ar'): FooterGroup[] =
     title: t('shell.nav.products'),
     links: [
       { label: t('shell.nav.brands'), href: `/ae/${locale}/brands/` },
-      { label: t('shell.nav.rooms'), href: `/ae/${locale}/rooms/` },
+      { label: t('shell.nav.design'), href: `/ae/${locale}/design/advisor/` },
     ],
   },
   {
-    title: t('shell.nav.support'),
-    links: [{ label: t('shell.nav.support'), href: `/ae/${locale}/support/` }],
+    title: t('footer.legal'),
+    links: [{ label: t('footer.legal'), href: `/ae/${locale}/legal/terms/` }],
   },
 ]

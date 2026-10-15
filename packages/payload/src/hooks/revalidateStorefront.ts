@@ -11,6 +11,8 @@ export const STOREFRONT_TAGS = {
   catalog: 'catalog',
   /** The Home global. */
   home: 'home',
+  /** Pages (legal and information pages) and the sitemaps that list them. */
+  content: 'content',
 } as const
 
 export type StorefrontTag = (typeof STOREFRONT_TAGS)[keyof typeof STOREFRONT_TAGS]

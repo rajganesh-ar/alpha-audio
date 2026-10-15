@@ -6,6 +6,7 @@ import {
   Footer,
   Header,
   MarketSwitch,
+  QuietActions,
   getDictionary,
   translator,
 } from '@alpha/ui'
@@ -109,14 +110,20 @@ export default async function MarketLayout({
                 { label: t('shell.nav.support'), href: `${home}support/` },
               ]}
               actions={
-                <MarketSwitch
-                  label={t('marketSwitch.label')}
-                  currentLabel={t('marketSwitch.current', {
-                    market: marketName,
-                    language: t(`languages.${route.locale}`),
-                  })}
-                  options={marketOptions(markets, route)}
-                />
+                <>
+                  <QuietActions
+                    label={t('ui.quietActions')}
+                    actions={[{ label: t('ui.bag'), icon: 'bag', href: `${home}bag/` }]}
+                  />
+                  <MarketSwitch
+                    label={t('marketSwitch.label')}
+                    currentLabel={t('marketSwitch.current', {
+                      market: marketName,
+                      language: t(`languages.${route.locale}`),
+                    })}
+                    options={marketOptions(markets, route)}
+                  />
+                </>
               }
             />
           }

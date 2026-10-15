@@ -134,3 +134,79 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  e2e:
+    name: End-to-end (checkout in ae/en and ae/ar)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: alpha
+          POSTGRES_PASSWORD: alpha
+          POSTGRES_DB: alpha
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U alpha -d alpha"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+
+    env:
+      # `next start` runs with NODE_ENV=production, where the sandbox provider is refused unless
+      # explicitly allowed (as on staging).
+      PAYMENT_SANDBOX_ALLOWED: 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # S3-compatible storage for the seeded product images (moto's S3 server, in memory).
+      - name: Media storage
+        run: |
+          pipx install 'moto[server]'
+          nohup moto_server -H 127.0.0.1 -p 9000 > /tmp/moto.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:9000/ > /dev/null && break; sleep 1; done
+          curl -sf -X PUT http://127.0.0.1:9000/alpha-media
+
+      - name: Migrate and seed
+        working-directory: apps/web
+        env:
+          PAYLOAD_MIGRATING: 'true'
+        run: |
+          pnpm migrate
+          pnpm seed:markets
+          pnpm seed:inventory
+          pnpm seed:purchasing
+          pnpm seed:catalog
+          pnpm seed:e2e
+
+      - name: Build
+        run: pnpm --filter @alpha/web build
+
+      - name: Playwright browser
+        run: pnpm --filter @alpha/web exec playwright install --with-deps chromium
+
+      - name: Checkout end to end (JavaScript off)
+        run: pnpm test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          retention-days: 7

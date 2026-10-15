@@ -17,6 +17,7 @@ export interface InputProps {
   /** Error message; marks the field invalid and is read with it. */
   error?: string | undefined
   required?: boolean | undefined
+  maxLength?: number | undefined
   requiredLabel?: string | undefined
   /** Validating in the background (an address lookup, a VAT number check). */
   loading?: boolean | undefined
@@ -40,6 +41,7 @@ export function Input({
   hint,
   error,
   required = false,
+  maxLength,
   requiredLabel,
   loading = false,
   loadingLabel,
@@ -73,6 +75,7 @@ export function Input({
           defaultValue={defaultValue}
           onChange={onChange ? (e) => onChange(e.currentTarget.value) : undefined}
           required={required}
+          maxLength={maxLength}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           aria-busy={loading || undefined}

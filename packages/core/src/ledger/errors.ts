@@ -9,6 +9,7 @@ export type LedgerErrorCode =
   | 'reason-required'
   | 'reservation-not-found'
   | 'reservation-not-active'
+  | 'reservation-expired'
   | 'expiry-required'
 
 /** A ledger rule refused the operation. Nothing was written: the transaction rolled back. */

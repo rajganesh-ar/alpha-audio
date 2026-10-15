@@ -13,7 +13,9 @@ import {
   Markets,
   inventoryCollections,
   purchasingCollections,
+  salesCollections,
   releaseExpiredReservationsTask,
+  expireCheckoutsTask,
 } from '@alpha/payload'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
@@ -53,12 +55,13 @@ export default buildConfig({
     Media,
     ...inventoryCollections,
     ...purchasingCollections,
+    ...salesCollections,
     LegacyRedirects,
     Users,
   ],
   globals: [Home, Markets],
   jobs: {
-    tasks: [releaseExpiredReservationsTask],
+    tasks: [releaseExpiredReservationsTask, expireCheckoutsTask],
     // Runs inside the app process (Payload starts crons on the first admin or API request).
     // The scheduled task queues itself each minute; this cron works the ledger queue.
     autoRun: [{ cron: '* * * * *', queue: LEDGER_QUEUE }],

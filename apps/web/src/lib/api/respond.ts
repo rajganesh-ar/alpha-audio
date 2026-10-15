@@ -3,7 +3,7 @@ import type { Payload, TypedUser } from 'payload'
 import type { z } from 'zod'
 
 /** Every /api/v1 response is per-user: never cached by a browser, CDN or proxy (CLAUDE.md rule 4). */
-const PRIVATE = { 'Cache-Control': 'private, no-store' } as const
+export const PRIVATE = { 'Cache-Control': 'private, no-store' } as const
 
 export const json = (body: unknown, status = 200): Response =>
   Response.json(body, { status, headers: PRIVATE })
@@ -36,8 +36,12 @@ export function serviceError(error: unknown): Response {
   throw error
 }
 
-/** A browser on another site cannot drive ops endpoints with a staff member's cookie. */
-function crossSite(request: Request): boolean {
+/**
+ * A browser on another site cannot drive these endpoints with the visitor's cookies (staff
+ * session, bag). Browsers send `Origin` (and `Sec-Fetch-Site`) on every POST.
+ */
+export function crossSite(request: Request): boolean {
+  if (request.headers.get('sec-fetch-site') === 'cross-site') return true
   const origin = request.headers.get('origin')
   if (!origin) return false
   const host =

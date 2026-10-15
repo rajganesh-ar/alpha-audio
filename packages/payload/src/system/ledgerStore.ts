@@ -202,6 +202,18 @@ export function transactionApi(tx: Executor): LedgerTx {
       )
     },
 
+    async retargetReservation(
+      id: Id,
+      docType: ReservationDocType,
+      docId: string,
+      expiresAt: Date | null,
+    ) {
+      await tx.execute(sql`
+        UPDATE reservations SET doc_type = ${docType}, doc_id = ${docId},
+          expires_at = ${expiresAt ? expiresAt.toISOString() : null}, updated_at = now()
+        WHERE id = ${int(id)}`)
+    },
+
     async lockExpiredReservations(now: Date, limit: number) {
       const { rows } = await tx.execute(sql`
         SELECT ${RESERVATION_COLUMNS} FROM reservations

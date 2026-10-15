@@ -7,7 +7,7 @@
     "dev": "pnpm fonts && next dev",
     "build": "pnpm fonts && next build",
     "start": "next start",
-    "lint": "eslint src tests",
+    "lint": "eslint src tests e2e playwright.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --project unit",
     "test:integration": "vitest run --project integration",
@@ -20,7 +20,9 @@
     "fonts": "alpha-sync-fonts public/fonts",
     "seed:inventory": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo-inventory.ts",
     "seed:purchasing": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo-purchasing.ts",
-    "seed:catalog": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo-catalog.ts"
+    "seed:catalog": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo-catalog.ts",
+    "seed:e2e": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-e2e.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@alpha/config": "workspace:*",
@@ -44,6 +46,7 @@
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.56.1",
     "@testcontainers/postgresql": "^11.0.0",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.15.0",

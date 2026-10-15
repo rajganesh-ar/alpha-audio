@@ -12,3 +12,4 @@ One file per decision: NNNN-title.md. 0001 is written by task 0001.
 | [0006](0006-storefront-rendering-and-live-stock.md) | Storefront rendering, caching and live stock   |
 | [0007](0007-listing-twin-and-facets.md)             | Category listings: dynamic twin and facets     |
 | [0008](0008-brand-rights.md)                        | Brand rights decide what the storefront sells  |
+| [0009](0009-checkout-and-payments.md)               | Checkout state machine and payments port       |

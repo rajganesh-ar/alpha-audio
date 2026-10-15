@@ -27,6 +27,11 @@ type ButtonAsButton = CommonProps & {
   type?: 'button' | 'submit' | 'reset' | undefined
   disabled?: boolean | undefined
   onClick?: (() => void) | undefined
+  /** Submitted with the form (`name=value`), so one form can carry several actions. */
+  name?: string | undefined
+  value?: string | undefined
+  /** Id of the form this button submits when it sits outside it. */
+  form?: string | undefined
 }
 type ButtonAsLink = CommonProps & { href: string; hrefLang?: string }
 export type ButtonProps = ButtonAsButton | ButtonAsLink
@@ -93,6 +98,9 @@ export function Button(props: ButtonProps) {
   return (
     <button
       type={props.type ?? 'button'}
+      name={props.name}
+      value={props.value}
+      form={props.form}
       onClick={props.onClick}
       disabled={props.disabled || loading}
       aria-busy={loading || undefined}

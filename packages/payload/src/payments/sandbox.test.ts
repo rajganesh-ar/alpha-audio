@@ -62,4 +62,16 @@ describe('SandboxPaymentProvider', () => {
     }
     expect(() => new SandboxPaymentProvider('short', () => '')).toThrow()
   })
+
+  it('refunds idempotently and refuses intents it never made', async () => {
+    const amount = { amount: 100n, currency: 'AED', decimals: 2 } as const
+    const a = await provider.refund({ intentId: 'sbx_abc', amount, idempotencyKey: 'refund:AE-1' })
+    expect(a.refundId).toMatch(/^rf_[0-9a-f]{24}$/)
+    expect(
+      await provider.refund({ intentId: 'sbx_abc', amount, idempotencyKey: 'refund:AE-1' }),
+    ).toEqual(a)
+    await expect(
+      provider.refund({ intentId: 'pi_1', amount, idempotencyKey: 'k' }),
+    ).rejects.toThrow()
+  })
 })

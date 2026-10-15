@@ -8,6 +8,9 @@ import {
   type CurrencyCode,
   type CurrencyDecimals,
   type FailureReason,
+  type FulfilmentStatus,
+  type Money,
+  type RefundStatus,
   type Id,
   type NewOrder,
   type OrderPatch,
@@ -204,6 +207,8 @@ export class PostgresCheckoutStore implements CheckoutStore {
           reservations: order.reservations,
           unavailableSkus: order.unavailableSkus,
           holdExpiresAt: order.holdExpiresAt?.toISOString() ?? null,
+          fulfilment: 'awaiting',
+          refund: { status: 'none' },
           idempotencyKey: order.idempotencyKey,
           accessTokenHash: d.accessTokenHash ?? '',
         },
@@ -280,6 +285,34 @@ export interface ShopperOrder {
   failureReason: FailureReason | null
   lines: PricedLine[]
   totals: OrderRecord['totals']
+  fulfilment: FulfilmentStatus
+  placedAt: Date
+  refund: { status: RefundStatus; amount: Money | null }
+  shipment: {
+    courier: string
+    trackingNumber: string
+    trackingUrl: string | null
+    shippedAt: Date
+    deliveredAt: Date | null
+  } | null
+}
+
+interface ShopperDoc {
+  accessTokenHash?: string
+  locale: string
+  createdAt: string
+  fulfilment?: FulfilmentStatus | null
+  refund?: { status?: RefundStatus | null; amount?: number | null } | null
+  shipment?:
+    | {
+        courier: string
+        trackingNumber: string
+        trackingUrl?: string | null
+        shippedAt: string
+        deliveredAt?: string | null
+      }
+    | number
+    | null
 }
 
 /**
@@ -296,13 +329,12 @@ export async function loadShopperOrder(
     collection: 'orders',
     where: { number: { equals: number } },
     limit: 1,
-    depth: 0,
+    depth: 1,
     showHiddenFields: true,
     // System read: the shopper is anonymous and proves the order is theirs with the token.
     overrideAccess: true,
   })
-  const doc = docs[0] as unknown as
-    (OrderDoc & { accessTokenHash?: string; locale: string }) | undefined
+  const doc = docs[0] as unknown as (OrderDoc & ShopperDoc) | undefined
   if (!doc?.accessTokenHash) return null
   const expected = Buffer.from(doc.accessTokenHash)
   const given = Buffer.from(hashToken(token))
@@ -316,5 +348,24 @@ export async function loadShopperOrder(
     failureReason: order.failureReason,
     lines: order.lines,
     totals: order.totals,
+    fulfilment: doc.fulfilment ?? 'awaiting',
+    placedAt: new Date(doc.createdAt),
+    refund: {
+      status: doc.refund?.status ?? 'none',
+      amount:
+        doc.refund?.amount === null || doc.refund?.amount === undefined
+          ? null
+          : { ...order.totals.total, amount: BigInt(Math.trunc(Number(doc.refund.amount))) },
+    },
+    shipment:
+      typeof doc.shipment === 'object' && doc.shipment
+        ? {
+            courier: doc.shipment.courier,
+            trackingNumber: doc.shipment.trackingNumber,
+            trackingUrl: doc.shipment.trackingUrl ?? null,
+            shippedAt: new Date(doc.shipment.shippedAt),
+            deliveredAt: doc.shipment.deliveredAt ? new Date(doc.shipment.deliveredAt) : null,
+          }
+        : null,
   }
 }

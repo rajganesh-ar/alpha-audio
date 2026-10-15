@@ -74,6 +74,7 @@ describe('component inventory', () => {
       'OrderSummary',
       'CheckoutSection',
       'PaymentMethodList',
+      'OrderTimeline',
     ]
     expect(inventory.filter((c) => !components.includes(c))).toEqual([])
   })

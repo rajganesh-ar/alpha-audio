@@ -61,3 +61,21 @@ export {
   type CartLine,
 } from './system/cartStore'
 export { EXPIRE_CHECKOUTS, expireCheckoutsTask } from './jobs/expireCheckouts'
+export {
+  NOTIFICATIONS_AUTORUN,
+  NOTIFICATIONS_QUEUE,
+  SEND_NOTIFICATION,
+  sendNotificationTask,
+} from './jobs/sendNotification'
+export { PostgresFulfilmentStore, createFulfilment } from './system/fulfilmentStore'
+export {
+  MAX_NOTIFICATION_ATTEMPTS,
+  deliverNotification,
+  queueNotification,
+  renderNotification,
+  type OutgoingEmail,
+  type SendEmail,
+} from './system/notifications'
+export { orderAccessToken } from './system/orderTokens'
+export { EMAIL_MESSAGES, type EmailMessages } from './notifications/messages'
+export { renderEmail, type EmailOrder, type RenderedEmail } from './notifications/render'

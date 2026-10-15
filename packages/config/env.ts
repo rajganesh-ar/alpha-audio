@@ -18,7 +18,10 @@ export const envSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((v) => v === 'true'),
-  SMTP_URL: z.string().url().optional(),
+  SMTP_URL: z.preprocess((v) => (v === '' ? undefined : v), z.string().url().optional()),
+  // Sender of customer emails (docs/tasks/0010).
+  EMAIL_FROM_ADDRESS: z.string().email().default('orders@alphaaudios.com'),
+  EMAIL_FROM_NAME: z.string().min(1).default('Alpha Audio'),
   // Payments (docs/tasks/0009). The card gateway is an open decision; `sandbox` is the test-mode
   // provider, refused in production unless PAYMENT_SANDBOX_ALLOWED=true (staging).
   PAYMENT_PROVIDER: z.enum(['sandbox']).default('sandbox'),

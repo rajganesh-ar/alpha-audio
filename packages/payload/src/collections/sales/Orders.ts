@@ -1,5 +1,5 @@
 import type { CollectionConfig, Field } from 'payload'
-import { FAILURE_REASONS, ORDER_STATUSES } from '@alpha/core'
+import { FAILURE_REASONS, FULFILMENT_STATUSES, ORDER_STATUSES, REFUND_STATUSES } from '@alpha/core'
 import { isStaff, nobody, staffField, systemWritten } from '../../access'
 import { LOCALE_CODES, MARKET_CODES } from '../../markets/codes'
 
@@ -199,6 +199,65 @@ export const Orders: CollectionConfig = {
                 value: s,
               })),
             },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'fulfilment',
+          type: 'select',
+          required: true,
+          index: true,
+          defaultValue: 'awaiting',
+          options: FULFILMENT_STATUSES.map((s) => ({ label: s, value: s })),
+          access: system,
+          admin: {
+            ...readOnly,
+            width: '33%',
+            description: 'Pick, ship and deliver on the ops screens (/ops/orders/).',
+          },
+        },
+        {
+          name: 'shipment',
+          type: 'relationship',
+          relationTo: 'shipments',
+          access: system,
+          admin: { ...readOnly, width: '33%' },
+        },
+        {
+          name: 'cancelReason',
+          type: 'text',
+          access: system,
+          admin: { ...readOnly, width: '33%' },
+        },
+      ],
+    },
+    {
+      name: 'refund',
+      type: 'group',
+      access: system,
+      admin: readOnly,
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'status',
+              type: 'select',
+              required: true,
+              defaultValue: 'none',
+              options: REFUND_STATUSES.map((s) => ({ label: s, value: s })),
+              admin: {
+                width: '25%',
+                description: '`manual`: refund it in the gateway by hand, then note it here.',
+              },
+            },
+            { name: 'amount', type: 'number', admin: { width: '25%' } },
+            { name: 'reference', type: 'text', admin: { width: '25%' } },
+            { name: 'error', type: 'text', admin: { width: '25%' } },
           ],
         },
       ],

@@ -661,3 +661,91 @@ describe('confirm', () => {
     ).rejects.toBeInstanceOf(LedgerError)
   })
 })
+
+describe('fulfilment by reservation', () => {
+  const ship = { doc: { type: 'shipment' as const, id: 'SH-2026-000001' } }
+
+  async function pickedOrder(serial = false) {
+    const t = setup()
+    if (serial) {
+      await t.receiveSerial('MC462', 'SN-1')
+      await t.receiveSerial('MC462', 'SN-2')
+    } else await t.receive('MA352', 3)
+    const r = await t.ledger.reserve({
+      sku: serial ? 'MC462' : 'MA352',
+      qty: 2,
+      market: 'ae',
+      doc: { type: 'order', id: 'AE-2026-000009' },
+    })
+    if (!r.ok) throw new Error('reserve failed')
+    await t.ledger.pick(r.reservation.id)
+    return { ...t, id: r.reservation.id }
+  }
+
+  it('ships and delivers exactly the reserved units, against the shipment', async () => {
+    const { ledger, level, store, id } = await pickedOrder()
+    await ledger.shipReservation(id, ship)
+    expect(level('MA352', DXB, 'picked')).toBe(0)
+    expect(level('MA352', DXB, 'shipped')).toBe(2)
+    expect(store.movements.at(-1)).toMatchObject({
+      fromState: 'picked',
+      toState: 'shipped',
+      docType: 'shipment',
+      docId: 'SH-2026-000001',
+    })
+    expect((await ledger.reservation(id))?.status).toBe('shipped')
+    await ledger.deliverReservation(id, ship)
+    expect(level('MA352', DXB, 'delivered')).toBe(2)
+    expect(level('MA352', DXB, 'available')).toBe(1)
+    expect((await ledger.reservation(id))?.status).toBe('delivered')
+  })
+
+  it('moves serials one by one', async () => {
+    const { ledger, store, id } = await pickedOrder(true)
+    await ledger.shipReservation(id, ship)
+    expect(store.serials.map((s) => [s.serial, s.state])).toEqual([
+      ['SN-1', 'shipped'],
+      ['SN-2', 'shipped'],
+    ])
+    await ledger.deliverReservation(id, ship)
+    expect(store.serials.every((s) => s.state === 'delivered')).toBe(true)
+  })
+
+  it('refuses to ship twice, to deliver before shipping, or to ship a hold not yet picked', async () => {
+    const { ledger, level, receive, id } = await pickedOrder()
+    await expect(ledger.deliverReservation(id, ship)).rejects.toMatchObject({
+      code: 'reservation-wrong-status',
+    })
+    await ledger.shipReservation(id, ship)
+    await expect(ledger.shipReservation(id, ship)).rejects.toMatchObject({
+      code: 'reservation-wrong-status',
+    })
+    expect(level('MA352', DXB, 'shipped')).toBe(2)
+    await receive('MA352', 1)
+    const held = await ledger.reserve({
+      sku: 'MA352',
+      qty: 1,
+      market: 'ae',
+      doc: { type: 'order', id: 'O2' },
+    })
+    if (!held.ok) throw new Error('reserve failed')
+    await expect(ledger.shipReservation(held.reservation.id, ship)).rejects.toMatchObject({
+      code: 'reservation-wrong-status',
+    })
+    await expect(ledger.shipReservation(999, ship)).rejects.toMatchObject({
+      code: 'reservation-not-found',
+    })
+    expect(await ledger.reservation(999)).toBeNull()
+  })
+
+  it('returns a picked hold to the shelf', async () => {
+    const { ledger, level, id } = await pickedOrder()
+    await ledger.returnToStock(id, { reason: 'cancelled' })
+    expect(level('MA352', DXB, 'picked')).toBe(0)
+    expect(level('MA352', DXB, 'available')).toBe(3)
+    expect((await ledger.reservation(id))?.status).toBe('released')
+    await expect(ledger.returnToStock(id)).rejects.toMatchObject({
+      code: 'reservation-wrong-status',
+    })
+  })
+})

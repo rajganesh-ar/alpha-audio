@@ -15,6 +15,8 @@ import {
   getMarketsCached,
   hashToken,
   linkCartOrder,
+  orderAccessToken,
+  queueNotification,
   loadCart,
   resolveMarketRoute,
   saveCart,
@@ -23,7 +25,7 @@ import {
 import { priceCart } from '@/lib/commerce/bag'
 import { bagCookie, readCookie } from '@/lib/commerce/cookies'
 import { paymentProvider } from '@/lib/commerce/payments'
-import { FORM_KEY, idempotencyKey, orderAccessToken } from '@/lib/commerce/tokens'
+import { FORM_KEY, idempotencyKey } from '@/lib/commerce/tokens'
 import { localizedPath, siteUrl } from '@/lib/seo'
 import { crossSite, json, problem } from './respond'
 import { readFields, seeOther, withQuery } from './forms'
@@ -111,7 +113,7 @@ export async function postCheckout(
     return seeOther(withQuery(paths.bag, { status: 'bag-invalid' }))
 
   const key = idempotencyKey(cart.id, formKey, bag)
-  const access = orderAccessToken(key)
+  const access = orderAccessToken(payload, key)
   const resultUrl = (number: string) => withQuery(paths.result, { order: number, token: access })
   const result = await createCheckout(payload, provider, now).start({
     market: route.market.code,
@@ -168,8 +170,10 @@ export async function postWebhook(
     event,
     payloadHash,
   )
-  if (result.outcome === 'confirmed' && result.order)
+  if (result.outcome === 'confirmed' && result.order) {
     await convertCartForOrder(deps.payload, Number(result.order.id))
+    await queueNotification(deps.payload, Number(result.order.id), 'order-confirmed')
+  }
   return json({ outcome: result.outcome })
 }
 

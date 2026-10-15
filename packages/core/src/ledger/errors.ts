@@ -9,6 +9,7 @@ export type LedgerErrorCode =
   | 'reason-required'
   | 'reservation-not-found'
   | 'reservation-not-active'
+  | 'reservation-wrong-status'
   | 'reservation-expired'
   | 'expiry-required'
 

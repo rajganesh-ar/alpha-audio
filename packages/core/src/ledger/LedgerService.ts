@@ -274,6 +274,56 @@ export class LedgerService {
     })
   }
 
+  /**
+   * A picked reservation goes back on the shelf: `picked → available`, status `released`. For
+   * an order cancelled after picking (docs/tasks/0010).
+   */
+  async returnToStock(reservationId: Id, actor: Actor & { reason?: string } = {}): Promise<void> {
+    await this.store.transaction(async (tx) => {
+      const reservation = await this.reservationIn(tx, reservationId, 'picked')
+      await this.apply(tx, this.reservationSteps(reservation, 'picked', 'available', actor))
+      await tx.setReservationStatus(reservation.id, 'released')
+    })
+  }
+
+  /**
+   * Hands a picked reservation to the courier: `picked → shipped` for exactly its units and
+   * serials, recorded against the shipment; status `shipped`, so it cannot ship twice.
+   */
+  async shipReservation(
+    reservationId: Id,
+    input: Actor & { doc: { type: 'shipment'; id: string } },
+  ): Promise<void> {
+    await this.store.transaction(async (tx) => {
+      const reservation = await this.reservationIn(tx, reservationId, 'picked')
+      await this.apply(
+        tx,
+        this.reservationSteps(reservation, 'picked', 'shipped', input, input.doc),
+      )
+      await tx.setReservationStatus(reservation.id, 'shipped')
+    })
+  }
+
+  /** The customer has a shipped reservation: `shipped → delivered`, status `delivered`. */
+  async deliverReservation(
+    reservationId: Id,
+    input: Actor & { doc: { type: 'shipment'; id: string } },
+  ): Promise<void> {
+    await this.store.transaction(async (tx) => {
+      const reservation = await this.reservationIn(tx, reservationId, 'shipped')
+      await this.apply(
+        tx,
+        this.reservationSteps(reservation, 'shipped', 'delivered', input, input.doc),
+      )
+      await tx.setReservationStatus(reservation.id, 'delivered')
+    })
+  }
+
+  /** The reservation as it stands (any status), for callers that resume interrupted work. */
+  async reservation(reservationId: Id): Promise<ReservationRecord | null> {
+    return this.store.transaction((tx) => tx.lockReservation(reservationId))
+  }
+
   /** Handed to the courier: `picked → shipped`. */
   async ship(input: ShipInput): Promise<void> {
     await this.store.transaction((tx) =>
@@ -419,6 +469,23 @@ export class LedgerService {
     await tx.setReservationStatus(reservation.id, status)
   }
 
+  private async reservationIn(
+    tx: LedgerTx,
+    id: Id,
+    status: ReservationStatus,
+  ): Promise<ReservationRecord> {
+    const reservation = await tx.lockReservation(id)
+    if (!reservation)
+      throw new LedgerError('reservation-not-found', `No reservation ${String(id)}.`)
+    if (reservation.status !== status) {
+      throw new LedgerError(
+        'reservation-wrong-status',
+        `Reservation ${String(id)} is ${reservation.status}, not ${status}.`,
+      )
+    }
+    return reservation
+  }
+
   private async activeReservation(tx: LedgerTx, id: Id): Promise<ReservationRecord> {
     const reservation = await tx.lockReservation(id)
     if (!reservation)
@@ -437,6 +504,7 @@ export class LedgerService {
     from: StockState,
     to: StockState,
     actor: Actor & { reason?: string },
+    doc: DocRef = { type: r.docType, id: r.docId },
   ): Step[] {
     return this.unitSteps({
       sku: r.sku,
@@ -445,7 +513,7 @@ export class LedgerService {
       from,
       to,
       location: r.location,
-      doc: { type: r.docType, id: r.docId },
+      doc,
       user: actor.user,
       reason: actor.reason,
     })

@@ -33,8 +33,16 @@ export const ORDER_NOTIFICATION_TEMPLATES = [
 ] as const
 export type OrderNotificationTemplate = (typeof ORDER_NOTIFICATION_TEMPLATES)[number]
 
-/** Every customer email: order emails and the sign-in link (docs/tasks/0012). */
-export const NOTIFICATION_TEMPLATES = [...ORDER_NOTIFICATION_TEMPLATES, 'sign-in'] as const
+/** Emails about a lead (docs/tasks/0018): to the shopper, and to the company it is offered to. */
+export const LEAD_NOTIFICATION_TEMPLATES = ['lead-received', 'lead-offered'] as const
+export type LeadNotificationTemplate = (typeof LEAD_NOTIFICATION_TEMPLATES)[number]
+
+/** Every email: order emails, the sign-in link (docs/tasks/0012) and lead emails. */
+export const NOTIFICATION_TEMPLATES = [
+  ...ORDER_NOTIFICATION_TEMPLATES,
+  'sign-in',
+  ...LEAD_NOTIFICATION_TEMPLATES,
+] as const
 export type NotificationTemplate = (typeof NOTIFICATION_TEMPLATES)[number]
 
 export interface OrderRefund {

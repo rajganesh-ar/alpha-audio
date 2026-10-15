@@ -519,7 +519,8 @@
       "orders": "Orders",
       "newOrder": "New order",
       "quotes": "Quotes",
-      "projects": "Projects"
+      "projects": "Projects",
+      "leads": "Leads"
     },
     "notFound": "That page is not on the dealer board.",
     "signIn": {
@@ -798,6 +799,78 @@
         "not-allowed": "Your role cannot register projects.",
         "error": "Something went wrong. Try again."
       }
+    },
+    "leads": {
+      "title": "Leads",
+      "intro": "Enquiries from the storefront offered to your company. Accept one to see the shopper’s details; if it is not accepted in time it goes to another partner.",
+      "empty": "No leads right now",
+      "emptyBody": "Enquiries for your brands and cities appear here.",
+      "city": "City",
+      "message": "Message",
+      "contact": "Contact",
+      "received": "Received",
+      "states": {
+        "offered": "Waiting for you",
+        "accepted": "Accepted",
+        "closed": "Closed"
+      },
+      "deadline": "Accept by {date} · {left}",
+      "left": {
+        "hours": "about {count} hours left",
+        "minutes": "under an hour left",
+        "passed": "time is up"
+      },
+      "accept": "Accept",
+      "decline": "Decline",
+      "won": "Won",
+      "lost": "Lost",
+      "value": "Value (net, optional)",
+      "outcome": "Record the outcome",
+      "outcomes": {
+        "won": "Won",
+        "lost": "Lost"
+      },
+      "results": {
+        "accepted": "You accepted the lead. The shopper’s details are below.",
+        "declined": "You declined the lead; it goes to another partner.",
+        "closed": "The outcome was recorded.",
+        "not-found": "That lead was not found.",
+        "not-yours": "That lead is not offered to your company.",
+        "not-offered": "That lead is no longer waiting for you.",
+        "too-late": "The time to accept this lead has passed.",
+        "not-accepted": "Only an accepted lead can be closed.",
+        "forbidden": "Your role cannot do that.",
+        "invalid": "Check the value and try again."
+      }
+    }
+  },
+  "enquiry": {
+    "metaTitle": "Ask about {product}",
+    "title": "Ask about {product}",
+    "body": "Tell us what you are looking for. A specialist from Alpha Audio or one of our partners will contact you within one working day.",
+    "request": "Request a price",
+    "specialist": "Ask a specialist",
+    "name": "Your name",
+    "email": "Email",
+    "phone": "Phone (optional)",
+    "city": "City",
+    "message": "What would you like to know?",
+    "consent": "Alpha Audio may share my details with one partner who will contact me about this enquiry.",
+    "honeypot": "Leave this empty",
+    "send": "Send enquiry",
+    "required": "required",
+    "status": {
+      "sent": "Thank you. We have your enquiry and will be in touch within one working day.",
+      "rate-limited": "Too many enquiries were sent from here. Please try again in an hour.",
+      "not-found": "That product is not available in this market.",
+      "invalid": "Please check the highlighted fields."
+    },
+    "fields": {
+      "name": "Enter your name.",
+      "email": "Enter a valid email address.",
+      "phone": "Enter a phone number with digits only, or leave it empty.",
+      "consent": "Tick the box so a partner can contact you.",
+      "form": "The form expired. Please send it again."
     }
   }
 }

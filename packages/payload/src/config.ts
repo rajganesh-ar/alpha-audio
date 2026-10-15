@@ -19,6 +19,7 @@ import { PricingSettings } from './globals/PricingSettings'
 import { expireCheckoutsTask } from './jobs/expireCheckouts'
 import { LEDGER_QUEUE, releaseExpiredReservationsTask } from './jobs/releaseExpiredReservations'
 import { NOTIFICATIONS_AUTORUN, sendNotificationTask } from './jobs/sendNotification'
+import { LEADS_AUTORUN, rerouteExpiredLeadsTask, routeLeadTask } from './jobs/leads'
 
 /**
  * The one Payload configuration of the platform, shared by every app that talks to the database
@@ -68,6 +69,8 @@ export function alphaConfig(options: AlphaConfigOptions): Config {
   return {
     serverURL,
     secret: env.PAYLOAD_SECRET,
+    // Read by system code that links across apps (lead emails link to the dealer board).
+    custom: { partnersServerURL: env.PARTNERS_SERVER_URL },
     cookiePrefix: options.cookiePrefix ?? 'payload',
     csrf: [...new Set([serverURL, ...(options.csrf ?? [])])],
     admin: options.admin ?? { user: Users.slug },
@@ -93,11 +96,17 @@ export function alphaConfig(options: AlphaConfigOptions): Config {
     ],
     globals: [Home, Markets, PricingSettings],
     jobs: {
-      tasks: [releaseExpiredReservationsTask, expireCheckoutsTask, sendNotificationTask],
+      tasks: [
+        releaseExpiredReservationsTask,
+        expireCheckoutsTask,
+        sendNotificationTask,
+        routeLeadTask,
+        rerouteExpiredLeadsTask,
+      ],
       // The web app works the queues (Payload starts the crons on the first request); other
       // apps only queue jobs, so every job runs once.
       autoRun: options.runJobs
-        ? [{ cron: '* * * * *', queue: LEDGER_QUEUE }, NOTIFICATIONS_AUTORUN]
+        ? [{ cron: '* * * * *', queue: LEDGER_QUEUE }, NOTIFICATIONS_AUTORUN, LEADS_AUTORUN]
         : [],
       jobsCollectionOverrides: ({ defaultJobsCollection }) => ({
         ...defaultJobsCollection,

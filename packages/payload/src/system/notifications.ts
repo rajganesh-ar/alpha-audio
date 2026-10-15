@@ -6,7 +6,13 @@ import {
   type NotificationTemplate,
 } from '@alpha/core'
 import { isLocaleCode, type LocaleCode } from '../markets/codes'
-import { renderEmail, renderSignInEmail, type RenderedEmail } from '../notifications/render'
+import {
+  renderEmail,
+  renderLeadEmail,
+  renderSignInEmail,
+  type RenderedEmail,
+} from '../notifications/render'
+import { getMarketsCached } from '../markets/read'
 import { open } from './secretBox'
 import { orderAccessToken } from './orderTokens'
 
@@ -124,6 +130,45 @@ export async function renderNotification(
         ? { email: { ...renderSignInEmail(locale, ''), to: row.to }, ...meta }
         : null
     return { email: { ...renderSignInEmail(locale, link), to: row.to }, ...meta }
+  }
+  if (row.template === 'lead-received' || row.template === 'lead-offered') {
+    const leadId = typeof row.lead === 'object' ? row.lead?.id : row.lead
+    if (leadId === undefined || leadId === null) return null
+    const lead = (await payload.findByID({
+      collection: 'leads',
+      id: leadId,
+      depth: 1,
+      locale,
+      // System read: the job renders the lead for the shopper or the offered company.
+      overrideAccess: true,
+    })) as unknown as {
+      number: string
+      market: string
+      city?: string | null
+      acceptBy?: string | null
+      product?: { title?: string | null } | number | null
+    }
+    const zone =
+      (await getMarketsCached(payload)).find((m) => m.code === lead.market)?.timezone ?? 'UTC'
+    const product =
+      typeof lead.product === 'object' && lead.product ? (lead.product.title ?? '') : ''
+    const custom = payload.config.custom as { partnersServerURL?: string } | undefined
+    const partners = custom?.partnersServerURL?.replace(/\/$/, '') ?? null
+    const email = renderLeadEmail(row.template, {
+      number: lead.number,
+      locale,
+      product,
+      city: lead.city ?? null,
+      acceptBy: lead.acceptBy
+        ? new Intl.DateTimeFormat(`${locale}-${lead.market.toUpperCase()}-u-nu-latn`, {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+            timeZone: zone,
+          }).format(new Date(lead.acceptBy))
+        : null,
+      link: partners ? `${partners}/leads` : null,
+    })
+    return { email: { ...email, to: row.to }, ...meta }
   }
   const orderId = typeof row.order === 'object' ? row.order?.id : row.order
   if (orderId === undefined || orderId === null) return null

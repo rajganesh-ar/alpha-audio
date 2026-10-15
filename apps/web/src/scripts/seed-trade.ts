@@ -12,7 +12,7 @@
  */
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { createProjects, ensureStaffUser } from '@alpha/payload'
+import { createProjects, ensureStaffUser, routeLead, submitEnquiry } from '@alpha/payload'
 
 const TRADE_PASSWORD = 'partners-demo-123'
 const TRADE_USERS = {
@@ -56,15 +56,43 @@ async function orderSetup(): Promise<void> {
   await payload.update({
     collection: 'companies',
     id: harmony.id,
-    data: { creditLimit: 50_000_000 },
+    data: {
+      creditLimit: 50_000_000,
+      // Leads (docs/tasks/0018): Harmony serves Dubai and Sharjah.
+      territories: ['Dubai', 'Sharjah'],
+      settings: { stockVisibility: 'exact', acceptsLeads: true },
+    },
     ...as(),
   })
   await payload.update({
     collection: 'companies',
     id: gulf.id,
-    data: { settings: { stockVisibility: 'banded', orderMultiple: 2, minOrderValue: 1_000_000 } },
+    data: {
+      territories: ['Abu Dhabi'],
+      settings: {
+        stockVisibility: 'banded',
+        orderMultiple: 2,
+        minOrderValue: 1_000_000,
+        acceptsLeads: true,
+      },
+    },
     ...as(),
   })
+  // Sonus faber's UAE enquiries go to dealers (docs/tasks/0018).
+  const sonus = (
+    await payload.find({
+      collection: 'brands',
+      where: { slug: { equals: 'sonus-faber' } },
+      ...as(),
+    })
+  ).docs[0]
+  if (sonus)
+    await payload.update({
+      collection: 'brand-agreements',
+      where: { and: [{ brand: { equals: sonus.id } }, { market: { equals: 'ae' } }] },
+      data: { leadRouting: 'dealer' },
+      ...as(),
+    })
   // An approved demo project (docs/tasks/0017): Lumina II at a project price for Harmony.
   const lumina = (
     await payload.find({
@@ -124,8 +152,28 @@ async function orderSetup(): Promise<void> {
     })
 }
 
+/** A fresh demo enquiry from Dubai, routed to Harmony, on every run (the dealer suite accepts one). */
+async function demoLead(): Promise<void> {
+  const sent = await submitEnquiry(payload, {
+    market: 'ae',
+    locale: 'en',
+    productSlug: 'sonus-faber-lumina-ii',
+    name: 'Mariam Al Hashimi',
+    email: `demo-lead-${Date.now()}@example.com`,
+    phone: '+971 50 123 4567',
+    city: 'Dubai',
+    message: 'Looking for speakers for a 20 m² majlis, with a turntable.',
+    consent: 'on',
+    website: '',
+    ip: null,
+    idempotencyKey: `seed-trade-${Date.now()}`,
+  })
+  if (sent.status === 'sent' && sent.number) await routeLead(payload, sent.number)
+}
+
 if (existing.docs.length) {
   await orderSetup()
+  await demoLead()
   payload.logger.info(
     'Trade demo already seeded (Harmony Systems LLC exists); order settings updated.',
   )
@@ -242,6 +290,7 @@ for (const [email, company, role, locale, name] of people) {
   })
 }
 await orderSetup()
+await demoLead()
 payload.logger.info(
   `Trade demo ready: sign in on the partners app as ${Object.values(TRADE_USERS).join(', ')}.`,
 )

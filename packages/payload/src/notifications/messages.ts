@@ -28,6 +28,9 @@ export interface EmailMessages {
   footer: string
   templates: Record<OrderNotificationTemplate, EmailCopy>
   signIn: EmailCopy & { action: string; ignore: string }
+  /** Lead emails (docs/tasks/0018): the shopper's acknowledgement and the dealer's offer. */
+  leadReceived: EmailCopy & { reference: string }
+  leadOffered: EmailCopy & { product: string; city: string; acceptBy: string; action: string }
 }
 
 export const EMAIL_MESSAGES: Record<LocaleCode, EmailMessages> = {
@@ -46,6 +49,21 @@ export const EMAIL_MESSAGES: Record<LocaleCode, EmailMessages> = {
     tracking: 'Tracking number',
     track: 'Track the parcel',
     footer: 'Alpha Audio. Reply to this email if you need help with your order.',
+    leadReceived: {
+      subject: 'We received your enquiry ({number})',
+      heading: 'Thank you, we have your enquiry',
+      body: 'A specialist from Alpha Audio or one of our partners will contact you within one working day about {product}.',
+      reference: 'Reference',
+    },
+    leadOffered: {
+      subject: 'New enquiry {number}: accept by {acceptBy}',
+      heading: 'A new enquiry for your company',
+      body: 'A shopper asked about {product}. Accept it on the dealer board to see their contact details. If it is not accepted in time, it goes to another partner.',
+      product: 'Product',
+      city: 'City',
+      acceptBy: 'Accept by',
+      action: 'Open the enquiry',
+    },
     signIn: {
       subject: 'Your Alpha Audio sign-in link',
       heading: 'Sign in to My Alpha',
@@ -92,6 +110,21 @@ export const EMAIL_MESSAGES: Record<LocaleCode, EmailMessages> = {
     tracking: 'رقم التتبع',
     track: 'تتبع الشحنة',
     footer: 'ألفا أوديو. رد على هذه الرسالة إذا احتجت إلى مساعدة في طلبك.',
+    leadReceived: {
+      subject: 'تلقّينا استفسارك ({number})',
+      heading: 'شكراً لك، وصلنا استفسارك',
+      body: 'سيتواصل معك أحد متخصصي ألفا أوديو أو أحد شركائنا خلال يوم عمل واحد بشأن {product}.',
+      reference: 'المرجع',
+    },
+    leadOffered: {
+      subject: 'استفسار جديد {number}: اقبله قبل {acceptBy}',
+      heading: 'استفسار جديد لشركتك',
+      body: 'سأل أحد المتسوقين عن {product}. اقبله في لوحة الوكلاء لرؤية بيانات التواصل. إن لم يُقبل في الوقت المحدد، يُحوَّل إلى شريك آخر.',
+      product: 'المنتج',
+      city: 'المدينة',
+      acceptBy: 'اقبله قبل',
+      action: 'فتح الاستفسار',
+    },
     signIn: {
       subject: 'رابط تسجيل الدخول إلى ألفا أوديو',
       heading: 'سجّل الدخول إلى ماي ألفا',

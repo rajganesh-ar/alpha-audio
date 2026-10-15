@@ -25,6 +25,8 @@ import * as migration_20261015_134318_quotes from './20261015_134318_quotes';
 import * as migration_20261015_134319_quotes_constraints from './20261015_134319_quotes_constraints';
 import * as migration_20261015_142339_project_registrations from './20261015_142339_project_registrations';
 import * as migration_20261015_142340_project_registrations_constraints from './20261015_142340_project_registrations_constraints';
+import * as migration_20261015_152137_leads from './20261015_152137_leads';
+import * as migration_20261015_152138_leads_constraints from './20261015_152138_leads_constraints';
 
 export const migrations = [
   {
@@ -161,5 +163,15 @@ export const migrations = [
     up: migration_20261015_142340_project_registrations_constraints.up,
     down: migration_20261015_142340_project_registrations_constraints.down,
     name: '20261015_142340_project_registrations_constraints',
+  },
+  {
+    up: migration_20261015_152137_leads.up,
+    down: migration_20261015_152137_leads.down,
+    name: '20261015_152137_leads',
+  },
+  {
+    up: migration_20261015_152138_leads_constraints.up,
+    down: migration_20261015_152138_leads_constraints.down,
+    name: '20261015_152138_leads_constraints',
   },
 ]

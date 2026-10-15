@@ -140,11 +140,30 @@ export const Companies: CollectionConfig = {
               name: 'dropShipAllowed',
               type: 'checkbox',
               defaultValue: false,
-              admin: { width: '50%' },
+              admin: { width: '25%' },
+            },
+            {
+              name: 'acceptsLeads',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                width: '25%',
+                description: 'Receives storefront enquiries for dealer-routed brands.',
+              },
             },
           ],
         },
       ],
+    },
+    {
+      name: 'territories',
+      type: 'text',
+      hasMany: true,
+      access: { read: staffField },
+      admin: {
+        description:
+          'Cities the company serves, e.g. Dubai, Sharjah. Leads from these cities are offered to it first (docs/tasks/0018).',
+      },
     },
   ],
 }

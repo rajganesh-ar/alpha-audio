@@ -82,6 +82,7 @@ describe('component inventory', () => {
       'QuickOrder',
       'CreditMeter',
       'ProjectRegistrationForm',
+      'LeadCard',
     ]
     expect(inventory.filter((c) => !components.includes(c))).toEqual([])
   })

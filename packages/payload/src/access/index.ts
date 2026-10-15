@@ -139,3 +139,31 @@ export const staffOrOwnCompanyDocs: Access = ({ req }) => {
   const company = companyOf(req.user)
   return company !== null ? { company: { equals: company } } : false
 }
+
+const LEAD_CONTACT_STATUSES = new Set(['accepted', 'closed'])
+
+/**
+ * Leads (docs/tasks/0018): staff read all; a company user reads the leads currently offered to
+ * or accepted by their company (`offeredTo` stays on the accepting company).
+ */
+export const staffOrOfferedCompany: Access = ({ req }) => {
+  if (req.user?.collection === 'users') return true
+  const company = companyOf(req.user)
+  return company !== null ? { offeredTo: { equals: company } } : false
+}
+
+/** A lead's contact details: staff, and the company that accepted it (never before acceptance). */
+export const canReadLeadContact: FieldAccess = ({ req, doc }) => {
+  if (req.user?.collection === 'users') return true
+  const company = companyOf(req.user)
+  const lead = doc as { offeredTo?: unknown; status?: unknown } | undefined
+  const offered =
+    typeof lead?.offeredTo === 'object' && lead.offeredTo
+      ? (lead.offeredTo as { id?: unknown }).id
+      : lead?.offeredTo
+  return (
+    company !== null &&
+    Number(offered) === company &&
+    LEAD_CONTACT_STATUSES.has(String(lead?.status ?? ''))
+  )
+}

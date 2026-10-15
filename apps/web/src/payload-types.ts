@@ -97,6 +97,7 @@ export interface Config {
     'trade-orders': TradeOrder;
     quotes: Quote;
     'project-registrations': ProjectRegistration;
+    leads: Lead;
     'contract-prices': ContractPrice;
     'price-lists': PriceList;
     'buyer-groups': BuyerGroup;
@@ -139,6 +140,7 @@ export interface Config {
     'trade-orders': TradeOrdersSelect<false> | TradeOrdersSelect<true>;
     quotes: QuotesSelect<false> | QuotesSelect<true>;
     'project-registrations': ProjectRegistrationsSelect<false> | ProjectRegistrationsSelect<true>;
+    leads: LeadsSelect<false> | LeadsSelect<true>;
     'contract-prices': ContractPricesSelect<false> | ContractPricesSelect<true>;
     'price-lists': PriceListsSelect<false> | PriceListsSelect<true>;
     'buyer-groups': BuyerGroupsSelect<false> | BuyerGroupsSelect<true>;
@@ -177,6 +179,8 @@ export interface Config {
       releaseExpiredReservations: TaskReleaseExpiredReservations;
       expireCheckouts: TaskExpireCheckouts;
       sendNotification: TaskSendNotification;
+      routeLead: TaskRouteLead;
+      rerouteExpiredLeads: TaskRerouteExpiredLeads;
       inline: {
         input: unknown;
         output: unknown;
@@ -1008,7 +1012,14 @@ export interface Notification {
    * For order emails.
    */
   order?: (number | null) | Order;
-  template: 'order-confirmed' | 'order-shipped' | 'order-delivered' | 'order-cancelled' | 'sign-in';
+  template:
+    | 'order-confirmed'
+    | 'order-shipped'
+    | 'order-delivered'
+    | 'order-cancelled'
+    | 'sign-in'
+    | 'lead-received'
+    | 'lead-offered';
   channel: 'email';
   locale: 'en' | 'ar';
   to: string;
@@ -1016,6 +1027,10 @@ export interface Notification {
    * For account emails (sign-in link).
    */
   customer?: (number | null) | Customer;
+  /**
+   * For lead emails (docs/tasks/0018).
+   */
+  lead?: (number | null) | Lead;
   secret?: string | null;
   status: 'queued' | 'sent' | 'failed';
   attempts: number;
@@ -1043,6 +1058,153 @@ export interface Customer {
   updatedAt: string;
   createdAt: string;
   collection: 'customers';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leads".
+ */
+export interface Lead {
+  id: number;
+  number: string;
+  status: 'new' | 'routing' | 'offered' | 'accepted' | 'with-alpha' | 'closed';
+  source: 'request-price' | 'specialist';
+  routing: 'alpha' | 'dealer';
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  locale: 'en' | 'ar';
+  brand?: (number | null) | Brand;
+  product?: (number | null) | Product;
+  city?: string | null;
+  message?: string | null;
+  contact?: {
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  };
+  /**
+   * The shopper agreed to be contacted by a partner.
+   */
+  consent?: boolean | null;
+  offeredTo?: (number | null) | Company;
+  acceptBy?: string | null;
+  outcome?: ('won' | 'lost') | null;
+  /**
+   * Won value, minor units.
+   */
+  value?: number | null;
+  /**
+   * Each offer: company, when, deadline and result.
+   */
+  attempts?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  idempotencyKey: string;
+  requestIpHash?: string | null;
+  /**
+   * Staff notes; never shown to a dealer.
+   */
+  staffNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "companies".
+ */
+export interface Company {
+  id: number;
+  name: string;
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  channel: 'dealer' | 'integrator' | 'retailer';
+  tier?: ('gold' | 'silver' | 'standard') | null;
+  /**
+   * Blocks ordering (overdue invoices), not quoting.
+   */
+  hold?: boolean | null;
+  buyerGroup?: (number | null) | BuyerGroup;
+  /**
+   * Overrides the buyer group’s list.
+   */
+  priceList?: (number | null) | PriceList;
+  /**
+   * Minor units of the market currency.
+   */
+  creditLimit?: number | null;
+  termsDays?: number | null;
+  settings: {
+    stockVisibility: 'exact' | 'banded' | 'hidden';
+    minOrderValue?: number | null;
+    orderMultiple?: number | null;
+    freeFreightThreshold?: number | null;
+    dropShipAllowed?: boolean | null;
+    /**
+     * Receives storefront enquiries for dealer-routed brands.
+     */
+    acceptsLeads?: boolean | null;
+  };
+  /**
+   * Cities the company serves, e.g. Dubai, Sharjah. Leads from these cities are offered to it first (docs/tasks/0018).
+   */
+  territories?: string[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "buyer-groups".
+ */
+export interface BuyerGroup {
+  id: number;
+  name: string;
+  /**
+   * Used by members without their own list.
+   */
+  priceList?: (number | null) | PriceList;
+  /**
+   * Off the dealer list price. A brand row beats a category row, which beats an all-products row.
+   */
+  discounts?:
+    | {
+        brand?: (number | null) | Brand;
+        category?: (number | null) | Category;
+        bps: number;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "price-lists".
+ */
+export interface PriceList {
+  id: number;
+  name: string;
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  validFrom?: string | null;
+  /**
+   * Exclusive; empty means open-ended.
+   */
+  validTo?: string | null;
+  items?:
+    | {
+        sku: string;
+        /**
+         * Net unit price, minor units.
+         */
+        price: number;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1124,92 +1286,6 @@ export interface SignInLink {
   usedAt?: string | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "companies".
- */
-export interface Company {
-  id: number;
-  name: string;
-  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
-  channel: 'dealer' | 'integrator' | 'retailer';
-  tier?: ('gold' | 'silver' | 'standard') | null;
-  /**
-   * Blocks ordering (overdue invoices), not quoting.
-   */
-  hold?: boolean | null;
-  buyerGroup?: (number | null) | BuyerGroup;
-  /**
-   * Overrides the buyer group’s list.
-   */
-  priceList?: (number | null) | PriceList;
-  /**
-   * Minor units of the market currency.
-   */
-  creditLimit?: number | null;
-  termsDays?: number | null;
-  settings: {
-    stockVisibility: 'exact' | 'banded' | 'hidden';
-    minOrderValue?: number | null;
-    orderMultiple?: number | null;
-    freeFreightThreshold?: number | null;
-    dropShipAllowed?: boolean | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "buyer-groups".
- */
-export interface BuyerGroup {
-  id: number;
-  name: string;
-  /**
-   * Used by members without their own list.
-   */
-  priceList?: (number | null) | PriceList;
-  /**
-   * Off the dealer list price. A brand row beats a category row, which beats an all-products row.
-   */
-  discounts?:
-    | {
-        brand?: (number | null) | Brand;
-        category?: (number | null) | Category;
-        bps: number;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "price-lists".
- */
-export interface PriceList {
-  id: number;
-  name: string;
-  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
-  validFrom?: string | null;
-  /**
-   * Exclusive; empty means open-ended.
-   */
-  validTo?: string | null;
-  items?:
-    | {
-        sku: string;
-        /**
-         * Net unit price, minor units.
-         */
-        price: number;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1620,7 +1696,13 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'releaseExpiredReservations' | 'expireCheckouts' | 'sendNotification';
+        taskSlug:
+          | 'inline'
+          | 'releaseExpiredReservations'
+          | 'expireCheckouts'
+          | 'sendNotification'
+          | 'routeLead'
+          | 'rerouteExpiredLeads';
         taskID: string;
         input?:
           | {
@@ -1653,7 +1735,16 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'releaseExpiredReservations' | 'expireCheckouts' | 'sendNotification') | null;
+  taskSlug?:
+    | (
+        | 'inline'
+        | 'releaseExpiredReservations'
+        | 'expireCheckouts'
+        | 'sendNotification'
+        | 'routeLead'
+        | 'rerouteExpiredLeads'
+      )
+    | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -1787,6 +1878,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'project-registrations';
         value: number | ProjectRegistration;
+      } | null)
+    | ({
+        relationTo: 'leads';
+        value: number | Lead;
       } | null)
     | ({
         relationTo: 'contract-prices';
@@ -2288,6 +2383,7 @@ export interface NotificationsSelect<T extends boolean = true> {
   locale?: T;
   to?: T;
   customer?: T;
+  lead?: T;
   secret?: T;
   status?: T;
   attempts?: T;
@@ -2396,7 +2492,9 @@ export interface CompaniesSelect<T extends boolean = true> {
         orderMultiple?: T;
         freeFreightThreshold?: T;
         dropShipAllowed?: T;
+        acceptsLeads?: T;
       };
+  territories?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2556,6 +2654,40 @@ export interface ProjectRegistrationsSelect<T extends boolean = true> {
   decidedBy?: T;
   decisionNote?: T;
   idempotencyKey?: T;
+  staffNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leads_select".
+ */
+export interface LeadsSelect<T extends boolean = true> {
+  number?: T;
+  status?: T;
+  source?: T;
+  routing?: T;
+  market?: T;
+  locale?: T;
+  brand?: T;
+  product?: T;
+  city?: T;
+  message?: T;
+  contact?:
+    | T
+    | {
+        name?: T;
+        email?: T;
+        phone?: T;
+      };
+  consent?: T;
+  offeredTo?: T;
+  acceptBy?: T;
+  outcome?: T;
+  value?: T;
+  attempts?: T;
+  idempotencyKey?: T;
+  requestIpHash?: T;
   staffNotes?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -3046,6 +3178,28 @@ export interface TaskSendNotification {
   };
   output: {
     result: string;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskRouteLead".
+ */
+export interface TaskRouteLead {
+  input: {
+    lead: string;
+  };
+  output: {
+    result: string;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskRerouteExpiredLeads".
+ */
+export interface TaskRerouteExpiredLeads {
+  input?: unknown;
+  output: {
+    expired: number;
   };
 }
 /**

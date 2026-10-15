@@ -13,3 +13,4 @@ See the Observability section of the spec for the required list.
 - [Dealer orders](dealer-orders.md)
 - [Dealer quotes](dealer-quotes.md)
 - [Project registrations](project-registrations.md)
+- [Leads](leads.md)

@@ -19,7 +19,8 @@ export default defineConfig({
   forbidOnly: !!process.env['CI'],
   retries: 0,
   timeout: 60_000,
-  reporter: process.env['CI'] ? [['list'], ['html', { open: 'never' }]] : 'list',
+  // In CI, failures also surface as annotations on the check run (readable without the artifact).
+  reporter: process.env['CI'] ? [['list'], ['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     ...devices['Desktop Chrome'],
     baseURL,

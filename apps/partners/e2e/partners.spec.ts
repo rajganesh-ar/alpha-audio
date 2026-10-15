@@ -37,7 +37,9 @@ test('a dealer signs in and sees its own prices, the RRP, the trace and exact st
   const amp = row(page, MA352)
   await expect(amp).toContainText(money('AED 34,500.00'))
   await expect(amp).toContainText(money('AED 21,000.00'))
-  await expect(amp.getByRole('cell').last()).toHaveText(/^\d+$/)
+  // Exact stock: units, or out of stock (with the purchase order date when one is open).
+  await expect(amp.getByRole('cell').last()).toHaveText(/^(\d+|Out of stock|Expected .+)$/)
+  await expect(row(page, 'MCINTOSH-MA252').getByRole('cell').last()).toHaveText(/^\d+$/)
   await amp.getByText('Why this price').click()
   await expect(amp.getByRole('listitem').filter({ hasText: 'Your contract price' })).toContainText(
     money('AED 21,000.00'),

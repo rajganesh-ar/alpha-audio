@@ -66,6 +66,7 @@ Import boundaries: apps import packages; packages never import apps; `packages/c
 - App Router. Public routes live under `app/(frontend)/[market]/[locale]/`. Market and locale are validated in `apps/web/src/proxy.ts` (Next.js 16's name for middleware) against the `Markets` global; unknown or non-live values 404. Pages call `requireMarketRoute(params)`. Never `notFound()` from the market layout; see ADR 0002.
 - Rendering: content pages are ISR with `revalidateTag` from Payload hooks (`revalidateStorefront`, `{ expire: 0 }`); anything reading a session, stock promise or buyer price is dynamic with `private, no-store`, or a live island inside an ISR page that renders the value at build time and refreshes it from a `private, no-store` `/api/v1` handler (`LiveStockLine`; ADR 0006). Cache Components is not enabled. Shop listings with filter, sort or page parameters render the dynamic twin `shop-results` through `proxy.ts`; the unfiltered listing stays ISR and never reads `searchParams` (ADR 0007).
 - Data access from server components goes through the Payload Local API via `packages/payload/client`. Browsers call only `/api/v1/*` route handlers, validated with Zod.
+- Staff screens live under `app/(ops)/ops/` (outside the market tree, own root layout, Payload staff session, plain forms posting to `/api/v1/ops/*`; ADR 0010).
 - Legacy query-string redirects (`?bid=`, `?catid=`) are resolved in `proxy.ts` from the `LegacyRedirects` table; the redirects plugin handles path redirects only.
 - Images through `next/image` with `sizes`; the LCP image is `priority`. No inline SVG icons; use the icon set in `packages/ui`.
 
@@ -117,7 +118,8 @@ Import boundaries: apps import packages; packages never import apps; `packages/c
 - Do not put business logic in React components or route handlers; call a service in `packages/core`.
 - Do not fetch external APIs from hooks synchronously; enqueue a job.
 - Do not compute prices, VAT or stock in the browser.
-- Do not take a payment outside the `PaymentProvider` port or change an order's status outside `CheckoutService` (compare-and-set transitions; ADR 0009).
+- Do not take a payment outside the `PaymentProvider` port or change an order's status outside `CheckoutService` (compare-and-set transitions; ADR 0009). Fulfilment status, shipments and refunds change only through `FulfilmentService` (ADR 0010).
+- Do not send a customer email directly: queue it in the notification outbox (`queueNotification`) so it is sent once, with retries.
 - Do not translate Arabic copy with the LLM for publication; mark it `draft` for the native reviewer.
 - Do not skip the concurrency and leak tests to get a build green.
 

@@ -74,6 +74,9 @@ const redirect = (location: string): RoutingDecision => ({
   status: 308,
 })
 
+/** First path segment of the staff ops screens (`app/(ops)/ops`). */
+export const OPS_SECTION = 'ops'
+
 export function decideRoute(url: URL): RoutingDecision {
   const { pathname, search } = url
 
@@ -86,6 +89,9 @@ export function decideRoute(url: URL): RoutingDecision {
   const segments = pathname.split('/') // ['', market, locale, ...rest]
   const first = segments[1] ?? ''
   const market = first.toLowerCase()
+
+  // The staff ops screens (docs/tasks/0010) live outside the market tree, like /admin.
+  if (first === OPS_SECTION) return { kind: 'next' }
 
   if (isMarketCode(market)) {
     const second = segments[2] ?? ''

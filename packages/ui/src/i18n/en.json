@@ -68,7 +68,8 @@
     "browseAll": "Browse all products",
     "unavailable": "Unavailable right now",
     "marketsUnavailable": "Markets are unavailable right now.",
-    "reference": "Reference"
+    "reference": "Reference",
+    "orderTimeline": "Order progress"
   },
   "price": {
     "inclVat": "Incl. VAT {rate}%",
@@ -308,5 +309,107 @@
       "decline": "Decline",
       "invalid": "This payment link is not valid."
     }
+  },
+  "orders": {
+    "metaTitle": "Your order",
+    "title": "Order {number}",
+    "progress": "Order progress",
+    "placed": "Placed {date}",
+    "steps": {
+      "confirmed": "Order confirmed",
+      "picked": "Being prepared",
+      "shipped": "On its way",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "payment": "Waiting for payment"
+    },
+    "shippedWith": "With {courier}, tracking number {tracking}",
+    "track": "Track the parcel",
+    "refund": {
+      "refunded": "Refunded {amount} to your payment method.",
+      "pending": "A refund of {amount} is on its way to your payment method.",
+      "manual": "A refund of {amount} is on its way to your payment method.",
+      "failed": "A refund of {amount} is on its way to your payment method."
+    },
+    "help": "Questions about this order? Reply to any of our emails about it.",
+    "view": "View your order",
+    "notFoundTitle": "Order not found",
+    "notFoundBody": "Check the link from your order email."
+  },
+  "ops": {
+    "title": "Orders",
+    "signIn": "Sign in with a staff account to see orders.",
+    "signInAction": "Sign in",
+    "back": "All orders",
+    "queues": {
+      "awaiting": "To pick",
+      "picked": "To ship",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "all": "All"
+    },
+    "columns": {
+      "number": "Order",
+      "placed": "Placed",
+      "customer": "Customer",
+      "items": "Items",
+      "total": "Total",
+      "status": "Status"
+    },
+    "empty": "No orders here.",
+    "lines": "Lines",
+    "sku": "SKU",
+    "qty": "Qty",
+    "location": "Location",
+    "serials": "Serials",
+    "contact": "Customer",
+    "address": "Delivery address",
+    "payment": "Payment",
+    "shipment": "Shipment",
+    "refundLabel": "Refund",
+    "pick": "Mark as picked",
+    "ship": "Mark as shipped",
+    "courier": "Courier",
+    "tracking": "Tracking number",
+    "trackingUrl": "Tracking link (optional)",
+    "deliver": "Mark as delivered",
+    "cancel": "Cancel order",
+    "cancelReason": "Reason for cancelling",
+    "refund": "Retry refund",
+    "fulfilment": {
+      "awaiting": "To pick",
+      "picking": "Picking",
+      "picked": "Picked",
+      "shipping": "Shipping",
+      "shipped": "Shipped",
+      "delivering": "Delivering",
+      "delivered": "Delivered",
+      "cancelling": "Cancelling",
+      "cancelled": "Cancelled"
+    },
+    "refundStatus": {
+      "none": "None",
+      "pending": "Pending",
+      "refunded": "Refunded",
+      "manual": "Refund by hand in the gateway",
+      "failed": "Failed: retry"
+    },
+    "results": {
+      "picked": "Order picked.",
+      "shipped": "Order shipped; the customer has been emailed.",
+      "delivered": "Order delivered.",
+      "cancelled": "Order cancelled; stock is back on the shelf.",
+      "refunded": "Refund updated.",
+      "not-found": "No such order.",
+      "not-confirmed": "Only confirmed orders can be fulfilled.",
+      "wrong-status": "That step is not possible from the order's current status.",
+      "hold-missing": "A line has lost its stock hold; check the order's reservations in the Ledger explorer.",
+      "invalid-shipment": "Enter the courier and a valid tracking number (and an https link, if any).",
+      "not-refundable": "This order has nothing to refund.",
+      "invalid": "Check the form and try again."
+    },
+    "brand": "Alpha Audio Ops",
+    "admin": "Admin"
   }
 }

@@ -6,6 +6,7 @@ import {
   type PaymentIntent,
   type PaymentProvider,
   type PaymentRequest,
+  type RefundRequest,
   type Money,
 } from '@alpha/core'
 
@@ -45,6 +46,15 @@ export class SandboxPaymentProvider implements PaymentProvider {
     })
     fields.set('sig', this.sign(`${intentId}?${fields.toString()}`))
     return { provider: this.id, intentId, redirectUrl: this.pageFor(intentId, fields.toString()) }
+  }
+
+  /** Refunds at once; the same idempotency key always yields the same refund reference. */
+  async refund(request: RefundRequest): Promise<{ refundId: string }> {
+    if (!request.intentId.startsWith('sbx_'))
+      throw new Error(`Unknown sandbox intent ${request.intentId}`)
+    return {
+      refundId: `rf_${this.sign(`refund:${request.intentId}:${request.idempotencyKey}`).slice(0, 24)}`,
+    }
   }
 
   /** The hosted page's view of an intent, if its link is authentic. */

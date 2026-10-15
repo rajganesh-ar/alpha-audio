@@ -53,7 +53,15 @@ export const RESERVATION_TTL_MS = {
   quote: 7 * 24 * 60 * 60 * 1000,
 } as const satisfies Partial<Record<ReservationDocType, number>>
 
-export const RESERVATION_STATUSES = ['active', 'released', 'expired', 'picked'] as const
+/** `picked`, `shipped` and `delivered` follow the units through fulfilment (docs/tasks/0010). */
+export const RESERVATION_STATUSES = [
+  'active',
+  'released',
+  'expired',
+  'picked',
+  'shipped',
+  'delivered',
+] as const
 export type ReservationStatus = (typeof RESERVATION_STATUSES)[number]
 
 /** Database ids are numbers in Postgres; the ledger does not care. */

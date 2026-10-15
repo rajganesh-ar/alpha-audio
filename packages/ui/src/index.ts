@@ -75,3 +75,8 @@ export {
   type PaymentMethodListProps,
   type PaymentMethodOption,
 } from './components/PaymentMethodList/PaymentMethodList'
+export {
+  OrderTimeline,
+  type OrderTimelineProps,
+  type TimelineStep,
+} from './components/OrderTimeline/OrderTimeline'

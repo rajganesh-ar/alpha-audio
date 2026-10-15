@@ -3,7 +3,7 @@ import { ADDRESS_SCHEME_FIELDS, money, priceBag } from '@alpha/core'
 import { ADDRESS_SCHEMES, SandboxPaymentProvider } from '@alpha/payload'
 import { bagCookie, bagCookieHeader, readCookie } from './cookies'
 import { paymentProvider, sandboxSecret } from './payments'
-import { FORM_KEY, idempotencyKey, newFormKey, orderAccessToken } from './tokens'
+import { FORM_KEY, idempotencyKey, newFormKey } from './tokens'
 
 const env = {
   DATABASE_URL: 'postgres://alpha:alpha@localhost:5432/alpha',
@@ -43,15 +43,9 @@ describe('checkout tokens', () => {
     expect(idempotencyKey(7, 'form-key-bbbbbbbbbbbb', bagOf(1))).not.toBe(key)
   })
 
-  it('makes fresh form keys and a stable, secret-bound access token', () => {
+  it('makes fresh form keys', () => {
     expect(newFormKey()).toMatch(FORM_KEY)
     expect(newFormKey()).not.toBe(newFormKey())
-    const token = orderAccessToken('k', env)
-    expect(orderAccessToken('k', env)).toBe(token)
-    expect(orderAccessToken('k', { ...env, PAYLOAD_SECRET: `${env.PAYLOAD_SECRET}1` })).not.toBe(
-      token,
-    )
-    expect(token).toMatch(/^[\w-]{43}$/)
   })
 })
 

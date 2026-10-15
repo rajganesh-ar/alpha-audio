@@ -34,6 +34,14 @@ export interface PaymentEvent {
   currency: string
 }
 
+export interface RefundRequest {
+  intentId: string
+  amount: Money
+  /** Same key, same refund: a retried refund is never paid twice. */
+  idempotencyKey: string
+  reason?: string | undefined
+}
+
 export interface PaymentProvider {
   readonly id: string
   /** Rails this provider can take (intersected with the market's rails). */
@@ -44,4 +52,9 @@ export interface PaymentProvider {
     rawBody: string,
     headers: Readonly<Record<string, string | undefined>>,
   ): PaymentEvent | null
+  /**
+   * Refunds a captured payment and returns the provider's refund reference. Absent when the
+   * provider cannot refund through its API; staff then refund by hand (docs/tasks/0010).
+   */
+  refund?(request: RefundRequest): Promise<{ refundId: string }>
 }

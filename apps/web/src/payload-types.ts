@@ -82,6 +82,8 @@ export interface Config {
     'purchase-orders': PurchaseOrder;
     'goods-receipts': GoodsReceipt;
     orders: Order;
+    shipments: Shipment;
+    notifications: Notification;
     carts: Cart;
     'webhook-events': WebhookEvent;
     'legacy-redirects': LegacyRedirect;
@@ -109,6 +111,8 @@ export interface Config {
     'purchase-orders': PurchaseOrdersSelect<false> | PurchaseOrdersSelect<true>;
     'goods-receipts': GoodsReceiptsSelect<false> | GoodsReceiptsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    shipments: ShipmentsSelect<false> | ShipmentsSelect<true>;
+    notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     carts: CartsSelect<false> | CartsSelect<true>;
     'webhook-events': WebhookEventsSelect<false> | WebhookEventsSelect<true>;
     'legacy-redirects': LegacyRedirectsSelect<false> | LegacyRedirectsSelect<true>;
@@ -142,6 +146,7 @@ export interface Config {
     tasks: {
       releaseExpiredReservations: TaskReleaseExpiredReservations;
       expireCheckouts: TaskExpireCheckouts;
+      sendNotification: TaskSendNotification;
       inline: {
         input: unknown;
         output: unknown;
@@ -587,7 +592,7 @@ export interface Reservation {
     | null;
   docType: 'cart' | 'quote' | 'pos' | 'project' | 'order';
   docId: string;
-  status: 'active' | 'released' | 'expired' | 'picked';
+  status: 'active' | 'released' | 'expired' | 'picked' | 'shipped' | 'delivered';
   /**
    * Empty: held until picked or released (paid orders).
    */
@@ -796,6 +801,30 @@ export interface Order {
     status?: ('pending' | 'authorised' | 'captured' | 'declined' | 'failed') | null;
   };
   /**
+   * Pick, ship and deliver on the ops screens (/ops/orders/).
+   */
+  fulfilment:
+    | 'awaiting'
+    | 'picking'
+    | 'picked'
+    | 'shipping'
+    | 'shipped'
+    | 'delivering'
+    | 'delivered'
+    | 'cancelling'
+    | 'cancelled';
+  shipment?: (number | null) | Shipment;
+  cancelReason?: string | null;
+  refund: {
+    /**
+     * `manual`: refund it in the gateway by hand, then note it here.
+     */
+    status: 'none' | 'pending' | 'refunded' | 'manual' | 'failed';
+    amount?: number | null;
+    reference?: string | null;
+    error?: string | null;
+  };
+  /**
    * Ledger reservation ids holding this order’s stock.
    */
   reservations?:
@@ -826,6 +855,43 @@ export interface Order {
    * Staff notes.
    */
   notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shipments".
+ */
+export interface Shipment {
+  id: number;
+  number: string;
+  order: number | Order;
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  status: 'shipped' | 'delivered';
+  courier: string;
+  trackingNumber: string;
+  trackingUrl?: string | null;
+  shippedAt: string;
+  deliveredAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications".
+ */
+export interface Notification {
+  id: number;
+  key: string;
+  order: number | Order;
+  template: 'order-confirmed' | 'order-shipped' | 'order-delivered' | 'order-cancelled';
+  channel: 'email';
+  locale: 'en' | 'ar';
+  to: string;
+  status: 'queued' | 'sent' | 'failed';
+  attempts: number;
+  sentAt?: string | null;
+  lastError?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -968,7 +1034,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'releaseExpiredReservations' | 'expireCheckouts';
+        taskSlug: 'inline' | 'releaseExpiredReservations' | 'expireCheckouts' | 'sendNotification';
         taskID: string;
         input?:
           | {
@@ -1001,7 +1067,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'releaseExpiredReservations' | 'expireCheckouts') | null;
+  taskSlug?: ('inline' | 'releaseExpiredReservations' | 'expireCheckouts' | 'sendNotification') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -1083,6 +1149,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'orders';
         value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'shipments';
+        value: number | Shipment;
+      } | null)
+    | ({
+        relationTo: 'notifications';
+        value: number | Notification;
       } | null)
     | ({
         relationTo: 'carts';
@@ -1485,12 +1559,58 @@ export interface OrdersSelect<T extends boolean = true> {
         intentId?: T;
         status?: T;
       };
+  fulfilment?: T;
+  shipment?: T;
+  cancelReason?: T;
+  refund?:
+    | T
+    | {
+        status?: T;
+        amount?: T;
+        reference?: T;
+        error?: T;
+      };
   reservations?: T;
   unavailableSkus?: T;
   holdExpiresAt?: T;
   idempotencyKey?: T;
   accessTokenHash?: T;
   notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shipments_select".
+ */
+export interface ShipmentsSelect<T extends boolean = true> {
+  number?: T;
+  order?: T;
+  market?: T;
+  status?: T;
+  courier?: T;
+  trackingNumber?: T;
+  trackingUrl?: T;
+  shippedAt?: T;
+  deliveredAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications_select".
+ */
+export interface NotificationsSelect<T extends boolean = true> {
+  key?: T;
+  order?: T;
+  template?: T;
+  channel?: T;
+  locale?: T;
+  to?: T;
+  status?: T;
+  attempts?: T;
+  sentAt?: T;
+  lastError?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1864,6 +1984,18 @@ export interface TaskExpireCheckouts {
   input?: unknown;
   output: {
     expired: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSendNotification".
+ */
+export interface TaskSendNotification {
+  input: {
+    notification: number;
+  };
+  output: {
+    result: string;
   };
 }
 /**

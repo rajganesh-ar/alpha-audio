@@ -89,6 +89,12 @@ describe('shop listing twin', () => {
     expect(at('/ae/en/products/x/?brand=y')).not.toHaveProperty('rewrite')
   })
 
+  it('leaves the staff ops screens to their own route group', () => {
+    expect(at('/ops/orders/')).toEqual({ kind: 'next' })
+    expect(at('/ops/orders/AE-2026-000001/')).toEqual({ kind: 'next' })
+    expect(at('/opsx/orders/')).toEqual({ kind: 'not-found' })
+  })
+
   it('404s direct requests for the twin', () => {
     expect(at('/ae/en/shop-results/amplifiers/')).toEqual({ kind: 'not-found' })
     expect(at('/ae/en/shop-results/?brand=x')).toEqual({ kind: 'not-found' })

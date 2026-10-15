@@ -108,7 +108,16 @@ export default async function CheckoutReturnPage({
                   {t('checkout.return.refresh')}
                 </Button>
               ) : (
-                <Button href={shop}>{t('checkout.return.toShop')}</Button>
+                <>
+                  <Button
+                    href={`${localizedPath(route.market.code, route.locale, `/orders/${encodeURIComponent(order.number)}`)}?token=${encodeURIComponent(one('token'))}`}
+                  >
+                    {t('orders.view')}
+                  </Button>
+                  <Button variant="secondary" href={shop}>
+                    {t('checkout.return.toShop')}
+                  </Button>
+                </>
               )}
             </div>
           </section>

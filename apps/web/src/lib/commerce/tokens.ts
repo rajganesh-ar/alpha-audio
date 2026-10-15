@@ -1,5 +1,4 @@
-import { createHash, createHmac, randomBytes } from 'node:crypto'
-import { loadEnv } from '@alpha/config/env'
+import { createHash, randomBytes } from 'node:crypto'
 import type { PricedBag } from '@alpha/core'
 
 /** A fresh key for one rendering of the checkout form (hidden field). */
@@ -21,15 +20,5 @@ export function idempotencyKey(cartId: number, formKey: string, bag: PricedBag):
     .digest('hex')
 }
 
-/**
- * The token in the order's confirmation link. Derived from the idempotency key with a server
- * secret, so a resubmitted checkout links to the same order; only its hash is stored.
- */
-export function orderAccessToken(
-  key: string,
-  source: Record<string, string | undefined> = process.env,
-): string {
-  return createHmac('sha256', loadEnv(source).PAYLOAD_SECRET)
-    .update(`order-access\n${key}`)
-    .digest('base64url')
-}
+// The order's access token is derived in `@alpha/payload` (`orderAccessToken`), shared with the
+// notification job that puts the same link in emails.

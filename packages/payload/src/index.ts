@@ -25,6 +25,7 @@ export { ensureStaffUser, type StaffCredentials } from './system/ensure-staff-us
 export * from './collections/inventory'
 export { createLedger, PostgresLedgerStore } from './system/ledgerStore'
 export { createReceiving, PostgresPurchasingStore } from './system/purchasingStore'
+export { brandsSellableIn, loadRightsWindows, type RightsWindow } from './system/marketRights'
 export {
   LEDGER_QUEUE,
   RELEASE_EXPIRED_RESERVATIONS,

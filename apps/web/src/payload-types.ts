@@ -70,6 +70,7 @@ export interface Config {
     products: Product;
     brands: Brand;
     categories: Category;
+    'brand-agreements': BrandAgreement;
     media: Media;
     warehouses: Warehouse;
     locations: Location;
@@ -93,6 +94,7 @@ export interface Config {
     products: ProductsSelect<false> | ProductsSelect<true>;
     brands: BrandsSelect<false> | BrandsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    'brand-agreements': BrandAgreementsSelect<false> | BrandAgreementsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     warehouses: WarehousesSelect<false> | WarehousesSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
@@ -320,6 +322,37 @@ export interface Category {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brand-agreements".
+ */
+export interface BrandAgreement {
+  id: number;
+  brand: number | Brand;
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  role: 'distributor' | 'retailer' | 'none';
+  exclusive?: boolean | null;
+  /**
+   * Inclusive. Empty: already in force.
+   */
+  validFrom?: string | null;
+  /**
+   * Exclusive. Empty: open-ended. Set it to end the agreement.
+   */
+  validTo?: string | null;
+  /**
+   * Who receives leads for this brand in this market.
+   */
+  leadRouting: 'alpha' | 'dealer';
+  /**
+   * origin-restriction and registration-pending hide the brand in this market.
+   */
+  complianceFlags?:
+    ('origin-restriction' | 'registration-pending' | 'arabic-labelling' | 'wireless-type-approval')[] | null;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -856,6 +889,10 @@ export interface PayloadLockedDocument {
         value: number | Category;
       } | null)
     | ({
+        relationTo: 'brand-agreements';
+        value: number | BrandAgreement;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
@@ -1029,6 +1066,23 @@ export interface CategoriesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brand-agreements_select".
+ */
+export interface BrandAgreementsSelect<T extends boolean = true> {
+  brand?: T;
+  market?: T;
+  role?: T;
+  exclusive?: T;
+  validFrom?: T;
+  validTo?: T;
+  leadRouting?: T;
+  complianceFlags?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

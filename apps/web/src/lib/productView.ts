@@ -178,3 +178,20 @@ export function breadcrumbJsonLd(items: ReadonlyArray<{ name: string; url: strin
     })),
   }
 }
+
+/** schema.org Brand for a brand page. */
+export function brandJsonLd(input: {
+  name: string
+  url: string
+  description?: string | null | undefined
+  logo?: string | null | undefined
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Brand',
+    name: input.name,
+    url: input.url,
+    ...(input.description ? { description: input.description } : {}),
+    ...(input.logo ? { logo: input.logo } : {}),
+  }
+}

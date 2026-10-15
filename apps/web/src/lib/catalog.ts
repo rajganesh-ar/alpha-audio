@@ -1,8 +1,13 @@
 import { unstable_cache } from 'next/cache'
 import { getPayload, type Payload } from 'payload'
 import config from '@payload-config'
-import { STOREFRONT_TAGS, type LocaleCode } from '@alpha/payload'
-import type { Category, Home, Product } from '@/payload-types'
+import {
+  STOREFRONT_TAGS,
+  loadRightsWindows,
+  type LocaleCode,
+  type RightsWindow,
+} from '@alpha/payload'
+import type { Brand, Category, Home, Product } from '@/payload-types'
 
 /**
  * Storefront reads of the catalogue and the Home global. Anonymous Local API calls with
@@ -113,3 +118,23 @@ export function categoryTrail(
   }
   return trail
 }
+
+/** Brand rights windows (public projection of BrandAgreements), cached like the catalogue. */
+export const getRightsWindows = (): Promise<RightsWindow[]> =>
+  unstable_cache(async () => loadRightsWindows(await payload()), ['rights-windows'], {
+    tags: [STOREFRONT_TAGS.catalog],
+    revalidate: REVALIDATE_SECONDS,
+  })()
+
+/** Every published brand, by name. */
+export const getBrands = (locale: LocaleCode): Promise<Brand[]> =>
+  unstable_cache(
+    async () =>
+      (
+        await (
+          await payload()
+        ).find({ collection: 'brands', limit: 500, depth: 1, sort: 'name', locale, ...read })
+      ).docs,
+    ['brands', locale],
+    { tags: [STOREFRONT_TAGS.catalog], revalidate: REVALIDATE_SECONDS },
+  )()

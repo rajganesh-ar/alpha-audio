@@ -443,3 +443,67 @@ export const HOME = {
     },
   },
 } as const
+
+/**
+ * Brand rights (BrandAgreements). Bluesound's UAE agreement ended on 30 June 2026, so its
+ * products are hidden in the UAE storefront though they stay published: the brand-rights rule
+ * from task 0008, visible in the demo.
+ */
+export const AGREEMENTS: Array<{
+  brand: string
+  market: 'ae' | 'sa'
+  role: 'distributor' | 'retailer'
+  exclusive: boolean
+  validFrom: string
+  validTo?: string
+  flags?: Array<'arabic-labelling' | 'wireless-type-approval'>
+}> = [
+  {
+    brand: 'mcintosh',
+    market: 'ae',
+    role: 'distributor',
+    exclusive: true,
+    validFrom: '2024-01-01',
+  },
+  {
+    brand: 'mcintosh',
+    market: 'sa',
+    role: 'distributor',
+    exclusive: false,
+    validFrom: '2025-07-01',
+  },
+  {
+    brand: 'sonus-faber',
+    market: 'ae',
+    role: 'distributor',
+    exclusive: true,
+    validFrom: '2024-01-01',
+  },
+  {
+    brand: 'sonus-faber',
+    market: 'sa',
+    role: 'retailer',
+    exclusive: false,
+    validFrom: '2025-07-01',
+    flags: ['arabic-labelling'],
+  },
+  { brand: 'marantz', market: 'ae', role: 'retailer', exclusive: false, validFrom: '2024-06-01' },
+  { brand: 'marantz', market: 'sa', role: 'distributor', exclusive: true, validFrom: '2025-07-01' },
+  {
+    brand: 'bluesound',
+    market: 'ae',
+    role: 'retailer',
+    exclusive: false,
+    validFrom: '2024-01-01',
+    validTo: '2026-06-30',
+    flags: ['wireless-type-approval'],
+  },
+  {
+    brand: 'bluesound',
+    market: 'sa',
+    role: 'retailer',
+    exclusive: false,
+    validFrom: '2025-07-01',
+    flags: ['wireless-type-approval'],
+  },
+]

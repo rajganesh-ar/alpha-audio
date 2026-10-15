@@ -14,6 +14,7 @@ import config from '@payload-config'
 import { createLedger, ensureStaffUser, loadMarkets } from '@alpha/payload'
 import type { Media } from '@/payload-types'
 import {
+  AGREEMENTS,
   BRANDS,
   CATEGORIES,
   HOME,
@@ -123,6 +124,23 @@ for (const b of BRANDS) {
     ...as(),
   })
   brandIds.set(b.slug, doc.id)
+}
+
+for (const a of AGREEMENTS) {
+  await payload.create({
+    collection: 'brand-agreements',
+    data: {
+      brand: brandIds.get(a.brand) as number,
+      market: a.market,
+      role: a.role,
+      exclusive: a.exclusive,
+      validFrom: `${a.validFrom}T00:00:00.000Z`,
+      ...(a.validTo ? { validTo: `${a.validTo}T00:00:00.000Z` } : {}),
+      leadRouting: 'alpha',
+      ...(a.flags ? { complianceFlags: a.flags } : {}),
+    },
+    ...as(),
+  })
 }
 
 const productIds = new Map<string, number>()
@@ -289,6 +307,6 @@ if (shelf) {
 }
 
 payload.logger.info(
-  `Demo catalogue seeded: ${BRANDS.length} brands, ${CATEGORIES.length} categories, ${PRODUCTS.length} products, Home page.`,
+  `Demo catalogue seeded: ${BRANDS.length} brands, ${AGREEMENTS.length} agreements, ${CATEGORIES.length} categories, ${PRODUCTS.length} products, Home page.`,
 )
 process.exit(0)

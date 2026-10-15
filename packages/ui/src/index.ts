@@ -14,6 +14,7 @@ export {
 } from './components/AnnouncementBar/AnnouncementBar'
 export { AppShell, type AppShellProps } from './components/AppShell/AppShell'
 export { Badge, type BadgeProps, type BadgeTone } from './components/Badge/Badge'
+export { BrandTile, type BrandTileProps } from './components/BrandTile/BrandTile'
 export {
   Breadcrumb,
   type BreadcrumbItem,

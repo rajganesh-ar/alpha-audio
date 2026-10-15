@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import { publishedIn } from '@alpha/core'
 import type { EntryTool } from '@alpha/payload'
 import {
   Card,
@@ -18,6 +17,7 @@ import { getCategories, getHome } from '@/lib/catalog'
 import { getMarketRoute, getMarkets, requireMarketRoute } from '@/lib/markets'
 import { imageOf } from '@/lib/productView'
 import { alternatesFor, jsonLd, localizedPath, siteUrl } from '@/lib/seo'
+import { getSaleRule } from '@/lib/rights'
 import { stockPromises } from '@/lib/stock'
 import type { Category, Product } from '@/payload-types'
 
@@ -54,9 +54,9 @@ export default async function MarketHome({ params }: { params: Params }) {
   const at = (path: string) => localizedPath(route.market.code, route.locale, path)
   const origin = siteUrl()
 
+  const onSale = await getSaleRule()
   const featured = (home.featured ?? []).filter(
-    (p): p is Product =>
-      typeof p === 'object' && p !== null && publishedIn(p.markets, route.market.code),
+    (p): p is Product => typeof p === 'object' && p !== null && onSale(p, route.market.code),
   )
   const chosen = (home.topCategories ?? []).filter(
     (c): c is Category => typeof c === 'object' && c !== null,

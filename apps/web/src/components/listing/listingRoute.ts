@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { buildListing, publishedIn, type ListingQuery } from '@alpha/core'
+import { buildListing, type ListingQuery } from '@alpha/core'
 import type { MarketRoute } from '@alpha/payload'
 import {
   categoryTrail,
@@ -10,6 +10,7 @@ import {
 } from '@/lib/catalog'
 import { facetSpecsFor, toListingItems } from '@/lib/listing'
 import { localizedPath } from '@/lib/seo'
+import { getSaleRule } from '@/lib/rights'
 import { stockPromises } from '@/lib/stock'
 import type { Category } from '@/payload-types'
 
@@ -38,9 +39,10 @@ export async function loadListing(
     }
   }
   const trail = category ? categoryTrail(categories, category.id) : []
+  const onSale = await getSaleRule()
   const products = (
     await getListingProducts(category ? descendantIds(categories, category.id) : null, route.locale)
-  ).filter((p) => publishedIn(p.markets, route.market.code))
+  ).filter((p) => onSale(p, route.market.code))
   const stock = products.length
     ? await stockPromises(
         products.map((p) => p.sku),

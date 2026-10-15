@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { publishedIn } from '@alpha/core'
 import { Breadcrumb, Gallery, PriceBlock, SpecTable, getDictionary, translator } from '@alpha/ui'
 import { LiveStockLine } from '@/components/LiveStockLine'
 import { categoryTrail, getCategories, getProduct } from '@/lib/catalog'
@@ -20,6 +19,7 @@ import {
   stockLabels,
 } from '@/lib/productView'
 import { alternatesFor, jsonLd, localizedPath, siteUrl } from '@/lib/seo'
+import { getSaleRule } from '@/lib/rights'
 import { stockPromises } from '@/lib/stock'
 
 type Params = Promise<{ market: string; locale: string; slug: string }>
@@ -37,14 +37,15 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const route = await getMarketRoute(market, locale)
   if (!route) return {}
   const product = await getProduct(slug, route.locale)
-  if (!product || !publishedIn(product.markets, route.market.code)) return {}
+  const onSale = await getSaleRule()
+  if (!product || !onSale(product, route.market.code)) return {}
   const brand = brandOf(product)
   const title = product.seo?.title || [brand?.name, product.title].filter(Boolean).join(' ')
   return {
     title,
     description: product.seo?.description || product.summary || undefined,
     alternates: alternatesFor(await getMarkets(), route, `/products/${product.slug}`, (m) =>
-      publishedIn(product.markets, m.code),
+      onSale(product, m.code),
     ),
     openGraph: {
       title,
@@ -60,8 +61,10 @@ export default async function ProductPage({ params }: { params: Params }) {
   const route = await requireMarketRoute(params)
   const { slug } = await params
   const product = await getProduct(slug, route.locale)
-  // Not sold here: a 404 with the market switcher, never a redirect to another market (spec).
-  if (!product || !publishedIn(product.markets, route.market.code)) notFound()
+  // Not sold here (unpublished, or the brand has no live agreement in this market): a 404 with
+  // the market switcher, never a redirect to another market (spec).
+  const onSale = await getSaleRule()
+  if (!product || !onSale(product, route.market.code)) notFound()
 
   const t = translator(getDictionary(route.locale))
   const brand = brandOf(product)

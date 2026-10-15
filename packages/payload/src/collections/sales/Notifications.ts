@@ -63,13 +63,20 @@ export const Notifications: CollectionConfig = {
     {
       type: 'row',
       fields: [
-        { name: 'to', type: 'email', required: true, access: system, admin: { width: '50%' } },
+        { name: 'to', type: 'email', required: true, access: system, admin: { width: '33%' } },
         {
           name: 'customer',
           type: 'relationship',
           relationTo: 'customers',
           access: system,
-          admin: { width: '50%', description: 'For account emails (sign-in link).' },
+          admin: { width: '33%', description: 'For account emails (sign-in link).' },
+        },
+        {
+          name: 'lead',
+          type: 'relationship',
+          relationTo: 'leads',
+          access: system,
+          admin: { width: '33%', description: 'For lead emails (docs/tasks/0018).' },
         },
       ],
     },

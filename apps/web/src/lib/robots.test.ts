@@ -14,6 +14,7 @@ describe('robots.txt', () => {
         '/*/*/orders/',
         '/*/*/account/',
         '/*/*/search/',
+        '/*/*/enquire/',
         '/ops/',
         '/admin',
         '/api/',

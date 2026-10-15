@@ -8,6 +8,7 @@ export const ROBOTS_DISALLOW = [
   '/*/*/orders/',
   '/*/*/account/',
   '/*/*/search/',
+  '/*/*/enquire/',
   '/ops/',
   '/admin',
   '/api/',

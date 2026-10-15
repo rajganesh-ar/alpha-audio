@@ -127,3 +127,60 @@ export function renderSignInEmail(locale: LocaleCode, link: string): RenderedEma
 </html>`
   return { subject: copy.subject, html, text }
 }
+
+export interface EmailLead {
+  number: string
+  locale: LocaleCode
+  product: string
+  city: string | null
+  /** Formatted in the market's time zone. */
+  acceptBy: string | null
+  link: string | null
+}
+
+/** Lead emails (docs/tasks/0018). The dealer's offer carries no shopper contact details. */
+export function renderLeadEmail(
+  template: 'lead-received' | 'lead-offered',
+  lead: EmailLead,
+): RenderedEmail {
+  const m = EMAIL_MESSAGES[lead.locale]
+  const dir = lead.locale === 'ar' ? 'rtl' : 'ltr'
+  const vars = { number: lead.number, product: lead.product, acceptBy: lead.acceptBy ?? '' }
+  const copy = template === 'lead-received' ? m.leadReceived : m.leadOffered
+  const rows: Array<[string, string]> =
+    template === 'lead-received'
+      ? [[m.leadReceived.reference, lead.number]]
+      : [
+          [m.leadOffered.product, lead.product],
+          ...(lead.city ? ([[m.leadOffered.city, lead.city]] as Array<[string, string]>) : []),
+          [m.leadOffered.acceptBy, lead.acceptBy ?? ''],
+        ]
+  const action = template === 'lead-offered' && lead.link ? m.leadOffered.action : null
+  const text = [
+    fill(copy.heading, vars),
+    '',
+    fill(copy.body, vars),
+    '',
+    ...rows.map(([k, v]) => `${k}: ${v}`),
+    ...(action && lead.link ? ['', `${action}: ${lead.link}`] : []),
+  ].join('\n')
+  const html = `<!doctype html>
+<html lang="${lead.locale}" dir="${dir}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escape(fill(copy.subject, vars))}</title></head>
+<body style="font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;line-height:1.5;margin:0;padding:24px;">
+<div style="max-width:560px;margin:0 auto;">
+<h1 style="font-size:22px;margin:0 0 8px;">${escape(fill(copy.heading, vars))}</h1>
+<p>${escape(fill(copy.body, vars))}</p>
+<table role="presentation" style="border-collapse:collapse;margin:16px 0;">${rows
+    .map(
+      ([k, v]) =>
+        `<tr><td style="padding:2px 16px 2px 0;">${escape(k)}</td><td style="padding:2px 0;"><bdi>${escape(v)}</bdi></td></tr>`,
+    )
+    .join('')}</table>
+${action && lead.link ? `<p style="margin:24px 0;"><a href="${escape(lead.link)}" style="font-weight:bold;">${escape(action)}</a></p>` : ''}
+<p style="font-size:13px;">${escape(m.footer)}</p>
+</div>
+</body>
+</html>`
+  return { subject: fill(copy.subject, vars), html, text }
+}

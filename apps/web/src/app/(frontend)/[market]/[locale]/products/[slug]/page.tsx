@@ -173,6 +173,15 @@ export default async function ProductPage({ params }: { params: Params }) {
               </Button>
             </form>
           ) : null}
+          {/* Enquiries go to Alpha or a partner by the brand's agreement (docs/tasks/0018). */}
+          <Button
+            href={`${home}enquire/?${new URLSearchParams({ product: product.slug }).toString()}`}
+            variant={price.kind === 'priced' ? 'quiet' : 'primary'}
+            icon="arrow-forward"
+            iconPosition="end"
+          >
+            {price.kind === 'priced' ? t('enquiry.specialist') : t('enquiry.request')}
+          </Button>
         </div>
       </div>
       <section className="max-w-3xl">

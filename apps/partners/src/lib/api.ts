@@ -1,6 +1,10 @@
 import type { Payload } from 'payload'
 import { z } from 'zod'
 import {
+  partnerAccount,
+  acceptLead,
+  closeLead,
+  declineLead,
   createQuoteFromDraft,
   decideTradeOrder,
   orderQuote,
@@ -484,4 +488,78 @@ export async function postProjectAction(
         result.reason,
         'Not withdrawn.',
       )
+}
+
+/** `GET /api/v1/leads`: leads offered to or accepted by the company (contact only once accepted). */
+export async function getLeads({ payload }: Deps, request: Request) {
+  const user = await signedIn(payload, request)
+  if (!user || (user as { collection?: string }).collection !== 'company-users')
+    return problem(401, 'unauthenticated', 'Sign in with a company account.')
+  return json(
+    await payload.find({
+      collection: 'leads',
+      user,
+      overrideAccess: false,
+      depth: 0,
+      sort: '-createdAt',
+      limit: 50,
+    }),
+  )
+}
+
+/** `POST /api/v1/leads/{number}/{accept|decline|outcome}` for the signed-in company user. */
+export async function postLeadAction(
+  { payload }: Deps,
+  request: Request,
+  number: string,
+  action: string,
+) {
+  if (crossSite(request)) return problem(403, 'cross-site', 'Cross-site requests are refused.')
+  const form = isForm(request)
+  if (action !== 'accept' && action !== 'decline' && action !== 'outcome')
+    return problem(404, 'not-found', 'Unknown action.')
+  const user = await signedIn(payload, request)
+  if (!user || (user as { collection?: string }).collection !== 'company-users')
+    return form ? seeOther('/login') : problem(401, 'unauthenticated', 'Sign in.')
+  const back = (result: string) =>
+    seeOther(`/leads?result=${result}#lead-${encodeURIComponent(number)}`)
+  let result
+  if (action === 'outcome') {
+    const fields = (await readFields(request)) ?? {}
+    const outcome =
+      fields['outcome'] === 'won' || fields['outcome'] === 'lost' ? fields['outcome'] : null
+    const raw = typeof fields['value'] === 'string' ? fields['value'].trim().replace(/,/g, '') : ''
+    const value = /^\d{1,12}(\.\d{1,3})?$/.test(raw) ? raw : raw === '' ? null : undefined
+    if (!outcome || value === undefined)
+      return form ? back('invalid') : problem(400, 'invalid-request', 'Outcome is won or lost.')
+    // The value is in the company's market currency.
+    const decimals = (await partnerAccount(payload, user))?.decimals ?? 2
+    const minor =
+      value === null
+        ? null
+        : BigInt(
+            (value.split('.')[0] ?? '0') + ((value.split('.')[1] ?? '') + '000').slice(0, decimals),
+          )
+    result = await closeLead(payload, user, number, outcome, minor)
+  } else {
+    result = await (action === 'accept' ? acceptLead : declineLead)(payload, user, number)
+  }
+  const outcome = result.ok
+    ? action === 'accept'
+      ? 'accepted'
+      : action === 'decline'
+        ? 'declined'
+        : 'closed'
+    : result.reason
+  if (form) return back(outcome)
+  if (result.ok) return json({ lead: { number, status: result.lead.status } })
+  return problem(
+    result.reason === 'not-found'
+      ? 404
+      : result.reason === 'forbidden' || result.reason === 'not-yours'
+        ? 403
+        : 409,
+    result.reason,
+    'Not done.',
+  )
 }

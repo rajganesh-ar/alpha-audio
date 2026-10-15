@@ -111,3 +111,4 @@ export {
   type ProjectFormValues,
   type ProjectRegistrationFormProps,
 } from './components/ProjectRegistrationForm/ProjectRegistrationForm'
+export { LeadCard, type LeadCardProps, type LeadContact } from './components/LeadCard/LeadCard'

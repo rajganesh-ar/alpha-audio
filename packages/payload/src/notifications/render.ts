@@ -1,4 +1,4 @@
-import { formatMoney, type Money, type NotificationTemplate } from '@alpha/core'
+import { formatMoney, type Money, type OrderNotificationTemplate } from '@alpha/core'
 import type { LocaleCode } from '../markets/codes'
 import { EMAIL_MESSAGES } from './messages'
 
@@ -32,7 +32,7 @@ const fill = (template: string, vars: Record<string, string>): string =>
  * One customer email, as HTML and plain text. Plain markup with no colours or images, `lang` and
  * `dir` on the document, Western digits in money (`formatMoney`); amounts come from the order.
  */
-export function renderEmail(template: NotificationTemplate, order: EmailOrder): RenderedEmail {
+export function renderEmail(template: OrderNotificationTemplate, order: EmailOrder): RenderedEmail {
   const m = EMAIL_MESSAGES[order.locale]
   const copy = m.templates[template]
   const dir = order.locale === 'ar' ? 'rtl' : 'ltr'
@@ -103,4 +103,27 @@ ${rows.map(([label, value], i) => `<tr><td style="${cell}${i === 2 ? 'font-weigh
 </body>
 </html>`
   return { subject: fill(copy.subject, vars), html, text }
+}
+
+/** The sign-in link email (docs/tasks/0012): one link, no other content. */
+export function renderSignInEmail(locale: LocaleCode, link: string): RenderedEmail {
+  const m = EMAIL_MESSAGES[locale]
+  const copy = m.signIn
+  const dir = locale === 'ar' ? 'rtl' : 'ltr'
+  const text = [copy.heading, '', copy.body, '', `${copy.action}: ${link}`, '', copy.ignore].join(
+    '\n',
+  )
+  const html = `<!doctype html>
+<html lang="${locale}" dir="${dir}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escape(copy.subject)}</title></head>
+<body style="font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;line-height:1.5;margin:0;padding:24px;">
+<div style="max-width:560px;margin:0 auto;">
+<h1 style="font-size:22px;margin:0 0 8px;">${escape(copy.heading)}</h1>
+<p>${escape(copy.body)}</p>
+<p style="margin:24px 0;"><a href="${escape(link)}" style="font-weight:bold;">${escape(copy.action)}</a></p>
+<p style="font-size:13px;">${escape(copy.ignore)}</p>
+</div>
+</body>
+</html>`
+  return { subject: copy.subject, html, text }
 }

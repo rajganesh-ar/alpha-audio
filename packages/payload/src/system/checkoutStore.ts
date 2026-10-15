@@ -339,6 +339,11 @@ export async function loadShopperOrder(
   const expected = Buffer.from(doc.accessTokenHash)
   const given = Buffer.from(hashToken(token))
   if (expected.length !== given.length || !timingSafeEqual(expected, given)) return null
+  return toShopperOrder(doc)
+}
+
+/** An order as its customer sees it (no keys, hashes or reservation ids). */
+export function toShopperOrder(doc: OrderDoc & ShopperDoc): ShopperOrder {
   const order = toOrderRecord(doc)
   return {
     number: order.number,

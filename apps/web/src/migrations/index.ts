@@ -14,8 +14,9 @@ import * as migration_20261015_073408_checkout_constraints from './20261015_0734
 import * as migration_20261015_073659_jobs_expire_checkouts from './20261015_073659_jobs_expire_checkouts';
 import * as migration_20261015_092240_fulfilment from './20261015_092240_fulfilment';
 import * as migration_20261015_092241_fulfilment_constraints from './20261015_092241_fulfilment_constraints';
-import * as migration_20261015_095446_pages from './20261015_095446_pages'
-import * as migration_20261015_095447_product_search from './20261015_095447_product_search'
+import * as migration_20261015_095446_pages from './20261015_095446_pages';
+import * as migration_20261015_095447_product_search from './20261015_095447_product_search';
+import * as migration_20261015_102240_customers from './20261015_102240_customers'
 
 export const migrations = [
   {
@@ -107,5 +108,10 @@ export const migrations = [
     up: migration_20261015_095447_product_search.up,
     down: migration_20261015_095447_product_search.down,
     name: '20261015_095447_product_search',
+  },
+  {
+    up: migration_20261015_102240_customers.up,
+    down: migration_20261015_102240_customers.down,
+    name: '20261015_102240_customers',
   },
 ]

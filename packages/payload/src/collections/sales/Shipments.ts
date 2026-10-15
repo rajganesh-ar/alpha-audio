@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isStaff, nobody, systemWritten } from '../../access'
+import { nobody, staffOrOwnShipments, systemWritten } from '../../access'
 import { MARKET_CODES } from '../../markets/codes'
 
 const system = { create: systemWritten, update: systemWritten }
@@ -7,7 +7,8 @@ const system = { create: systemWritten, update: systemWritten }
 /**
  * One parcel handed to a courier for an order (docs/tasks/0010). Courier integration is an open
  * decision, so staff record the courier and tracking number on the ops screens; the stock moves
- * `picked → shipped` against this document. Staff read; only the fulfilment service writes.
+ * `picked → shipped` against this document. Staff read; a customer reads their own order's
+ * shipment (docs/tasks/0012); only the fulfilment service writes.
  */
 export const Shipments: CollectionConfig = {
   slug: 'shipments',
@@ -17,7 +18,7 @@ export const Shipments: CollectionConfig = {
     useAsTitle: 'number',
     defaultColumns: ['number', 'order', 'courier', 'trackingNumber', 'status', 'shippedAt'],
   },
-  access: { read: isStaff, create: nobody, update: nobody, delete: nobody },
+  access: { read: staffOrOwnShipments, create: nobody, update: nobody, delete: nobody },
   fields: [
     {
       type: 'row',

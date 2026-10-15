@@ -1,6 +1,6 @@
 import type { CollectionConfig, Field } from 'payload'
 import { FAILURE_REASONS, FULFILMENT_STATUSES, ORDER_STATUSES, REFUND_STATUSES } from '@alpha/core'
-import { isStaff, nobody, staffField, systemWritten } from '../../access'
+import { isStaff, nobody, staffField, staffOrOwnOrders, systemWritten } from '../../access'
 import { LOCALE_CODES, MARKET_CODES } from '../../markets/codes'
 
 const system = { create: systemWritten, update: systemWritten }
@@ -16,7 +16,7 @@ const readOnly = { readOnly: true } as const
 
 /**
  * A storefront order (docs/tasks/0009). Written only by the checkout service (system); staff
- * read it and may add notes. Money is minor units of `currency` with `decimals` beside it.
+ * read it and may add notes; a signed-in customer reads their own (docs/tasks/0012). Money is minor units of `currency` with `decimals` beside it.
  * Orders are never deleted; failed and expired checkouts stay for the record.
  */
 export const Orders: CollectionConfig = {
@@ -27,7 +27,7 @@ export const Orders: CollectionConfig = {
     useAsTitle: 'number',
     defaultColumns: ['number', 'status', 'market', 'createdAt'],
   },
-  access: { read: isStaff, create: nobody, update: isStaff, delete: nobody },
+  access: { read: staffOrOwnOrders, create: nobody, update: isStaff, delete: nobody },
   fields: [
     {
       type: 'row',
@@ -190,7 +190,7 @@ export const Orders: CollectionConfig = {
           type: 'row',
           fields: [
             { name: 'provider', type: 'text' },
-            { name: 'intentId', type: 'text', index: true },
+            { name: 'intentId', type: 'text', index: true, access: { read: staffField } },
             {
               name: 'status',
               type: 'select',
@@ -230,7 +230,8 @@ export const Orders: CollectionConfig = {
         {
           name: 'cancelReason',
           type: 'text',
-          access: system,
+          // Staff wording (it may say "fraud check"); customers see that the order was cancelled.
+          access: { ...system, read: staffField },
           admin: { ...readOnly, width: '33%' },
         },
       ],
@@ -256,8 +257,13 @@ export const Orders: CollectionConfig = {
               },
             },
             { name: 'amount', type: 'number', admin: { width: '25%' } },
-            { name: 'reference', type: 'text', admin: { width: '25%' } },
-            { name: 'error', type: 'text', admin: { width: '25%' } },
+            {
+              name: 'reference',
+              type: 'text',
+              access: { read: staffField },
+              admin: { width: '25%' },
+            },
+            { name: 'error', type: 'text', access: { read: staffField }, admin: { width: '25%' } },
           ],
         },
       ],
@@ -290,6 +296,11 @@ export const Orders: CollectionConfig = {
       access: { ...system, read: staffField },
       admin: { hidden: true },
     },
-    { name: 'notes', type: 'textarea', admin: { description: 'Staff notes.' } },
+    {
+      name: 'notes',
+      type: 'textarea',
+      access: { read: staffField },
+      admin: { description: 'Staff notes; never shown to the customer.' },
+    },
   ],
 }

@@ -63,6 +63,7 @@ export type SupportedTimezones =
 
 export interface Config {
   auth: {
+    customers: CustomerAuthOperations;
     users: UserAuthOperations;
   };
   blocks: {};
@@ -87,6 +88,9 @@ export interface Config {
     notifications: Notification;
     carts: Cart;
     'webhook-events': WebhookEvent;
+    customers: Customer;
+    'customer-sessions': CustomerSession;
+    'sign-in-links': SignInLink;
     'legacy-redirects': LegacyRedirect;
     users: User;
     'payload-kv': PayloadKv;
@@ -117,6 +121,9 @@ export interface Config {
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     carts: CartsSelect<false> | CartsSelect<true>;
     'webhook-events': WebhookEventsSelect<false> | WebhookEventsSelect<true>;
+    customers: CustomersSelect<false> | CustomersSelect<true>;
+    'customer-sessions': CustomerSessionsSelect<false> | CustomerSessionsSelect<true>;
+    'sign-in-links': SignInLinksSelect<false> | SignInLinksSelect<true>;
     'legacy-redirects': LegacyRedirectsSelect<false> | LegacyRedirectsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -143,7 +150,7 @@ export interface Config {
   widgets: {
     collections: CollectionsWidget;
   };
-  user: User;
+  user: Customer | User;
   jobs: {
     tasks: {
       releaseExpiredReservations: TaskReleaseExpiredReservations;
@@ -155,6 +162,24 @@ export interface Config {
       };
     };
     workflows: unknown;
+  };
+}
+export interface CustomerAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
   };
 }
 export interface UserAuthOperations {
@@ -905,7 +930,7 @@ export interface Order {
   idempotencyKey: string;
   accessTokenHash: string;
   /**
-   * Staff notes.
+   * Staff notes; never shown to the customer.
    */
   notes?: string | null;
   updatedAt: string;
@@ -936,17 +961,45 @@ export interface Shipment {
 export interface Notification {
   id: number;
   key: string;
-  order: number | Order;
-  template: 'order-confirmed' | 'order-shipped' | 'order-delivered' | 'order-cancelled';
+  /**
+   * For order emails.
+   */
+  order?: (number | null) | Order;
+  template: 'order-confirmed' | 'order-shipped' | 'order-delivered' | 'order-cancelled' | 'sign-in';
   channel: 'email';
   locale: 'en' | 'ar';
   to: string;
+  /**
+   * For account emails (sign-in link).
+   */
+  customer?: (number | null) | Customer;
+  secret?: string | null;
   status: 'queued' | 'sent' | 'failed';
   attempts: number;
   sentAt?: string | null;
   lastError?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customers".
+ */
+export interface Customer {
+  id: number;
+  email: string;
+  name?: string | null;
+  phone?: string | null;
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  locale: 'en' | 'ar';
+  lastSignInAt?: string | null;
+  /**
+   * Opted in to marketing (PDPL consent). Order emails are sent regardless.
+   */
+  marketingConsent?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  collection: 'customers';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -997,6 +1050,35 @@ export interface WebhookEvent {
   payloadHash: string;
   outcome?: string | null;
   receivedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customer-sessions".
+ */
+export interface CustomerSession {
+  id: number;
+  tokenHash: string;
+  customer: number | Customer;
+  expiresAt: string;
+  revokedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sign-in-links".
+ */
+export interface SignInLink {
+  id: number;
+  tokenHash: string;
+  email: string;
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  locale: 'en' | 'ar';
+  ipHash?: string | null;
+  expiresAt: string;
+  usedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1224,6 +1306,18 @@ export interface PayloadLockedDocument {
         value: number | WebhookEvent;
       } | null)
     | ({
+        relationTo: 'customers';
+        value: number | Customer;
+      } | null)
+    | ({
+        relationTo: 'customer-sessions';
+        value: number | CustomerSession;
+      } | null)
+    | ({
+        relationTo: 'sign-in-links';
+        value: number | SignInLink;
+      } | null)
+    | ({
         relationTo: 'legacy-redirects';
         value: number | LegacyRedirect;
       } | null)
@@ -1232,10 +1326,15 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null);
   globalSlug?: string | null;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'customers';
+        value: number | Customer;
+      }
+    | {
+        relationTo: 'users';
+        value: number | User;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -1245,10 +1344,15 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: number;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'customers';
+        value: number | Customer;
+      }
+    | {
+        relationTo: 'users';
+        value: number | User;
+      };
   key?: string | null;
   value?:
     | {
@@ -1687,6 +1791,8 @@ export interface NotificationsSelect<T extends boolean = true> {
   channel?: T;
   locale?: T;
   to?: T;
+  customer?: T;
+  secret?: T;
   status?: T;
   attempts?: T;
   sentAt?: T;
@@ -1727,6 +1833,48 @@ export interface WebhookEventsSelect<T extends boolean = true> {
   payloadHash?: T;
   outcome?: T;
   receivedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customers_select".
+ */
+export interface CustomersSelect<T extends boolean = true> {
+  email?: T;
+  name?: T;
+  phone?: T;
+  market?: T;
+  locale?: T;
+  lastSignInAt?: T;
+  marketingConsent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customer-sessions_select".
+ */
+export interface CustomerSessionsSelect<T extends boolean = true> {
+  tokenHash?: T;
+  customer?: T;
+  expiresAt?: T;
+  revokedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sign-in-links_select".
+ */
+export interface SignInLinksSelect<T extends boolean = true> {
+  tokenHash?: T;
+  email?: T;
+  market?: T;
+  locale?: T;
+  ipHash?: T;
+  expiresAt?: T;
+  usedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

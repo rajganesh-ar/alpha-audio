@@ -52,3 +52,35 @@ export const staffField: FieldAccess = ({ req }) => req.user?.collection === 'us
 
 /** Field-level: no one, through any API (secrets that only system code reads). */
 export const noOneReads: FieldAccess = () => false
+
+/** A signed-in storefront customer (docs/tasks/0012; session from the `alpha_session` cookie). */
+export const isCustomer = (user: { collection?: string } | null | undefined): boolean =>
+  user?.collection === 'customers'
+
+/** Customers: staff read everyone (support); a customer reads only their own record. */
+export const staffOrSelf: Access = ({ req }) => {
+  if (req.user?.collection === 'users') return true
+  if (isCustomer(req.user)) return { id: { equals: req.user?.id } }
+  return false
+}
+
+/**
+ * Orders: staff read all; a signed-in customer reads the orders placed with their verified email
+ * address (they proved it by signing in with a link sent to it). Everyone else: nothing.
+ */
+export const staffOrOwnOrders: Access = ({ req }) => {
+  if (req.user?.collection === 'users') return true
+  const email = (req.user as { email?: unknown } | null)?.email
+  if (isCustomer(req.user) && typeof email === 'string' && email)
+    return { 'contact.email': { equals: email } }
+  return false
+}
+
+/** Shipments: staff read all; a customer reads the shipments of their own orders. */
+export const staffOrOwnShipments: Access = ({ req }) => {
+  if (req.user?.collection === 'users') return true
+  const email = (req.user as { email?: unknown } | null)?.email
+  if (isCustomer(req.user) && typeof email === 'string' && email)
+    return { 'order.contact.email': { equals: email } }
+  return false
+}

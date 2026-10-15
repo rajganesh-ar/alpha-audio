@@ -1,14 +1,15 @@
 import type { CollectionConfig } from 'payload'
 import { NOTIFICATION_TEMPLATES } from '@alpha/core'
-import { isStaff, nobody, systemWritten } from '../../access'
+import { isStaff, noOneReads, nobody, systemWritten } from '../../access'
 import { LOCALE_CODES } from '../../markets/codes'
 
 const system = { create: systemWritten, update: systemWritten }
 
 /**
- * The customer notification outbox (docs/tasks/0010). A row is written once per order and
- * template (`key` is unique), and the `sendNotification` job delivers it with retries. Staff
- * read it for support; only system code writes.
+ * The customer notification outbox (docs/tasks/0010, 0012). A row is written once per key
+ * (order and template, or the sign-in link), and the `sendNotification` job delivers it with
+ * retries. Staff read it for support; only system code writes. `secret` holds the encrypted
+ * sign-in link until it is sent, then is cleared; nobody reads it through the API.
  */
 export const Notifications: CollectionConfig = {
   slug: 'notifications',
@@ -28,10 +29,9 @@ export const Notifications: CollectionConfig = {
           name: 'order',
           type: 'relationship',
           relationTo: 'orders',
-          required: true,
           index: true,
           access: system,
-          admin: { width: '25%' },
+          admin: { width: '25%', description: 'For order emails.' },
         },
         {
           name: 'template',
@@ -60,7 +60,25 @@ export const Notifications: CollectionConfig = {
         },
       ],
     },
-    { name: 'to', type: 'email', required: true, access: system },
+    {
+      type: 'row',
+      fields: [
+        { name: 'to', type: 'email', required: true, access: system, admin: { width: '50%' } },
+        {
+          name: 'customer',
+          type: 'relationship',
+          relationTo: 'customers',
+          access: system,
+          admin: { width: '50%', description: 'For account emails (sign-in link).' },
+        },
+      ],
+    },
+    {
+      name: 'secret',
+      type: 'text',
+      access: { ...system, read: noOneReads },
+      admin: { hidden: true },
+    },
     {
       type: 'row',
       fields: [

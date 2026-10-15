@@ -24,12 +24,17 @@ export type FulfilmentStatus = (typeof FULFILMENT_STATUSES)[number]
 export const REFUND_STATUSES = ['none', 'pending', 'refunded', 'manual', 'failed'] as const
 export type RefundStatus = (typeof REFUND_STATUSES)[number]
 
-export const NOTIFICATION_TEMPLATES = [
+/** Emails about an order (docs/tasks/0010). */
+export const ORDER_NOTIFICATION_TEMPLATES = [
   'order-confirmed',
   'order-shipped',
   'order-delivered',
   'order-cancelled',
 ] as const
+export type OrderNotificationTemplate = (typeof ORDER_NOTIFICATION_TEMPLATES)[number]
+
+/** Every customer email: order emails and the sign-in link (docs/tasks/0012). */
+export const NOTIFICATION_TEMPLATES = [...ORDER_NOTIFICATION_TEMPLATES, 'sign-in'] as const
 export type NotificationTemplate = (typeof NOTIFICATION_TEMPLATES)[number]
 
 export interface OrderRefund {
@@ -91,7 +96,7 @@ export interface FulfilmentStore {
 }
 
 /** Queues a customer notification once per order and template (an outbox). */
-export type Notify = (order: FulfilmentOrder, template: NotificationTemplate) => Promise<void>
+export type Notify = (order: FulfilmentOrder, template: OrderNotificationTemplate) => Promise<void>
 
 export type FulfilmentRefusal =
   | 'not-found'

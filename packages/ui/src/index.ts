@@ -80,3 +80,8 @@ export {
   type OrderTimelineProps,
   type TimelineStep,
 } from './components/OrderTimeline/OrderTimeline'
+export {
+  AccountTabs,
+  type AccountTab,
+  type AccountTabsProps,
+} from './components/AccountTabs/AccountTabs'

@@ -19,6 +19,18 @@ export const envSchema = z.object({
     .default('false')
     .transform((v) => v === 'true'),
   SMTP_URL: z.string().url().optional(),
+  // Payments (docs/tasks/0009). The card gateway is an open decision; `sandbox` is the test-mode
+  // provider, refused in production unless PAYMENT_SANDBOX_ALLOWED=true (staging).
+  PAYMENT_PROVIDER: z.enum(['sandbox']).default('sandbox'),
+  // Empty means unset: the secret is then derived from PAYLOAD_SECRET.
+  PAYMENT_SANDBOX_SECRET: z.preprocess(
+    (v) => (v === '' ? undefined : v),
+    z.string().min(32).optional(),
+  ),
+  PAYMENT_SANDBOX_ALLOWED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
 })
 
 export type Env = z.infer<typeof envSchema>

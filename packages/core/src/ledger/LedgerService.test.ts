@@ -605,3 +605,59 @@ describe('sellable', () => {
     expect(await ledger.sellable('MA352', 'om')).toBe(0)
   })
 })
+
+describe('confirm', () => {
+  it('turns a cart hold into an order hold without moving stock', async () => {
+    const { ledger, store, receive, level, advance } = setup()
+    await receive('MA352', 3)
+    const r = await ledger.reserve({
+      sku: 'MA352',
+      qty: 2,
+      market: 'ae',
+      doc: { type: 'cart', id: 'AE-2026-000001' },
+    })
+    if (!r.ok) throw new Error('reserve failed')
+    const movements = store.movements.length
+    const confirmed = await ledger.confirm(r.reservation.id, {
+      doc: { type: 'order', id: 'AE-2026-000001' },
+    })
+    expect(confirmed).toMatchObject({
+      docType: 'order',
+      docId: 'AE-2026-000001',
+      expiresAt: null,
+      status: 'active',
+    })
+    expect(store.movements.length).toBe(movements)
+    expect(level('MA352', DXB, 'reserved')).toBe(2)
+    advance(60 * 60 * 1000)
+    expect(await ledger.releaseExpiredReservations()).toBe(0)
+    expect(level('MA352', DXB, 'reserved')).toBe(2)
+  })
+
+  it('refuses an expired or inactive hold', async () => {
+    const { ledger, receive, advance } = setup()
+    await receive('MA352', 2)
+    const r = await ledger.reserve({
+      sku: 'MA352',
+      qty: 1,
+      market: 'ae',
+      doc: { type: 'cart', id: 'C1' },
+    })
+    if (!r.ok) throw new Error('reserve failed')
+    advance(16 * 60 * 1000)
+    await expect(
+      ledger.confirm(r.reservation.id, { doc: { type: 'order', id: 'O1' } }),
+    ).rejects.toMatchObject({ code: 'reservation-expired' })
+    const s = await ledger.reserve({
+      sku: 'MA352',
+      qty: 1,
+      market: 'ae',
+      doc: { type: 'cart', id: 'C2' },
+    })
+    if (!s.ok) throw new Error('reserve failed')
+    await ledger.release(s.reservation.id)
+    await expect(
+      ledger.confirm(s.reservation.id, { doc: { type: 'order', id: 'O2' } }),
+    ).rejects.toBeInstanceOf(LedgerError)
+  })
+})

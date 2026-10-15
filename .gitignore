@@ -17,3 +17,5 @@ apps/web/public/fonts/
 packages/ui/storybook-static/
 packages/ui/test-results/
 packages/ui/playwright-report/
+apps/web/test-results/
+apps/web/playwright-report/

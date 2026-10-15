@@ -142,6 +142,10 @@ export class MemoryLedgerStore implements LedgerStore {
         const record = s.reservations.get(String(id))
         if (record) record.status = status
       },
+      retargetReservation: async (id, docType, docId, expiresAt) => {
+        const record = s.reservations.get(String(id))
+        if (record) Object.assign(record, { docType, docId, expiresAt })
+      },
       lockExpiredReservations: async (now, limit) =>
         [...s.reservations.values()]
           .filter((r) => r.status === 'active' && r.expiresAt !== null && r.expiresAt <= now)

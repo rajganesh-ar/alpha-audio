@@ -81,6 +81,9 @@ export interface Config {
     suppliers: Supplier;
     'purchase-orders': PurchaseOrder;
     'goods-receipts': GoodsReceipt;
+    orders: Order;
+    carts: Cart;
+    'webhook-events': WebhookEvent;
     'legacy-redirects': LegacyRedirect;
     users: User;
     'payload-kv': PayloadKv;
@@ -105,6 +108,9 @@ export interface Config {
     suppliers: SuppliersSelect<false> | SuppliersSelect<true>;
     'purchase-orders': PurchaseOrdersSelect<false> | PurchaseOrdersSelect<true>;
     'goods-receipts': GoodsReceiptsSelect<false> | GoodsReceiptsSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
+    carts: CartsSelect<false> | CartsSelect<true>;
+    'webhook-events': WebhookEventsSelect<false> | WebhookEventsSelect<true>;
     'legacy-redirects': LegacyRedirectsSelect<false> | LegacyRedirectsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -135,6 +141,7 @@ export interface Config {
   jobs: {
     tasks: {
       releaseExpiredReservations: TaskReleaseExpiredReservations;
+      expireCheckouts: TaskExpireCheckouts;
       inline: {
         input: unknown;
         output: unknown;
@@ -734,6 +741,147 @@ export interface GoodsReceipt {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: number;
+  number: string;
+  status: 'reserving' | 'unavailable' | 'paying' | 'confirming' | 'confirmed' | 'failed' | 'expired';
+  failureReason?: ('declined' | 'payment-error' | 'amount-mismatch' | 'stock-lost') | null;
+  channel: 'web';
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  locale: 'en' | 'ar';
+  currency: string;
+  decimals: number;
+  contact?: {
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  };
+  /**
+   * Fields of the market’s address scheme, as entered.
+   */
+  address?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  paymentMethod?: string | null;
+  lines?:
+    | {
+        product?: (number | null) | Product;
+        sku: string;
+        title: string;
+        qty: number;
+        unitPrice: number;
+        lineTotal: number;
+        vat: number;
+        id?: string | null;
+      }[]
+    | null;
+  totals: {
+    subtotal: number;
+    vat: number;
+    delivery: number;
+    total: number;
+  };
+  payment?: {
+    provider?: string | null;
+    intentId?: string | null;
+    status?: ('pending' | 'authorised' | 'captured' | 'declined' | 'failed') | null;
+  };
+  /**
+   * Ledger reservation ids holding this order’s stock.
+   */
+  reservations?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  unavailableSkus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Cart holds lapse at this time while paying.
+   */
+  holdExpiresAt?: string | null;
+  idempotencyKey: string;
+  accessTokenHash: string;
+  /**
+   * Staff notes.
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts".
+ */
+export interface Cart {
+  id: number;
+  tokenHash: string;
+  market: 'ae' | 'sa' | 'qa' | 'kw' | 'bh' | 'om';
+  locale: 'en' | 'ar';
+  lines?:
+    | {
+        sku: string;
+        qty: number;
+        /**
+         * Unit price incl. VAT when added (minor units), to announce a change.
+         */
+        priceSnapshot?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Checkout details entered so far.
+   */
+  draft?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  status: 'open' | 'converted';
+  order?: (number | null) | Order;
+  expiresAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "webhook-events".
+ */
+export interface WebhookEvent {
+  id: number;
+  provider: string;
+  eventId: string;
+  payloadHash: string;
+  outcome?: string | null;
+  receivedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Old site URLs with query strings, redirected to their new pages.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -820,7 +968,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'releaseExpiredReservations';
+        taskSlug: 'inline' | 'releaseExpiredReservations' | 'expireCheckouts';
         taskID: string;
         input?:
           | {
@@ -853,7 +1001,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'releaseExpiredReservations') | null;
+  taskSlug?: ('inline' | 'releaseExpiredReservations' | 'expireCheckouts') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -931,6 +1079,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'goods-receipts';
         value: number | GoodsReceipt;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'carts';
+        value: number | Cart;
+      } | null)
+    | ({
+        relationTo: 'webhook-events';
+        value: number | WebhookEvent;
       } | null)
     | ({
         relationTo: 'legacy-redirects';
@@ -1278,6 +1438,100 @@ export interface GoodsReceiptsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  number?: T;
+  status?: T;
+  failureReason?: T;
+  channel?: T;
+  market?: T;
+  locale?: T;
+  currency?: T;
+  decimals?: T;
+  contact?:
+    | T
+    | {
+        name?: T;
+        email?: T;
+        phone?: T;
+      };
+  address?: T;
+  paymentMethod?: T;
+  lines?:
+    | T
+    | {
+        product?: T;
+        sku?: T;
+        title?: T;
+        qty?: T;
+        unitPrice?: T;
+        lineTotal?: T;
+        vat?: T;
+        id?: T;
+      };
+  totals?:
+    | T
+    | {
+        subtotal?: T;
+        vat?: T;
+        delivery?: T;
+        total?: T;
+      };
+  payment?:
+    | T
+    | {
+        provider?: T;
+        intentId?: T;
+        status?: T;
+      };
+  reservations?: T;
+  unavailableSkus?: T;
+  holdExpiresAt?: T;
+  idempotencyKey?: T;
+  accessTokenHash?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts_select".
+ */
+export interface CartsSelect<T extends boolean = true> {
+  tokenHash?: T;
+  market?: T;
+  locale?: T;
+  lines?:
+    | T
+    | {
+        sku?: T;
+        qty?: T;
+        priceSnapshot?: T;
+        id?: T;
+      };
+  draft?: T;
+  status?: T;
+  order?: T;
+  expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "webhook-events_select".
+ */
+export interface WebhookEventsSelect<T extends boolean = true> {
+  provider?: T;
+  eventId?: T;
+  payloadHash?: T;
+  outcome?: T;
+  receivedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "legacy-redirects_select".
  */
 export interface LegacyRedirectsSelect<T extends boolean = true> {
@@ -1600,6 +1854,16 @@ export interface TaskReleaseExpiredReservations {
   input?: unknown;
   output: {
     released: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskExpireCheckouts".
+ */
+export interface TaskExpireCheckouts {
+  input?: unknown;
+  output: {
+    expired: number;
   };
 }
 /**

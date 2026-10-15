@@ -13,6 +13,7 @@ export {
   type AnnouncementBarProps,
 } from './components/AnnouncementBar/AnnouncementBar'
 export { AppShell, type AppShellProps } from './components/AppShell/AppShell'
+export { BagLine, type BagLineProps } from './components/BagLine/BagLine'
 export { Badge, type BadgeProps, type BadgeTone } from './components/Badge/Badge'
 export { BrandTile, type BrandTileProps } from './components/BrandTile/BrandTile'
 export {
@@ -60,3 +61,17 @@ export { Skeleton, type SkeletonProps } from './components/Skeleton/Skeleton'
 export { SortMenu, type SortMenuProps } from './components/SortMenu/SortMenu'
 export { SpecTable, type SpecRow, type SpecTableProps } from './components/SpecTable/SpecTable'
 export { StockLine, type StockLineProps, type StockStatus } from './components/StockLine/StockLine'
+export {
+  CheckoutSection,
+  type CheckoutSectionProps,
+} from './components/CheckoutSection/CheckoutSection'
+export {
+  OrderSummary,
+  type OrderSummaryProps,
+  type SummaryRow,
+} from './components/OrderSummary/OrderSummary'
+export {
+  PaymentMethodList,
+  type PaymentMethodListProps,
+  type PaymentMethodOption,
+} from './components/PaymentMethodList/PaymentMethodList'

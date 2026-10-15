@@ -46,3 +46,9 @@ export const canEditCatalog: Access = (args) => {
   const status = (args.data as { _status?: unknown } | undefined)?._status
   return status === 'published' ? canPublish(args) : true
 }
+
+/** Field-level: staff only (hidden values such as idempotency keys and token hashes). */
+export const staffField: FieldAccess = ({ req }) => req.user?.collection === 'users'
+
+/** Field-level: no one, through any API (secrets that only system code reads). */
+export const noOneReads: FieldAccess = () => false

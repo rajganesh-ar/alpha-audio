@@ -1,7 +1,15 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { Breadcrumb, Gallery, PriceBlock, SpecTable, getDictionary, translator } from '@alpha/ui'
+import {
+  Breadcrumb,
+  Button,
+  Gallery,
+  PriceBlock,
+  SpecTable,
+  getDictionary,
+  translator,
+} from '@alpha/ui'
 import { LiveStockLine } from '@/components/LiveStockLine'
 import { categoryTrail, getCategories, getProduct } from '@/lib/catalog'
 import { getMarketRoute, getMarkets, requireMarketRoute } from '@/lib/markets'
@@ -153,6 +161,18 @@ export default async function ProductPage({ params }: { params: Params }) {
             dateLocale={numberLocale(route)}
             timeZone={route.market.timezone}
           />
+          {price.kind === 'priced' ? (
+            // A plain form (no session read), so the page stays ISR and works without JavaScript.
+            <form method="post" action={`/api/v1/markets/${route.market.code}/bag/lines`}>
+              <input type="hidden" name="sku" value={product.sku} />
+              <input type="hidden" name="qty" value="1" />
+              <input type="hidden" name="mode" value="add" />
+              <input type="hidden" name="locale" value={route.locale} />
+              <Button type="submit" icon="bag" fullWidth className="sm:w-auto">
+                {t('bag.add')}
+              </Button>
+            </form>
+          ) : null}
         </div>
       </div>
       <section className="max-w-3xl">

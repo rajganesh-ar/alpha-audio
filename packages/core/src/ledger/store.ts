@@ -3,6 +3,7 @@ import type {
   Level,
   LevelKey,
   MovementRecord,
+  ReservationDocType,
   ReservationRecord,
   ReservationStatus,
   SerialRecord,
@@ -30,6 +31,13 @@ export interface LedgerTx {
   insertReservation(reservation: Omit<ReservationRecord, 'id'>): Promise<ReservationRecord>
   lockReservation(id: Id): Promise<ReservationRecord | null>
   setReservationStatus(id: Id, status: ReservationStatus): Promise<void>
+  /** Points a locked reservation at another document and expiry; no stock moves. */
+  retargetReservation(
+    id: Id,
+    docType: ReservationDocType,
+    docId: string,
+    expiresAt: Date | null,
+  ): Promise<void>
   /** Active reservations past expiry, locked; rows locked by another worker are skipped. */
   lockExpiredReservations(now: Date, limit: number): Promise<ReservationRecord[]>
 }

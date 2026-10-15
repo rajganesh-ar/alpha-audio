@@ -18,7 +18,8 @@
     "check": "turbo run typecheck lint test test:integration test:a11y",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:visual": "turbo run test:visual"
+    "test:visual": "turbo run test:visual",
+    "test:e2e": "pnpm --filter @alpha/web test:e2e"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

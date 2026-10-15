@@ -7,3 +7,4 @@ export {
   type MemoryPurchaseOrder,
   type MemoryReceipt,
 } from './purchasing/memoryStore'
+export { MemoryCheckoutStore } from './checkout/memoryStore'

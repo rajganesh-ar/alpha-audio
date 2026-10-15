@@ -242,6 +242,29 @@ export class LedgerService {
     await this.store.transaction((tx) => this.releaseIn(tx, reservationId, 'released', actor))
   }
 
+  /**
+   * Moves an active reservation to another document without moving stock: a paid cart hold
+   * becomes an order hold (docs/tasks/0009). Refuses a hold whose expiry has passed, even if the
+   * expiry job has not run yet, so a late payment cannot keep stock it no longer holds.
+   */
+  async confirm(
+    reservationId: Id,
+    input: { doc: { type: ReservationDocType; id: string }; expiresAt?: Date | null | undefined },
+  ): Promise<ReservationRecord> {
+    return this.store.transaction(async (tx) => {
+      const reservation = await this.activeReservation(tx, reservationId)
+      if (reservation.expiresAt && reservation.expiresAt <= this.now()) {
+        throw new LedgerError(
+          'reservation-expired',
+          `Reservation ${String(reservationId)} expired at ${reservation.expiresAt.toISOString()}.`,
+        )
+      }
+      const expiresAt = this.expiry(input.doc.type, input.expiresAt)
+      await tx.retargetReservation(reservation.id, input.doc.type, input.doc.id, expiresAt)
+      return { ...reservation, docType: input.doc.type, docId: input.doc.id, expiresAt }
+    })
+  }
+
   /** A picker took the reserved units: `reserved → picked`. */
   async pick(reservationId: Id, actor: Actor = {}): Promise<void> {
     await this.store.transaction(async (tx) => {

@@ -88,7 +88,7 @@ Import boundaries: apps import packages; packages never import apps; `packages/c
   - `price.leak.test.ts`: two companies sign in; neither can read the other's prices, stock setting, credit or quotes.
   - `price.rounding.test.ts`: 2-decimal and 3-decimal currencies, VAT as `total × rate ÷ (100 + rate)`.
   - `rtl.snapshots`: every component in LTR and RTL.
-- End-to-end with Playwright in `apps/web/e2e/`: checkout in `ae/en` and `ae/ar`; dealer order with approval; receiving flow.
+- End-to-end with Playwright in `apps/web/e2e/`: checkout in `ae/en` and `ae/ar` (JavaScript off; seed with `seed:e2e`); dealer order with approval; receiving flow.
 - Do not mock the database in integration tests. Do mock external providers with the fixtures in `packages/core/fixtures/`.
 - LLM code is tested with the evaluation harness in `packages/llm/eval`; prompt or tool changes must run it.
 
@@ -117,6 +117,7 @@ Import boundaries: apps import packages; packages never import apps; `packages/c
 - Do not put business logic in React components or route handlers; call a service in `packages/core`.
 - Do not fetch external APIs from hooks synchronously; enqueue a job.
 - Do not compute prices, VAT or stock in the browser.
+- Do not take a payment outside the `PaymentProvider` port or change an order's status outside `CheckoutService` (compare-and-set transitions; ADR 0009).
 - Do not translate Arabic copy with the LLM for publication; mark it `draft` for the native reviewer.
 - Do not skip the concurrency and leak tests to get a build green.
 

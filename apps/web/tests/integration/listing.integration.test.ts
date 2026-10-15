@@ -55,6 +55,20 @@ describe('category listing (loadListing against the database)', () => {
         ...as,
       })
     const [a, b] = await Promise.all([brand('list-brand-a'), brand('list-brand-b')])
+    // Brands are on sale only under a live agreement (task 0008).
+    for (const id of [a.id, b.id]) {
+      await payload().create({
+        collection: 'brand-agreements',
+        data: {
+          brand: id,
+          market: 'ae',
+          role: 'distributor',
+          exclusive: false,
+          leadRouting: 'alpha',
+        },
+        ...as,
+      })
+    }
     for (let i = 0; i < 26; i++) {
       await payload().create({
         collection: 'products',

@@ -9,6 +9,12 @@ How products reach the storefront, and what to check when a page looks wrong. Re
 - Publishing expires the storefront cache at once. The next visit renders fresh, and a page unpublished in a market returns 404 with the market switcher.
 - Arabic copy stays `draft` under **Arabic review** until the native reviewer marks it reviewed.
 
+## Brand rights
+
+- A product shows in a market only if its brand has a **live brand agreement** there (Catalogue → Brand agreements): role distributor or retailer, today inside valid from / valid to, and no `origin-restriction` or `registration-pending` flag.
+- To stop selling a brand in a market, set **Valid to** on its agreement (never delete it). To restart, add a new agreement starting on or after that date; overlapping agreements are refused.
+- A brand with no live agreement disappears from the brand index, its brand page returns 404, and its products are hidden everywhere in that market, even though they stay published.
+
 ## Something looks stale
 
 | Symptom                                        | Why                                                                  | Do                                                                                             |

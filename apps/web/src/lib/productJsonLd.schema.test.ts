@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { stockPromise, type StockPromiseStatus } from '@alpha/core'
 import { MARKETS_SEED, resolveMarketRoute, type MarketRoute } from '@alpha/payload'
 import type { Product } from '@/payload-types'
-import { breadcrumbJsonLd, priceOf, productJsonLd } from './productView'
+import { brandJsonLd, breadcrumbJsonLd, priceOf, productJsonLd } from './productView'
 
 /**
  * Schema test for the product page's structured data (spec: "validated in CI with a schema
@@ -95,5 +95,35 @@ describe('product JSON-LD', () => {
         { name: 'MA352', url },
       ]),
     )
+  })
+})
+
+const BrandLd = z.object({
+  '@context': z.literal('https://schema.org'),
+  '@type': z.literal('Brand'),
+  name: z.string().min(1),
+  url: absoluteUrl,
+  description: z.string().min(1).optional(),
+  logo: absoluteUrl.optional(),
+})
+
+describe('brand JSON-LD', () => {
+  it('validates with and without a logo or story', () => {
+    BrandLd.parse(
+      brandJsonLd({
+        name: 'McIntosh',
+        url: 'https://alphaaudios.com/ae/en/brands/mcintosh/',
+        description: 'Since 1949.',
+        logo: 'https://alphaaudios.com/api/media/file/l.webp',
+      }),
+    )
+    const bare = BrandLd.parse(
+      brandJsonLd({
+        name: 'Marantz',
+        url: 'https://alphaaudios.com/ae/en/brands/marantz/',
+        description: null,
+      }),
+    )
+    expect(bare).not.toHaveProperty('description')
   })
 })

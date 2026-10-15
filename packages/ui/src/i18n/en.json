@@ -173,5 +173,16 @@
     "categories": "Categories",
     "pageTitle": "{title}, page {page}",
     "description": "Hi-fi, home cinema and streaming, with prices including VAT and live stock."
+  },
+  "brands": {
+    "title": "Brands",
+    "lede": "The brands Alpha Audio represents in {market}.",
+    "description": "Hi-fi, home cinema and streaming brands available from Alpha Audio in {market}.",
+    "products": "{count} products",
+    "productsOne": "1 product",
+    "noProducts": "Coming soon",
+    "more": "More brands",
+    "shopAll": "Shop all {brand}",
+    "empty": "No brands are available here yet."
   }
 }
